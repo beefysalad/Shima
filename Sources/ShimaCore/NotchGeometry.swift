@@ -6,9 +6,9 @@ public enum NotchGeometry {
     /// Size of the "virtual notch" used on displays without a physical one (design doc 6.5 / M0).
     public static let virtualNotchSize = CGSize(width: 200, height: 32)
 
-    /// How far the static pill extends past the notch on each side and below it,
-    /// so it is visible against the menu bar rather than vanishing into the camera housing.
-    public static let pillOverhang: CGFloat = 6
+    /// How far the idle pill extends past the notch on each side and below it. Zero keeps it flush,
+    /// so it is invisible until it expands or shows a live indicator. Set SHIMA_DEBUG=1 to see it.
+    public static let pillOverhang: CGFloat = 0
 
     /// The notch rect: the screen's top strip between `auxiliaryTopLeftArea` and `auxiliaryTopRightArea`,
     /// `safeAreaInsetTop` tall. Falls back to a virtual notch centred at the top of the screen when the

@@ -28,8 +28,10 @@ final class NotchPanel: NSPanel {
 }
 
 struct PillView: View {
+    /// Set SHIMA_DEBUG=1 to tint the pill red so it is visible against the black notch.
+    static let debug = ProcessInfo.processInfo.environment["SHIMA_DEBUG"] != nil
     var body: some View {
         UnevenRoundedRectangle(bottomLeadingRadius: 12, bottomTrailingRadius: 12)
-            .fill(Color.black)
+            .fill(Self.debug ? Color.red : Color.black)
     }
 }

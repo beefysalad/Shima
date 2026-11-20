@@ -38,11 +38,11 @@ import Testing
         #expect(r.size == NotchGeometry.virtualNotchSize)
     }
 
-    @Test func pillExtendsPastNotchAndStaysFlushWithTop() {
+    @Test func idlePillIsFlushWithNotch() {
         let notch = CGRect(x: 663, y: 950, width: 186, height: 32)
         let p = NotchGeometry.pillFrame(notch: notch)
         #expect(p.maxY == notch.maxY)
         #expect(p.midX == notch.midX)
-        #expect(p.width == 186 + 12 && p.height == 32 + 6)
+        #expect(p == notch)
     }
 }

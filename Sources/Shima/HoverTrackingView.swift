@@ -23,7 +23,8 @@ final class HoverTrackingView: NSView {
         guard let window else { return }
         let inWindow = window.convertPoint(fromScreen: NSEvent.mouseLocation)
         let p = convert(inWindow, from: nil)
-        onPointer(hotRect.contains(p))
+        // NSMouseInRect includes the top edge (screen top), matching the tracking area; CGRect.contains does not.
+        onPointer(NSMouseInRect(p, hotRect, isFlipped))
     }
 
     override func mouseEntered(with event: NSEvent) { onPointer(true) }

@@ -1,4 +1,13 @@
-# shima
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/shima-logo.svg">
+    <img src="assets/branding/shima-logo-light.svg" alt="shima by Patrick" width="420">
+  </picture>
+</p>
+
+<p align="center">
+  <strong>島 · "island"</strong>
+</p>
 
 A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). It shows Claude Code session state, Spotify now-playing and a file shelf in the dead space around the notch. It is a small, local, hackable POC, not a product.
 

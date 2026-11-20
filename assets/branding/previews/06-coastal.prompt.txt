@@ -1,0 +1,9 @@
+Tool: built-in image_gen
+Status: revised exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one quick PNG logo mark concept for Shima, a personal macOS notch app named after 島, island.
+Primary request: A minimal soft organic island silhouette: one squat rounded mound with a gentle low crest, a subtly uneven shoreline-like base and a single small rounded horizontal pill opening tucked near the top. Welcoming independent macOS utility brand with the quiet character of a seaside illustration reduced to its simplest icon. Solid muted coastal blue #6C93AB on flat warm cream #F8F5EC. No separate waves, no scenery or sun, no outlines, no folded ribbon or letter shapes.
+Creative direction: independently branded, calm, warm, organic, human, quietly playful, approachable. Absolutely no resemblance to the violet angular Kaze terminal identity. No tech aesthetic. Think a carefully drawn tiny organic brand symbol rather than a software glyph. Simple enough to redraw as one or two SVG paths and recognizable at 16px.
+Composition: one mark only centered on a square canvas, generous negative space, mark approximately half the width of the canvas. The mark is a graphic flat silhouette, not a realistic object.
+Constraints: crisp smooth solid-filled vector-like shape; a single color only, flat specified background. No text, lettering, labels, numbers, words, mockups, icon tiles, shadows, glows, bevels, 3D, gradients, textures, grain, noise, polygons, chamfers, angular folds, terminal glyphs, or violet/purple. Do not add decorative elements.

@@ -1,0 +1,11 @@
+Tool: built-in image_gen
+Status: neon orange exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one PNG brand mark exploration for Shima, a personal MacBook notch app.
+Primary request: Design a beautiful minimal lowercase s-inspired brand mark as ONE broad, flowing rounded ribbon silhouette. Two generous opposing curves form a compact S; broad strokes, open negative space, soft rounded ends, no angular joints. Let the upper curve terminate in a subtle short horizontal pill-like tip that gently suggests a Dynamic Island. The form must feel effortlessly drawn, friendly, premium, balanced and ownable, not a standard font S, not a chain link, not a dollar sign. No additional pill cutout or decoration. Orange silhouette on black.
+Art direction: exceptionally thoughtful modern independent brand, soft sculptural silhouette rendered completely flat, compact, bold, memorable, friendly. All edges are curved and rounded, absolutely no sharp corners or chamfers. Avoid generic amorphous blobs.
+Palette: vivid neon orange #FF6500 solid fill on perfectly uniform pure black #000000. 'Neon' means saturated color ONLY; absolutely no glow or lighting.
+Composition: square canvas, single centered mark approximately 50 percent canvas width with generous clear black padding, no text or labels. Shape carefully balanced and suitable for manual recreation using a few clean SVG paths. Visually recognizable at 16px.
+Rendering: pristine smooth flat filled vector-like graphic. Exactly two colors, orange and black, with normal edge antialiasing only.
+Exclude: violet, purple, green, blue, cream, beige, gradients, shadows, glows, bevels, extrusions, textures, grain, noise, hand-drawn rough edges, mockups, rounded square app tiles, borders, typography, words, extra marks, folded K, terminals, circuits, angular geometry, sharp edges.

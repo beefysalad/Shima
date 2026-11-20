@@ -1,0 +1,11 @@
+Tool: built-in image_gen
+Status: neon orange exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one PNG brand mark exploration for Shima, a personal MacBook notch app.
+Primary request: Design a minimal iconic floating island symbol: a single broad vivid orange silhouette with a low smooth convex upper edge and a deep smoothly rounded bowl-shaped underside, creating a calm gently floating island / soft cushion form. In the upper center, integrate ONE small horizontal black pill-shaped cutout. Refined proportions: the island is about 1.65 times wider than tall, the small cutout about 0.27 of the island width. All contours clean and smoothly rounded. Shape should feel like a designed compact symbol with tension and elegance, not a random blob, landscape mountain, smiley face, mouth, game controller, or rounded rectangle. No extra shapes.
+Art direction: exceptionally thoughtful modern independent brand, soft sculptural silhouette rendered completely flat, compact, bold, memorable, friendly. All edges are curved and rounded, absolutely no sharp corners or chamfers. Avoid generic amorphous blobs.
+Palette: vivid neon orange #FF6500 solid fill on perfectly uniform pure black #000000. 'Neon' means saturated color ONLY; absolutely no glow or lighting.
+Composition: square canvas, single centered mark approximately 50 percent canvas width with generous clear black padding, no text or labels. Shape carefully balanced and suitable for manual recreation using a few clean SVG paths. Visually recognizable at 16px.
+Rendering: pristine smooth flat filled vector-like graphic. Exactly two colors, orange and black, with normal edge antialiasing only.
+Exclude: violet, purple, green, blue, cream, beige, gradients, shadows, glows, bevels, extrusions, textures, grain, noise, hand-drawn rough edges, mockups, rounded square app tiles, borders, typography, words, extra marks, folded K, terminals, circuits, angular geometry, sharp edges.

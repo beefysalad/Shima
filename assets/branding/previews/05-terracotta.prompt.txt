@@ -1,0 +1,9 @@
+Tool: built-in image_gen
+Status: revised exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one quick PNG logo mark concept for Shima, a personal macOS notch app named after 島, island.
+Primary request: A friendly compact island silhouette made of one gently domed warm terracotta shape, softly rounded and slightly asymmetrical like a little island on the horizon. A single wide shallow rounded indentation in its top edge hints at the MacBook notch, and the body stays thick and clearly connected below the indentation. The result should feel like a small cozy cove, not a tech symbol, not a letter, not a crown. Solid warm terracotta #C8785C on flat pale sand #FAF0DF. No outlines.
+Creative direction: independently branded, calm, warm, organic, human, quietly playful, approachable. Absolutely no resemblance to the violet angular Kaze terminal identity. No tech aesthetic. Think a carefully drawn tiny organic brand symbol rather than a software glyph. Simple enough to redraw as one or two SVG paths and recognizable at 16px.
+Composition: one mark only centered on a square canvas, generous negative space, mark approximately half the width of the canvas. The mark is a graphic flat silhouette, not a realistic object.
+Constraints: crisp smooth solid-filled vector-like shape; a single color only, flat specified background. No text, lettering, labels, numbers, words, mockups, icon tiles, shadows, glows, bevels, 3D, gradients, textures, grain, noise, polygons, chamfers, angular folds, terminal glyphs, or violet/purple. Do not add decorative elements.

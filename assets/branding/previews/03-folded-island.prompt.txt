@@ -1,0 +1,10 @@
+Tool: built-in image_gen
+Status: exploration preview; not approved production artwork
+
+Use case: logo-brand. Asset type: PNG concept preview for the Shima macOS notch app, sibling of Kaze terminal.
+Input image 1 is the Kaze logo style reference; image 2 is the approved Kaze icon geometry reference. Borrow image 2's angular solid vector construction and crisp chamfers, as well as its violet palette; create a NEW Shima mark, do not copy the K.
+Primary request: Create a single bold geometric island silhouette, with an asymmetric broad folded ridge rising from the lower left to an elevated flat top and descending to the right: a compact solid faceted mound, using the diagonal chamfered angles of the Kaze K. Integrate just one small horizontal charcoal rounded pill near the highest top edge, as a notch. Solid violet silhouette, no contour lines, no separate rocks, no water or scenic details. It should feel like a compact folded island / abstract 島, not a mountain illustration, sailboat, or letter A.
+Composition: one mark only, centered in a square image, generous clear padding, mark occupying about 55 percent of image width. Flat exact solid charcoal #0e1015 background, no tile or surrounding border.
+Color: mark filled with a subtle smooth linear violet gradient from #b9a6ff at upper left to #8b7bff at lower right. Small notch detail flat #0e1015.
+Style: exceptionally clean geometric vector-like brand symbol, flat solid filled shapes, strong silhouette, reproduceable as a few SVG paths, simple and iconic at 16px.
+No text, wordmark, byline, labels, multiple alternatives, extra marks, shadows, glow, bevel, 3D, noise, textures, mockups, grids, or lighting effects.

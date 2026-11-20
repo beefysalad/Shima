@@ -1,0 +1,9 @@
+Tool: built-in image_gen
+Status: revised exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one quick PNG logo mark concept for Shima, a personal macOS notch app named after 島, island.
+Primary request: A single soft asymmetrical island pebble silhouette, horizontally settled, with gently irregular rounded contours like a smooth stone shaped by the sea. A tiny horizontal dark pill opening near its top hints at the MacBook notch. The shape should feel calm, friendly, tactile in its silhouette but entirely flat in rendering. One solid muted sea-glass green #8CB9A3 on a flat warm ivory #F6F2E9 background. No outlines. Not a perfect rounded rectangle, not a leaf, not a letter or device.
+Creative direction: independently branded, calm, warm, organic, human, quietly playful, approachable. Absolutely no resemblance to the violet angular Kaze terminal identity. No tech aesthetic. Think a carefully drawn tiny organic brand symbol rather than a software glyph. Simple enough to redraw as one or two SVG paths and recognizable at 16px.
+Composition: one mark only centered on a square canvas, generous negative space, mark approximately half the width of the canvas. The mark is a graphic flat silhouette, not a realistic object.
+Constraints: crisp smooth solid-filled vector-like shape; a single color only, flat specified background. No text, lettering, labels, numbers, words, mockups, icon tiles, shadows, glows, bevels, 3D, gradients, textures, grain, noise, polygons, chamfers, angular folds, terminal glyphs, or violet/purple. Do not add decorative elements.

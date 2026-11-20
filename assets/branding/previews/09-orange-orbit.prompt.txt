@@ -1,0 +1,11 @@
+Tool: built-in image_gen
+Status: neon orange exploration preview; not approved production artwork
+
+Use case: logo-brand.
+Asset type: one PNG brand mark exploration for Shima, a personal MacBook notch app.
+Primary request: Design an elegant iconic orange circular emblem, a bold nearly circular softly organic disk. Cut a single black horizontal island-shaped negative space across its upper-middle, with fully rounded ends, gently curving down to the right: a calm, slight flowing sweep, like a tiny island hovering within the circle. The opening is broad enough to be readable at 16px, but leave generous orange above and below. Treat the circle and its curved island opening as one powerful balanced flat logo, a tiny notch reference integrated with softness. No sharp ends, no small secondary details. Not a letter, not a planet with a ring, not a power icon, not an eye. A single orange emblem on black.
+Art direction: exceptionally thoughtful modern independent brand, soft sculptural silhouette rendered completely flat, compact, bold, memorable, friendly. All edges are curved and rounded, absolutely no sharp corners or chamfers. Avoid generic amorphous blobs.
+Palette: vivid neon orange #FF6500 solid fill on perfectly uniform pure black #000000. 'Neon' means saturated color ONLY; absolutely no glow or lighting.
+Composition: square canvas, single centered mark approximately 50 percent canvas width with generous clear black padding, no text or labels. Shape carefully balanced and suitable for manual recreation using a few clean SVG paths. Visually recognizable at 16px.
+Rendering: pristine smooth flat filled vector-like graphic. Exactly two colors, orange and black, with normal edge antialiasing only.
+Exclude: violet, purple, green, blue, cream, beige, gradients, shadows, glows, bevels, extrusions, textures, grain, noise, hand-drawn rough edges, mockups, rounded square app tiles, borders, typography, words, extra marks, folded K, terminals, circuits, angular geometry, sharp edges.

@@ -13,7 +13,7 @@ Native Swift 6.1, SwiftPM, macOS 14+. SwiftUI views in a borderless non-activati
 - **No Xcode.** Only Command Line Tools are installed. Everything must build with `swift build`; no `.xcodeproj`.
 - No third-party dependencies without asking the user first.
 - Do not touch `~/.claude/settings.json` or any file outside this repo.
-- Use "shima" where the design doc says "notch" (`~/.config/shima/config.toml`, `shimactl`).
+- Use "shima" where the design doc says "notch" (`~/.config/shima/config.json`, `shimactl`).
 - `shimactl` always exits 0 quickly. The panel never steals focus and uses no timers while idle.
 - Put logic in `ShimaCore` with tests; keep AppKit glue in `Shima`.
 - No tool-attribution trailers in commit messages (a hook enforces this).

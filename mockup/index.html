@@ -1,0 +1,1121 @@
+<meta charset="utf-8">
+<title>shima notch mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one scaled MacBook "device" (1552x956 design px) on top, three control cards below.
+   The page around the device follows the viewer's theme; the island inside is always pure black. */
+:root {
+  /* page (light) */
+  --page: #E8EBEE;
+  --panel: #F6F7F8;
+  --ink: #15181C;
+  --ink-2: #5B636D;
+  --line: #D2D7DD;
+  --chip: #FFFFFF;
+  --accent: #B9582F;
+  --focus: #2E6BE6;
+
+  /* island: fixed, never themed */
+  --i-bg: #000;
+  --i-ink: #F5F5F7;
+  --i-ink2: rgba(235, 235, 245, .62);
+  --i-ink3: rgba(235, 235, 245, .52);
+  --i-fill: rgba(255, 255, 255, .075);
+  --i-fill2: rgba(255, 255, 255, .13);
+  --claude: #E07A4F;
+  --spotify: #1ED760;
+  --done: #86AEF7;
+  --danger: #FF6961;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* spring set from JS (response .35, damping .8, as in the design doc 6.6) */
+  --spring: cubic-bezier(.3, 1.15, .4, 1);
+  --dur: .5s;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0C0E11; --panel: #14171B; --ink: #E7EAEE; --ink-2: #8B939D;
+    --line: #252A31; --chip: #1B1F25; --accent: #E8875C; --focus: #6E9BFF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0C0E11; --panel: #14171B; --ink: #E7EAEE; --ink-2: #8B939D;
+  --line: #252A31; --chip: #1B1F25; --accent: #E8875C; --focus: #6E9BFF;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.page {
+  max-width: 1280px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px;
+}
+
+/* ---------- masthead ---------- */
+.mast { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+.mark { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 700; letter-spacing: -.03em; }
+.mark i { display: inline-block; width: 34px; height: 13px; background: #000; border-radius: 0 0 7px 7px; box-shadow: 0 0 0 1px var(--line); }
+.mast p { margin: 0; color: var(--ink-2); max-width: 62ch; text-wrap: pretty; }
+
+/* ---------- device ---------- */
+.fit { width: 100%; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.sizer { position: relative; margin-inline: auto; }
+.device { position: absolute; top: 0; left: 0; width: 1552px; height: 956px; transform-origin: 0 0; }
+.bezel {
+  position: absolute; left: 40px; top: 0; width: 1472px; height: 932px;
+  background: #050506; border-radius: 30px 30px 8px 8px; padding: 16px;
+  box-shadow: 0 0 0 2px #2b2d31, 0 0 0 3px #111, 0 30px 60px -20px rgba(0,0,0,.45);
+}
+.base {
+  position: absolute; left: 0; top: 930px; width: 1552px; height: 24px;
+  background: linear-gradient(#c9ccd1, #9a9ea5 55%, #6d7178);
+  border-radius: 2px 2px 22px 22px / 2px 2px 14px 14px;
+  box-shadow: 0 14px 24px -10px rgba(0,0,0,.45);
+}
+.base::before { content: ""; position: absolute; left: 50%; top: 0; width: 220px; height: 9px; transform: translateX(-50%); background: linear-gradient(#8d9097, #b5b8be); border-radius: 0 0 12px 12px; }
+
+.screen {
+  position: relative; width: 1440px; height: 900px; overflow: hidden; border-radius: 14px 14px 2px 2px;
+  font-family: var(--font); color: var(--i-ink); user-select: none;
+  background:
+    radial-gradient(30% 5% at 31% 74%, rgba(4,10,16,.9) 55%, transparent 62%),
+    radial-gradient(70% 45% at 72% 108%, rgba(222,128,74,.42), transparent 70%),
+    radial-gradient(80% 60% at 14% -10%, rgba(52,98,140,.55), transparent 70%),
+    linear-gradient(180deg, #08121e 0%, #0e2232 46%, #173847 70%, #2b3440 86%, #3a3036 100%);
+}
+.screen::after { /* shima: faint horizontal stripes over the sea */
+  content: ""; position: absolute; inset: 62% 0 0 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,.028) 0 2px, transparent 2px 11px);
+  mask-image: linear-gradient(transparent, #000 40%);
+}
+
+/* menu bar */
+.menubar {
+  position: absolute; inset: 0 0 auto 0; height: 34px; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  background: rgba(8, 12, 18, .38); backdrop-filter: blur(20px) saturate(140%);
+  font-size: 13.5px; color: rgba(255,255,255,.92);
+}
+.menubar .left, .menubar .right { display: flex; align-items: center; gap: 20px; }
+.menubar .left b { font-weight: 700; }
+.menubar .right { gap: 16px; }
+.mb-icon { display: inline-flex; align-items: center; opacity: .92; }
+.mb-shima { width: 22px; height: 9px; background: #fff; border-radius: 0 0 5px 5px; opacity: .9; }
+.clock { font-variant-numeric: tabular-nums; }
+
+/* faint terminal window */
+.term {
+  position: absolute; left: 96px; top: 118px; width: 660px; height: 430px; z-index: 1;
+  background: rgba(14, 16, 20, .78); border-radius: 12px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 30px 60px rgba(0,0,0,.45);
+  opacity: .5; transition: opacity .4s ease, box-shadow .4s ease;
+}
+.term.lit { opacity: .9; box-shadow: 0 0 0 1px rgba(224,122,79,.55), 0 30px 60px rgba(0,0,0,.5); }
+.term-bar { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: rgba(255,255,255,.04); font-size: 12.5px; color: rgba(255,255,255,.55); }
+.term-bar .dots { display: flex; gap: 8px; margin-right: 10px; }
+.term-bar .dots span { width: 12px; height: 12px; border-radius: 50%; background: #3a3d42; }
+.term-bar .dots span:nth-child(1) { background: #ff5f57; } .term-bar .dots span:nth-child(2) { background: #febc2e; } .term-bar .dots span:nth-child(3) { background: #28c840; }
+.term-title { flex: 1; text-align: center; margin-right: 70px; }
+.term pre { margin: 0; padding: 16px 18px; font: 12.5px/1.65 var(--mono); color: rgba(230,232,236,.78); white-space: pre-wrap; }
+.term pre .o { color: var(--claude); } .term pre .d { color: rgba(230,232,236,.4); } .term pre .g { color: #8fd19e; }
+
+/* desktop icons (drop target for files dragged out of the tray) */
+.desk-icons { position: absolute; inset: 60px 28px auto auto; display: grid; gap: 18px; justify-items: center; z-index: 1; }
+.desk-icon { position: absolute; width: 96px; display: grid; justify-items: center; gap: 6px; font-size: 12px; text-align: center; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.desk-icon .doc { width: 46px; height: 56px; border-radius: 5px; background: linear-gradient(#fafafa, #dfe2e6); position: relative; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.desk-icon .doc::after { content: attr(data-ext); position: absolute; bottom: 6px; left: 0; right: 0; font: 700 9px var(--font); color: #59606a; text-transform: uppercase; text-shadow: none; }
+.desk-icon span { line-height: 1.25; word-break: break-word; }
+.desk-icon.new .doc { animation: pop .45s var(--spring); }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+.screen.drop-ok { box-shadow: inset 0 0 0 3px rgba(134,174,247,.5); }
+
+/* ---------- the notch + island ---------- */
+.notch { position: absolute; top: 0; left: 622px; width: 196px; height: 34px; background: #000; border-radius: 0 0 12px 12px; z-index: 6; }
+.lens { position: absolute; top: 12px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; z-index: 40; pointer-events: none;
+  background: radial-gradient(circle at 35% 35%, #1d2638 0 25%, #070910 60%); box-shadow: 0 0 0 1.5px #0c0d10; }
+
+.island-wrap {
+  --w: 312px; --h: 34px; --r: 12px; --ear: 9px;
+  position: absolute; top: 0; left: 50%; z-index: 30;
+  width: var(--w); height: var(--h); transform: translateX(-50%);
+  transition: width var(--dur) var(--spring), height var(--dur) var(--spring);
+}
+.ear { position: absolute; top: 0; width: var(--ear); height: var(--ear); transition: width var(--dur) var(--spring), height var(--dur) var(--spring); pointer-events: none; }
+.ear.l { right: 100%; background: radial-gradient(100% 100% at 0 100%, transparent 97%, var(--i-bg) 100%); }
+.ear.r { left: 100%;  background: radial-gradient(100% 100% at 100% 100%, transparent 97%, var(--i-bg) 100%); }
+.island {
+  position: absolute; inset: 0; background: var(--i-bg); overflow: hidden;
+  border-radius: 0 0 var(--r) var(--r);
+  transition: border-radius var(--dur) var(--spring), box-shadow .35s ease;
+  cursor: default;
+}
+.island-wrap[data-mode="expanded"] .island { box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+.island-wrap[data-mode="peek"] .island { box-shadow: 0 14px 34px rgba(0,0,0,.45); }
+.island-wrap.attn .island { animation: attn 1.6s ease-in-out infinite; }
+@keyframes attn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224,122,79,0), 0 4px 14px rgba(224,122,79,.18); }
+  50% { box-shadow: 0 0 0 1.5px rgba(224,122,79,.75), 0 6px 26px rgba(224,122,79,.55); }
+}
+
+/* views are laid out at their final size and revealed by the growing clip */
+.view { position: absolute; top: 0; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+.v-col { width: 312px; height: 34px; }
+.v-peek { width: 460px; height: 84px; }
+.v-exp { width: 720px; height: 330px; transform: translateX(-50%) translateY(-6px) scale(.97); transform-origin: 50% 0; transition: opacity .2s ease, transform var(--dur) var(--spring); }
+[data-mode="collapsed"] .v-col, [data-mode="peek"] .v-col { opacity: 1; }
+[data-mode="peek"] .v-peek { opacity: 1; transition-delay: .08s; }
+[data-mode="expanded"] .v-exp { opacity: 1; pointer-events: auto; transform: translateX(-50%); transition-delay: .06s, 0s; }
+
+/* collapsed indicators */
+.slot { position: absolute; top: 0; height: 34px; width: 58px; display: flex; align-items: center; gap: 6px; transition: opacity .25s ease; }
+.slot.l { left: 0; padding-left: 14px; }
+.slot.r { right: 0; justify-content: flex-end; padding-right: 15px; gap: 5px; }
+.mini-art { width: 20px; height: 20px; border-radius: 5px; flex: none; }
+.wave { display: flex; align-items: center; gap: 2px; height: 14px; }
+.wave i { width: 2.5px; height: 100%; border-radius: 2px; background: var(--tint, #fff); transform: scaleY(.25); transform-origin: 50% 50%; }
+.wave.on i { animation: bar .9s ease-in-out infinite alternate; }
+.wave.on i:nth-child(2) { animation-duration: .7s; animation-delay: -.3s; }
+.wave.on i:nth-child(3) { animation-duration: 1.1s; animation-delay: -.5s; }
+.wave.on i:nth-child(4) { animation-duration: .8s; animation-delay: -.2s; }
+@keyframes bar { 0% { transform: scaleY(.22); } 100% { transform: scaleY(1); } }
+.sdot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--i-ink3); }
+.sdot.running { background: rgba(255,255,255,.78); }
+.sdot.needs { background: var(--claude); animation: dot 1.2s ease-in-out infinite; }
+.sdot.done { background: var(--done); }
+@keyframes dot { 50% { transform: scale(1.35); box-shadow: 0 0 8px var(--claude); } }
+
+/* peek */
+.peek-row { position: absolute; left: 0; right: 0; top: 34px; height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 20px 6px; }
+.peek-art { width: 34px; height: 34px; border-radius: 8px; flex: none; }
+.peek-text { flex: 1; min-width: 0; display: grid; }
+.peek-text b { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.peek-text span { font-size: 12px; color: var(--i-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.peek-badge { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: rgba(224,122,79,.16); color: var(--claude); }
+
+/* expanded: top row splits around the notch */
+.topbar { position: absolute; inset: 0 0 auto 0; height: 34px; display: flex; justify-content: space-between; padding: 0 16px; }
+.wing { width: 262px; display: flex; align-items: center; gap: 2px; }
+.wing.r { justify-content: flex-end; gap: 8px; font-size: 12px; color: var(--i-ink2); padding-right: 2px; }
+.tab {
+  position: relative; border: 0; background: transparent; color: var(--i-ink3);
+  font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 8px; transition: color .15s, background .15s;
+}
+.tab:hover { color: var(--i-ink2); }
+.tab[aria-selected="true"] { color: var(--i-ink); background: var(--i-fill2); }
+.tab .badge { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--claude); }
+.tab .badge.err { background: var(--danger); }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.status-pill .sdot { width: 7px; height: 7px; }
+.status-pill.toast { color: var(--i-ink); }
+
+.body { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; padding: 14px 20px 20px; }
+.panel { height: 100%; }
+
+/* --- Now Playing --- */
+.np { display: grid; grid-template-columns: 136px 1fr 200px; gap: 20px; height: 100%; }
+.art { width: 136px; height: 136px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.art::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, rgba(0,0,0,.09) 0 3px, transparent 3px 9px); mix-blend-mode: multiply; }
+.np-main { display: flex; flex-direction: column; min-width: 0; padding-top: 4px; }
+.src { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--i-ink2); letter-spacing: .02em; }
+.src i { width: 7px; height: 7px; border-radius: 50%; background: var(--spotify); }
+.np-title { margin: 8px 0 2px; font-size: 19px; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-artist { font-size: 13.5px; color: var(--i-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prog { margin-top: 18px; display: grid; gap: 5px; }
+.bar { height: 5px; border-radius: 3px; background: var(--i-fill2); overflow: hidden; cursor: pointer; }
+.bar i { display: block; height: 100%; width: 0; background: var(--i-ink); border-radius: 3px; }
+.times { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--i-ink3); font-variant-numeric: tabular-nums; }
+.ctrls { margin-top: 12px; display: flex; align-items: center; gap: 14px; }
+.ibtn { border: 0; background: transparent; color: var(--i-ink); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; transition: background .15s, transform .15s; }
+.ibtn:hover { background: var(--i-fill2); }
+.ibtn:active { transform: scale(.92); }
+.ibtn.big { width: 42px; height: 42px; background: var(--i-fill); }
+.upnext { display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--i-fill2); padding-left: 16px; min-width: 0; }
+.cap { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--i-ink3); margin-bottom: 6px; }
+.qrow { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; text-align: left; padding: 6px; border-radius: 8px; color: var(--i-ink); min-width: 0; }
+.qrow:hover { background: var(--i-fill); }
+.qrow .mini-art { width: 26px; height: 26px; border-radius: 6px; }
+.qrow span { display: grid; min-width: 0; font-size: 12px; line-height: 1.3; }
+.qrow span b, .qrow span em { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: normal; }
+.qrow span b { font-weight: 550; } .qrow span em { color: var(--i-ink2); }
+.np-empty { height: 100%; display: grid; place-items: center; color: var(--i-ink2); font-size: 13px; text-align: center; }
+
+/* --- Claude sessions --- */
+.sessions { display: grid; gap: 6px; }
+.srow {
+  display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 12px;
+  padding: 9px 12px; border-radius: 14px; border: 0; background: var(--i-fill); color: var(--i-ink); text-align: left;
+  transition: background .15s, box-shadow .3s;
+}
+.srow:hover { background: var(--i-fill2); }
+.srow.needs { animation: rowpulse 1.6s ease-in-out infinite; }
+@keyframes rowpulse { 50% { box-shadow: inset 0 0 0 1.5px rgba(224,122,79,.75); background: rgba(224,122,79,.12); } }
+.srow.focused { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.5); }
+.sicon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; }
+.sicon.running { border: 2px solid rgba(255,255,255,.16); border-top-color: rgba(255,255,255,.85); animation: spin 1s linear infinite; width: 22px; height: 22px; margin: 3px; }
+.sicon.needs { background: rgba(224,122,79,.18); color: var(--claude); }
+.sicon.done { background: rgba(134,174,247,.16); color: var(--done); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.sline1 { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.sname { font-size: 14px; font-weight: 600; }
+.sapp { font-size: 11px; color: var(--i-ink3); }
+.sstate { font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.sstate.running { color: var(--i-ink2); } .sstate.needs { color: var(--claude); } .sstate.done { color: var(--done); }
+.smsg { font-size: 12.5px; color: var(--i-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; margin-top: 1px; }
+.smsg code { font: 11.5px var(--mono); color: var(--i-ink); }
+.sright { display: flex; align-items: center; gap: 10px; font: 12px var(--mono); color: var(--i-ink3); font-variant-numeric: tabular-nums; }
+.sright .go { font: 600 11px var(--font); color: var(--i-ink2); padding: 4px 8px; border-radius: 7px; background: var(--i-fill2); }
+.sess-foot { margin-top: 10px; font-size: 11.5px; color: var(--i-ink3); }
+
+/* --- File tray --- */
+.tray { display: grid; grid-template-columns: 210px 1fr; gap: 16px; height: 100%; }
+.dropzone {
+  border: 1.5px dashed rgba(255,255,255,.2); border-radius: 16px; display: grid; place-items: center; align-content: center; gap: 8px;
+  color: var(--i-ink2); font-size: 12.5px; text-align: center; padding: 12px; transition: border-color .15s, background .15s, color .15s;
+}
+.dropzone svg { color: var(--i-ink3); }
+.dropzone.over { border-color: var(--done); background: rgba(134,174,247,.1); color: var(--i-ink); }
+.dropzone .mode { font: 600 11px var(--font); padding: 3px 8px; border-radius: 6px; background: var(--i-fill2); color: var(--i-ink); }
+.shelf { display: flex; flex-direction: column; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; flex: 1; overflow-y: auto; padding: 2px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 220px; padding: 6px 10px 6px 6px;
+  border-radius: 10px; background: var(--i-fill); border: 0; color: var(--i-ink); cursor: grab; text-align: left;
+  transition: background .15s, box-shadow .15s;
+}
+.chip:hover { background: var(--i-fill2); }
+.chip[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--done); }
+.chip:active { cursor: grabbing; }
+.chip .ft { width: 26px; height: 30px; border-radius: 5px; flex: none; display: grid; place-items: end center; padding-bottom: 3px; font: 700 7.5px var(--font); text-transform: uppercase; color: rgba(0,0,0,.65); background: var(--ftc, #c8ccd2); }
+.chip span { display: grid; min-width: 0; line-height: 1.25; }
+.chip b { font-size: 12px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip em { font-size: 11px; font-style: normal; color: var(--i-ink3); }
+.chip.new { animation: pop .4s var(--spring); }
+.tray-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.pbtn { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 6px 11px; border-radius: 9px; font-size: 12px; font-weight: 600; background: var(--i-fill2); color: var(--i-ink); transition: background .15s; }
+.pbtn:hover { background: rgba(255,255,255,.2); }
+.pbtn.blue { background: rgba(134,174,247,.2); color: #cfe0ff; }
+.pbtn.blue:hover { background: rgba(134,174,247,.3); }
+.hint { margin-left: auto; font-size: 11px; color: var(--i-ink3); }
+.tray-empty { color: var(--i-ink3); font-size: 12.5px; padding: 8px 2px; }
+
+/* --- Automations --- */
+.rules-wrap { display: grid; grid-template-columns: 1fr 250px; gap: 16px; height: 100%; }
+.rules { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.rule { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 12px; background: var(--i-fill); }
+.rule.flash { animation: flash .9s ease; }
+@keyframes flash { 0% { background: rgba(224,122,79,.35); } }
+.rule .t { font-size: 12.5px; font-weight: 550; }
+.rule .c { font: 11px/1.5 var(--mono); color: var(--i-ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rule.off .t, .rule.off .c { opacity: .45; }
+.switch { position: relative; width: 32px; height: 19px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch i { position: absolute; inset: 0; border-radius: 10px; background: rgba(255,255,255,.18); transition: background .2s; pointer-events: none; }
+.switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: transform .25s var(--spring); }
+.switch input:checked + i { background: var(--claude); }
+.switch input:checked + i::after { transform: translateX(13px); }
+.switch input:focus-visible + i { outline: 2px solid var(--done); outline-offset: 2px; }
+.cfg { display: flex; align-items: center; gap: 8px; font: 11px var(--mono); color: var(--i-ink3); margin-top: 4px; padding: 0 2px; }
+.cfg .ok { color: #8fd19e; } .cfg .bad { color: var(--danger); }
+.log { display: flex; flex-direction: column; min-width: 0; border-left: 1px solid var(--i-fill2); padding-left: 14px; }
+.log ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; overflow: hidden; align-content: start; flex: 1; }
+.log li { font: 11px/1.4 var(--mono); color: var(--i-ink2); }
+.log li .ts { color: var(--i-ink3); }
+.log li .ev { color: var(--i-ink); }
+.log li .act { color: var(--claude); }
+.log li .skip { color: var(--i-ink3); }
+.log li.new { animation: slidein .35s ease; }
+@keyframes slidein { from { opacity: 0; transform: translateY(-4px); } }
+
+/* AirDrop sheet */
+.sheet {
+  position: absolute; left: 50%; top: 380px; width: 380px; transform: translateX(-50%); z-index: 50;
+  background: rgba(36, 38, 44, .86); backdrop-filter: blur(30px) saturate(160%); border-radius: 18px; padding: 18px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 30px 70px rgba(0,0,0,.6); color: var(--i-ink);
+  animation: sheet .35s var(--spring);
+}
+@keyframes sheet { from { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(.96); } }
+.sheet h3 { margin: 0 0 2px; font-size: 14px; font-weight: 650; }
+.sheet p { margin: 0 0 16px; font-size: 12px; color: var(--i-ink2); }
+.devs { display: flex; justify-content: space-around; gap: 8px; margin-bottom: 16px; }
+.dev { border: 0; background: transparent; color: var(--i-ink); display: grid; justify-items: center; gap: 6px; font-size: 11.5px; padding: 6px; border-radius: 10px; }
+.dev:hover { background: var(--i-fill); }
+.dev i { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 600; font-size: 15px; }
+.sheet .row { display: flex; justify-content: flex-end; }
+
+/* ---------- control cards ---------- */
+.controls { display: grid; grid-template-columns: 1.05fr 1.5fr .95fr; gap: 16px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { margin: 0; font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.states { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sbtn {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--chip); font-size: 13px; text-align: left; transition: border-color .15s, background .15s;
+}
+.sbtn:hover { border-color: var(--ink-2); }
+.sbtn[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.sbtn small { font: 600 11px var(--mono); color: var(--ink-2); }
+.group { display: grid; gap: 8px; }
+.group > label, .glabel { font-size: 12px; color: var(--ink-2); }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 10px; background: color-mix(in srgb, var(--line) 55%, transparent); width: fit-content; max-width: 100%; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; padding: 4px 10px; border-radius: 7px; font: 12px var(--mono); color: var(--ink-2); }
+.seg input:checked + span { background: var(--chip); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.seg input:focus-visible + span { outline: 2px solid var(--focus); }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn { padding: 7px 11px; border-radius: 9px; border: 1px solid var(--line); background: var(--chip); font-size: 12.5px; transition: border-color .15s; }
+.btn:hover { border-color: var(--ink-2); }
+.btn code { font: 11px var(--mono); color: var(--accent); }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+.keys { display: grid; gap: 8px; margin: 0; }
+.keys div { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; color: var(--ink-2); }
+.keys dt { min-width: 62px; }
+.keys dd { margin: 0; }
+kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px solid var(--line); border-bottom-width: 2px; background: var(--chip); color: var(--ink); }
+.note { font-size: 12px; color: var(--ink-2); margin: 0; text-wrap: pretty; }
+
+@media (max-width: 960px) { .controls { grid-template-columns: 1fr 1fr; } .controls .card:last-child { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .controls { grid-template-columns: 1fr; } .mark { font-size: 22px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; }
+  .wave.on i { transform: scaleY(.6); }
+  .island-wrap.attn .island { box-shadow: 0 0 0 1.5px rgba(224,122,79,.75); }
+  .srow.needs { box-shadow: inset 0 0 0 1.5px rgba(224,122,79,.75); }
+}
+</style>
+
+<div class="page">
+  <header class="mast">
+    <div class="mark"><i aria-hidden="true"></i>shima</div>
+    <p>Interactive mockup of the notch app POC, milestones M0 to M4. Hover the notch, drop files on it, or fire events from Simulate. This is a browser demo, not the Swift app.</p>
+  </header>
+
+  <section class="fit" id="fit" aria-label="MacBook screen with the shima island">
+    <div class="sizer" id="sizer">
+      <div class="device" id="device">
+        <div class="bezel">
+          <div class="screen" id="screen">
+            <div class="menubar">
+              <div class="left"><b>kaze</b><span>Shell</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span></div>
+              <div class="right">
+                <span class="mb-icon" title="shima"><span class="mb-shima"></span></span>
+                <span class="mb-icon"><svg width="17" height="13" viewBox="0 0 17 13" fill="currentColor" aria-hidden="true"><path d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l1.3-1.4A11 11 0 0 0 8.5.2 11 11 0 0 0 .7 3.4L2 4.8a9 9 0 0 1 6.5-2.6Zm0 3.8c1.5 0 2.9.6 4 1.6l1.3-1.4a7.6 7.6 0 0 0-10.6 0l1.3 1.4c1.1-1 2.5-1.6 4-1.6Zm0 3.8c.6 0 1.1.2 1.5.6L8.5 12.6 7 10.4c.4-.4.9-.6 1.5-.6Z"/></svg></span>
+                <span class="mb-icon"><svg width="26" height="12" viewBox="0 0 26 12" aria-hidden="true"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.6" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".5"/></svg></span>
+                <span class="clock" id="clock">Fri Nov 20 9:41 AM</span>
+              </div>
+            </div>
+
+            <div class="term" id="term">
+              <div class="term-bar"><div class="dots"><span></span><span></span><span></span></div><div class="term-title" id="termTitle">kaze</div></div>
+              <pre id="termBody"></pre>
+            </div>
+
+            <div id="desk"></div>
+
+            <div class="notch" aria-hidden="true"></div>
+            <div class="lens" aria-hidden="true"></div>
+
+            <div class="island-wrap" id="wrap" data-mode="collapsed">
+              <div class="ear l"></div><div class="ear r"></div>
+              <div class="island" id="island" role="region" aria-label="shima island">
+                <!-- collapsed -->
+                <div class="view v-col" aria-hidden="true">
+                  <div class="slot l" id="colLeft"><div class="mini-art" id="colArt"></div><div class="wave" id="colWave"><i></i><i></i><i></i><i></i></div></div>
+                  <div class="slot r" id="colRight"></div>
+                </div>
+                <!-- peek -->
+                <div class="view v-peek" aria-live="polite"><div class="peek-row" id="peekRow"></div></div>
+                <!-- expanded -->
+                <div class="view v-exp">
+                  <div class="topbar">
+                    <div class="wing l" role="tablist" aria-label="Island tabs">
+                      <button class="tab" role="tab" data-tab="music" id="tab-music">Music</button>
+                      <button class="tab" role="tab" data-tab="claude" id="tab-claude">Claude</button>
+                      <button class="tab" role="tab" data-tab="tray" id="tab-tray">Tray</button>
+                      <button class="tab" role="tab" data-tab="rules" id="tab-rules">Rules</button>
+                    </div>
+                    <div class="wing r" id="wingRight"></div>
+                  </div>
+                  <div class="body">
+                    <div class="panel" data-panel="music" id="pMusic"></div>
+                    <div class="panel" data-panel="claude" id="pClaude" hidden></div>
+                    <div class="panel" data-panel="tray" id="pTray" hidden></div>
+                    <div class="panel" data-panel="rules" id="pRules" hidden></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="sheetHost"></div>
+          </div>
+        </div>
+        <div class="base" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <div class="card">
+      <h2>Jump to state</h2>
+      <div class="states" id="states">
+        <button class="sbtn" data-state="idle">Idle <small>M0</small></button>
+        <button class="sbtn" data-state="peek">Peek <small>M1</small></button>
+        <button class="sbtn" data-state="music">Now Playing <small>M1</small></button>
+        <button class="sbtn" data-state="claude">Claude <small>M2</small></button>
+        <button class="sbtn" data-state="tray">File tray <small>M3</small></button>
+        <button class="sbtn" data-state="rules">Automations <small>M4</small></button>
+      </div>
+      <p class="note">States opened from here stay open until you press Esc or click the desktop. Opened by hover, the island collapses 300 ms after the pointer leaves.</p>
+    </div>
+
+    <div class="card">
+      <h2>Simulate</h2>
+      <div class="group">
+        <span class="glabel" id="sessLbl">Claude session</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sessLbl" id="sessPick"></div>
+        <div class="btns">
+          <button class="btn" data-sim="claude.needs_input">Needs input <code>claude.needs_input</code></button>
+          <button class="btn" data-sim="claude.done">Finished <code>claude.done</code></button>
+          <button class="btn" data-sim="claude.started">Started <code>claude.started</code></button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="glabel">Spotify</span>
+        <div class="btns">
+          <button class="btn" data-sim="spotify.track_changed">Track changes <code>spotify.track_changed</code></button>
+          <button class="btn" data-sim="spotify.toggle">Play / pause</button>
+          <button class="btn" data-sim="spotify.quit" id="quitBtn">Quit Spotify</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="glabel">Config and sound</span>
+        <div class="btns">
+          <button class="btn" data-sim="config.break" id="cfgBtn">Save a broken config.toml</button>
+          <label class="check"><input type="checkbox" id="soundOn" checked> Play sounds</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Keyboard and pointer</h2>
+      <dl class="keys">
+        <div><dt><kbd>Esc</kbd></dt><dd>Collapse the island</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Music, Claude, Tray, Rules</dd></div>
+        <div><dt>Hover</dt><dd>Expand; leave to collapse</dd></div>
+        <div><dt>Drop</dt><dd>Drag files from Finder onto the notch. Hold <kbd>⌥</kbd> to move instead of copy</dd></div>
+        <div><dt>Drag out</dt><dd>Drag a tray chip onto the desktop</dd></div>
+      </dl>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const now = () => Date.now();
+  const mmss = sec => { sec = Math.max(0, Math.floor(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s = sec % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
+  const clockTime = d => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  const ICON = {
+    play: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.6v10.8c0 .5.6.8 1 .5l8.3-5.4a.6.6 0 0 0 0-1L5.5 2.1c-.4-.3-1 0-1 .5Z"/></svg>',
+    pause: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="1"/></svg>',
+    next: '<svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor"><path d="M1 1.8v10.4c0 .4.5.7.8.4L8.6 7.4a.5.5 0 0 0 0-.8L1.8 1.4c-.3-.3-.8 0-.8.4Zm8 0v10.4c0 .4.5.7.8.4l6.8-5.2a.5.5 0 0 0 0-.8L9.8 1.4c-.3-.3-.8 0-.8.4Z"/></svg>',
+    prev: '<svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor"><path d="M17 1.8v10.4c0 .4-.5.7-.8.4L9.4 7.4a.5.5 0 0 1 0-.8l6.8-5.2c.3-.3.8 0 .8.4Zm-8 0v10.4c0 .4-.5.7-.8.4L1.4 7.4a.5.5 0 0 1 0-.8l6.8-5.2c.3-.3.8 0 .8.4Z"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7.3 2.6 2.6L11 4.4"/></svg>',
+    hand: '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="2.6"/></svg>',
+    tray: '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4v11m0 0-4-4m4 4 4-4"/><path d="M4 15v4a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-4"/></svg>',
+    airdrop: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.2 10.4a5 5 0 1 1 7.6 0"/><path d="M5 8.8a2.6 2.6 0 1 1 4 0"/><path d="M7 7.4 5.2 12.6h3.6Z" fill="currentColor"/></svg>'
+  };
+
+  /* ---------- spring easing from the doc's .spring(response: .35, dampingFraction: .8) ---------- */
+  function springLinear(response = 0.35, zeta = 0.8) {
+    const w = 2 * Math.PI / response, wd = w * Math.sqrt(1 - zeta * zeta);
+    const x = t => 1 - Math.exp(-zeta * w * t) * (Math.cos(wd * t) + (zeta * w / wd) * Math.sin(wd * t));
+    let dur = 0;
+    for (let t = 0; t < 3; t += 0.004) if (Math.abs(1 - x(t)) > 0.002) dur = t;
+    const pts = Array.from({ length: 41 }, (_, i) => +x(dur * i / 40).toFixed(4));
+    pts[40] = 1;
+    return { easing: `linear(${pts.join(', ')})`, dur };
+  }
+  function applyMotion() {
+    const root = document.documentElement.style;
+    if (reduced.matches) { root.setProperty('--dur', '.01s'); return; }
+    const sp = springLinear(0.35, 0.8);
+    if (CSS.supports('transition-timing-function', 'linear(0, 1)')) {
+      root.setProperty('--spring', sp.easing);
+      root.setProperty('--dur', (sp.dur * 1.25).toFixed(3) + 's');
+    } else root.setProperty('--dur', '.5s');
+  }
+  applyMotion();
+  reduced.addEventListener?.('change', applyMotion);
+
+  /* ---------- data ---------- */
+  const TRACKS = [
+    { title: 'Tidepool', artist: 'Mareva', album: 'Shallow Hours', len: 222, hues: [18, 330] },
+    { title: 'Paper Lanterns', artist: 'Kiyo & the Low Hum', album: 'Night Market', len: 245, hues: [42, 205] },
+    { title: 'Static Bloom', artist: 'Oda Rivers', album: 'Field Recordings', len: 178, hues: [158, 262] },
+    { title: 'Lighthouse Keeper', artist: 'Saltwater Choir', album: 'North Coast', len: 311, hues: [200, 8] }
+  ];
+  const art = t => `radial-gradient(circle at 28% 26%, hsl(${t.hues[0]} 85% 66%), transparent 52%),
+    radial-gradient(circle at 78% 74%, hsl(${t.hues[1]} 72% 48%), transparent 58%),
+    conic-gradient(from 210deg at 60% 40%, hsl(${t.hues[1]} 55% 22%), hsl(${t.hues[0]} 70% 40%), hsl(${t.hues[1]} 55% 22%))`;
+  const tint = t => `hsl(${t.hues[0]} 85% 70%)`;
+
+  const min = 60e3;
+  const SESSIONS = [
+    { id: 'kaze', cwd: 'kaze-terminal', app: 'kaze', state: 'running', started: now() - 12 * min - 4e3, ended: null,
+      msg: 'Edit src/pty/reader.rs: resize buffer on SIGWINCH',
+      work: ['Read src/pty/reader.rs (214 lines)', 'Edit src/pty/reader.rs: resize buffer on SIGWINCH', 'Bash cargo test pty::', 'Edit src/render/grid.rs: clamp cursor row'] },
+    { id: 'shima', cwd: 'shima', app: 'Ghostty', state: 'needs', started: now() - 4 * min - 31e3, ended: null,
+      msg: 'Claude needs your permission to use Bash: <code>swift build</code>',
+      work: ['Read NotchCore/Panel/ScreenLocator.swift', 'Edit HoverTracker.swift: 300 ms collapse delay', 'Write Tests/HoverTrackerTests.swift'] },
+    { id: 'dink', cwd: 'dink-avenue', app: 'iTerm', state: 'done', started: now() - 31 * min, ended: now() - 3 * min,
+      msg: 'All 42 tests pass. Opened PR #18 as a draft.',
+      work: ['Bash pnpm test', 'Edit app/routes/booking.tsx'] }
+  ];
+  const TERM = {
+    kaze: '<span class="d">~/code/kaze-terminal</span> <span class="o">claude</span>\n\n<span class="o">⏺</span> Read(src/pty/reader.rs)\n  <span class="d">⎿  Read 214 lines</span>\n\n<span class="o">⏺</span> The buffer is sized once at spawn, so a SIGWINCH leaves\n  stale rows. I will resize it in the signal handler.\n\n<span class="o">⏺</span> Update(src/pty/reader.rs)\n  <span class="d">⎿  Updated with 9 additions and 2 removals</span>\n\n<span class="o">✻</span> Running cargo test pty:: <span class="d">(12s · esc to interrupt)</span>',
+    shima: '<span class="d">~/code/shima</span> <span class="o">claude</span>\n\n<span class="o">⏺</span> Update(NotchCore/Panel/HoverTracker.swift)\n  <span class="d">⎿  Updated with 14 additions</span>\n\n<span class="o">⏺</span> Bash(swift build)\n\n  Do you want to proceed?\n  <span class="o">❯ 1. Yes</span>\n    2. Yes, and don\'t ask again for swift build\n    3. No, and tell Claude what to do differently',
+    dink: '<span class="d">~/code/dink-avenue</span> <span class="o">claude</span>\n\n<span class="o">⏺</span> Bash(pnpm test)\n  <span class="d">⎿</span>  <span class="g">✓ 42 passed</span> <span class="d">(3.8s)</span>\n\n<span class="o">⏺</span> All 42 tests pass. I opened PR #18 as a draft with the\n  booking form changes.\n\n<span class="d">&gt;</span> █'
+  };
+  const NEEDS_MSGS = ['Claude needs your permission to use Bash: <code>rm -rf .build</code>', 'Claude is waiting for your input', 'Claude needs your permission to use Edit: <code>Package.swift</code>'];
+  const DONE_MSGS = { kaze: 'Done in 14 min. 3 files changed, cargo test green.', shima: 'Done. HoverTracker collapses 300 ms after leave.', dink: 'All 42 tests pass. Opened PR #18 as a draft.' };
+
+  const RULES = [
+    { id: 'r1', on: 'claude.needs_input', enabled: true, title: 'When a session needs you, pulse orange and ping',
+      code: 'claude.needs_input → pulse "orange", sound "Ping"', acts: [['pulse', 'orange'], ['sound', 'Ping']] },
+    { id: 'r2', on: 'claude.done', enabled: true, when: { cwd_matches: 'kaze-terminal' }, title: 'When kaze-terminal finishes, expand for 3 s and play Glass',
+      code: 'claude.done · cwd_matches "kaze-terminal" → expand "3s", sound "Glass"', acts: [['expand', 3000, 'claude'], ['sound', 'Glass']] },
+    { id: 'r3', on: 'spotify.track_changed', enabled: true, title: 'When the track changes, peek the new song',
+      code: 'spotify.track_changed → peek "2.5s"', acts: [['peek', 2500]] }
+  ];
+
+  const S = {
+    mode: 'collapsed', tab: 'music', pinned: false, hover: false, pulse: true,
+    spotify: { on: true, playing: true, idx: 0, pos: 71 },
+    sessions: SESSIONS, target: 'kaze', focused: null,
+    shelf: [
+      { id: 1, name: 'notch-geometry.png', size: 1264000 },
+      { id: 2, name: 'config.toml', size: 2140 }
+    ],
+    selected: new Set(), nextId: 3, newIds: new Set(),
+    configOk: true, sound: true, peek: null, toast: null, log: [], sheet: false, desk: [
+      { name: 'Screenshot 2026-11-20 at 09.12.png', x: 1300, y: 70 },
+      { name: '2026-11-20-notch-design.md', x: 1300, y: 180 }
+    ]
+  };
+  const T = {};
+
+  /* ---------- elements ---------- */
+  const wrap = $('#wrap'), island = $('#island'), screen = $('#screen');
+
+  /* ---------- mode control ---------- */
+  function setMode(mode, o = {}) {
+    clearTimeout(T.auto); clearTimeout(T.leave);
+    S.mode = mode;
+    if (o.tab) S.tab = o.tab;
+    S.pinned = !!o.pinned;
+    if (o.auto) T.auto = setTimeout(() => { if (!S.hover) setMode('collapsed'); }, o.auto);
+    renderIsland();
+    renderStates();
+  }
+  const collapse = () => { S.pinned = false; setMode('collapsed'); };
+
+  function islandSize() {
+    if (S.mode === 'expanded') return [720, 330, 36, 14];
+    if (S.mode === 'peek') return [460, 84, 24, 12];
+    const busy = S.spotify.on || S.sessions.length;
+    return [busy ? 312 : 196, 34, 12, 9];
+  }
+
+  /* ---------- rendering ---------- */
+  function renderIsland() {
+    const [w, h, r, ear] = islandSize();
+    wrap.style.setProperty('--w', w + 'px');
+    wrap.style.setProperty('--h', h + 'px');
+    wrap.style.setProperty('--r', r + 'px');
+    wrap.style.setProperty('--ear', ear + 'px');
+    wrap.dataset.mode = S.mode;
+    const attention = S.pulse && S.sessions.some(s => s.state === 'needs');
+    wrap.classList.toggle('attn', attention && S.mode !== 'expanded');
+    renderCollapsed(); renderPeek(); renderTabs(); renderWing();
+  }
+
+  function renderCollapsed() {
+    const t = TRACKS[S.spotify.idx];
+    const left = $('#colLeft');
+    left.style.opacity = S.spotify.on ? 1 : 0;
+    $('#colArt').style.background = art(t);
+    const wave = $('#colWave');
+    wave.style.setProperty('--tint', tint(t));
+    wave.classList.toggle('on', S.spotify.on && S.spotify.playing);
+    $('#colRight').innerHTML = S.sessions.map(s => `<span class="sdot ${s.state}" title="${esc(s.cwd)}: ${s.state}"></span>`).join('');
+  }
+
+  function renderPeek() {
+    const p = S.peek || { kind: 'track' };
+    const row = $('#peekRow');
+    if (p.kind === 'claude') {
+      row.innerHTML = `<div class="peek-badge">${ICON.hand}</div><div class="peek-text"><b>${esc(p.title)}</b><span>${p.sub}</span></div>`;
+    } else {
+      const t = TRACKS[S.spotify.idx];
+      row.innerHTML = `<div class="peek-art" style="background:${art(t)}"></div>
+        <div class="peek-text"><b>${esc(t.title)}</b><span>${esc(t.artist)} · Spotify</span></div>
+        <div class="wave ${S.spotify.playing ? 'on' : ''}" style="--tint:${tint(t)}"><i></i><i></i><i></i><i></i></div>`;
+    }
+  }
+
+  function renderTabs() {
+    $$('.tab').forEach(b => {
+      const on = b.dataset.tab === S.tab;
+      b.setAttribute('aria-selected', on);
+      b.tabIndex = S.mode === 'expanded' ? 0 : -1;
+      b.querySelector('.badge')?.remove();
+      if (b.dataset.tab === 'claude' && S.sessions.some(s => s.state === 'needs')) b.insertAdjacentHTML('beforeend', '<i class="badge"></i>');
+      if (b.dataset.tab === 'rules' && !S.configOk) b.insertAdjacentHTML('beforeend', '<i class="badge err"></i>');
+    });
+    $$('.panel').forEach(p => { p.hidden = p.dataset.panel !== S.tab; });
+  }
+
+  function renderWing() {
+    const el = $('#wingRight');
+    if (S.toast) { el.innerHTML = `<span class="status-pill toast">${esc(S.toast)}</span>`; return; }
+    const needs = S.sessions.filter(s => s.state === 'needs').length;
+    const running = S.sessions.filter(s => s.state === 'running').length;
+    const parts = [];
+    if (needs) parts.push(`<span class="status-pill"><span class="sdot needs"></span>${needs} needs you</span>`);
+    if (running) parts.push(`<span class="status-pill"><span class="sdot running"></span>${running} running</span>`);
+    if (!parts.length) parts.push(`<span class="status-pill">All quiet</span>`);
+    el.innerHTML = parts.join('');
+  }
+  function toast(msg, ms = 2600) {
+    S.toast = msg; renderWing();
+    clearTimeout(T.toast); T.toast = setTimeout(() => { S.toast = null; renderWing(); }, ms);
+  }
+
+  function renderMusic() {
+    const el = $('#pMusic');
+    if (!S.spotify.on) {
+      el.innerHTML = `<div class="np-empty"><div>Spotify is not running.<br><span style="color:var(--i-ink3)">The module stays hidden and sends no Apple Events until it launches.</span></div></div>`;
+      return;
+    }
+    const t = TRACKS[S.spotify.idx];
+    const queue = [1, 2, 3].map(k => (S.spotify.idx + k) % TRACKS.length);
+    el.innerHTML = `<div class="np">
+      <div class="art" style="background:${art(t)}" role="img" aria-label="Artwork for ${esc(t.album)}"></div>
+      <div class="np-main">
+        <span class="src"><i></i>Playing on Spotify</span>
+        <div class="np-title">${esc(t.title)}</div>
+        <div class="np-artist">${esc(t.artist)} · ${esc(t.album)}</div>
+        <div class="prog">
+          <div class="bar" id="bar" role="slider" aria-label="Playback position" tabindex="0"><i id="barFill"></i></div>
+          <div class="times"><span id="tPos">0:00</span><span id="tLeft">-0:00</span></div>
+        </div>
+        <div class="ctrls">
+          <button class="ibtn" data-sp="prev" aria-label="Previous track">${ICON.prev}</button>
+          <button class="ibtn big" data-sp="toggle" aria-label="${S.spotify.playing ? 'Pause' : 'Play'}">${S.spotify.playing ? ICON.pause : ICON.play}</button>
+          <button class="ibtn" data-sp="next" aria-label="Next track">${ICON.next}</button>
+        </div>
+      </div>
+      <div class="upnext"><div class="cap">Up next</div>
+        ${queue.map(i => `<button class="qrow" data-play="${i}"><div class="mini-art" style="background:${art(TRACKS[i])}"></div><span><b>${esc(TRACKS[i].title)}</b><em>${esc(TRACKS[i].artist)}</em></span></button>`).join('')}
+      </div>
+    </div>`;
+    tickMusic();
+  }
+  function tickMusic() {
+    const t = TRACKS[S.spotify.idx], fill = $('#barFill');
+    if (!fill) return;
+    fill.style.width = (S.spotify.pos / t.len * 100).toFixed(2) + '%';
+    $('#tPos').textContent = mmss(S.spotify.pos);
+    $('#tLeft').textContent = '-' + mmss(t.len - S.spotify.pos);
+    $('#bar').setAttribute('aria-valuenow', Math.floor(S.spotify.pos));
+  }
+
+  const STATE_LABEL = { running: 'Running', needs: 'Needs you', done: 'Done' };
+  function renderClaude() {
+    $('#pClaude').innerHTML = `<div class="sessions">${S.sessions.map(s => `
+      <button class="srow ${s.state} ${S.focused === s.id ? 'focused' : ''}" data-session="${s.id}" aria-label="Open ${esc(s.cwd)} in ${esc(s.app)}">
+        <div class="sicon ${s.state}">${s.state === 'needs' ? ICON.hand : s.state === 'done' ? ICON.check : ''}</div>
+        <div style="min-width:0">
+          <div class="sline1"><span class="sname">${esc(s.cwd)}</span><span class="sstate ${s.state}">${STATE_LABEL[s.state]}</span><span class="sapp">${esc(s.app)}</span></div>
+          <div class="smsg">${s.msg}</div>
+        </div>
+        <div class="sright"><span data-elapsed="${s.id}">${mmss(((s.ended || now()) - s.started) / 1000)}</span><span class="go">Open</span></div>
+      </button>`).join('')}</div>
+      <div class="sess-foot">Click a session to bring its terminal app to the front.</div>`;
+  }
+  function tickClaude() {
+    S.sessions.forEach(s => { const el = $(`[data-elapsed="${s.id}"]`); if (el) el.textContent = mmss(((s.ended || now()) - s.started) / 1000); });
+  }
+
+  const EXT_COLOR = { png: '#7fd3c4', jpg: '#7fd3c4', jpeg: '#7fd3c4', gif: '#7fd3c4', heic: '#7fd3c4', pdf: '#ff8a80', md: '#c8ccd2', txt: '#c8ccd2', toml: '#f2c66d', json: '#f2c66d', zip: '#d7b48a', swift: '#ff9e6b', mov: '#b39dff', mp4: '#b39dff' };
+  const ext = n => (n.includes('.') ? n.split('.').pop() : '').toLowerCase().slice(0, 4);
+  const fmtSize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  function renderTray() {
+    const n = S.shelf.length, sel = S.selected.size;
+    $('#pTray').innerHTML = `<div class="tray">
+      <div class="dropzone" id="dropzone">${ICON.tray}<div>Drop files on the notch<br>to keep them here</div><span class="mode" id="dropMode">Copy · hold ⌥ to move</span></div>
+      <div class="shelf">
+        <div class="chips">${n ? S.shelf.map(f => `
+          <button class="chip ${S.newIds.has(f.id) ? 'new' : ''}" draggable="true" data-file="${f.id}" aria-pressed="${S.selected.has(f.id)}" title="${esc(f.name)}">
+            <span class="ft" style="--ftc:${EXT_COLOR[ext(f.name)] || '#c8ccd2'}">${esc(ext(f.name) || 'file')}</span>
+            <span><b>${esc(f.name)}</b><em>${fmtSize(f.size)}${f.moved ? ' · moved' : ''}</em></span>
+          </button>`).join('') : '<div class="tray-empty">The shelf is empty. Drag files from Finder onto the notch.</div>'}
+        </div>
+        <div class="tray-actions">
+          <button class="pbtn blue" data-tray="airdrop" ${n ? '' : 'disabled'}>${ICON.airdrop} AirDrop ${sel ? sel + ' selected' : n ? 'all ' + n : ''}</button>
+          <button class="pbtn" data-tray="clear" ${n ? '' : 'disabled'}>Clear</button>
+          <span class="hint">Drag a file out to the desktop</span>
+        </div>
+      </div>
+    </div>`;
+    S.newIds.clear();
+  }
+
+  function renderRules() {
+    $('#pRules').innerHTML = `<div class="rules-wrap">
+      <div class="rules">
+        ${RULES.map(r => `<div class="rule ${r.enabled ? '' : 'off'}" id="rule-${r.id}">
+          <div style="min-width:0"><div class="t">${esc(r.title)}</div><div class="c">${esc(r.code)}</div></div>
+          <label class="switch"><input type="checkbox" id="sw-${r.id}" data-rule="${r.id}" ${r.enabled ? 'checked' : ''} aria-label="${esc(r.title)}"><i></i></label>
+        </div>`).join('')}
+        <div class="cfg">~/.config/notch/config.toml · ${S.configOk ? '<span class="ok">loaded</span>' : '<span class="bad">line 7: expected "]". Using the last good config</span>'}</div>
+      </div>
+      <div class="log"><div class="cap">Event log</div><ol id="logList"></ol></div>
+    </div>`;
+    renderLog();
+  }
+  function renderLog(fresh) {
+    const ol = $('#logList'); if (!ol) return;
+    ol.innerHTML = S.log.slice(0, 9).map((l, i) => `<li class="${i === 0 && fresh ? 'new' : ''}"><span class="ts">${l.ts}</span> <span class="ev">${esc(l.ev)}</span><br>${l.out}</li>`).join('') || '<li class="skip">No events yet. Fire one from Simulate.</li>';
+  }
+  function log(ev, out) {
+    S.log.unshift({ ts: clockTime(new Date()), ev, out });
+    S.log.length = Math.min(S.log.length, 30);
+    renderLog(true);
+  }
+
+  function renderTerm() {
+    const id = S.focused || 'kaze', s = S.sessions.find(x => x.id === id);
+    $('#termTitle').textContent = `${s.app} — ${s.cwd}`;
+    $('#termBody').innerHTML = TERM[id];
+  }
+
+  function renderDesk() {
+    $('#desk').innerHTML = S.desk.map((d, i) => `<div class="desk-icon ${d.fresh ? 'new' : ''}" style="left:${d.x - 48}px;top:${d.y}px"><div class="doc" data-ext="${esc(ext(d.name))}"></div><span>${esc(d.name)}</span></div>`).join('');
+    S.desk.forEach(d => { d.fresh = false; });
+  }
+
+  function renderSheet() {
+    const host = $('#sheetHost');
+    if (!S.sheet) { host.innerHTML = ''; return; }
+    const files = S.selected.size ? S.shelf.filter(f => S.selected.has(f.id)) : S.shelf;
+    const devs = [['iPhone', 'IP', '#3b82f6'], ['iPad', 'PA', '#a855f7'], ['MacBook Air', 'MA', '#64748b']];
+    host.innerHTML = `<div class="sheet" role="dialog" aria-label="AirDrop">
+      <h3>AirDrop</h3><p>${files.length} item${files.length > 1 ? 's' : ''}: ${esc(files.map(f => f.name).join(', '))}</p>
+      <div class="devs">${devs.map(([n, i, c]) => `<button class="dev" data-dev="${n}"><i style="background:${c}">${i}</i>${n}</button>`).join('')}</div>
+      <div class="row"><button class="pbtn" data-dev="">Cancel</button></div>
+    </div>`;
+  }
+
+  function renderStates() {
+    const cur = S.mode === 'collapsed' ? 'idle' : S.mode === 'peek' ? 'peek' : S.tab;
+    $$('.sbtn').forEach(b => b.setAttribute('aria-pressed', b.dataset.state === cur));
+  }
+
+  function renderSessPick() {
+    $('#sessPick').innerHTML = S.sessions.map(s => `<label><input type="radio" name="sess" id="pick-${s.id}" value="${s.id}" ${S.target === s.id ? 'checked' : ''}><span>${esc(s.cwd)}</span></label>`).join('');
+  }
+
+  function renderAll() { renderIsland(); renderMusic(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
+
+  /* ---------- sound ---------- */
+  let ac;
+  function sound(name) {
+    if (!S.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const tones = name === 'Glass' ? [[1318.5, 0], [1975.5, 0.11]] : [[1046.5, 0], [1568, 0.05]];
+      tones.forEach(([f, d]) => {
+        const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + d;
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.16, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.7);
+        o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + 0.75);
+      });
+    } catch (e) { /* audio unavailable */ }
+  }
+
+  /* ---------- rule engine (mirrors 5.3 of the design doc) ---------- */
+  function fire(ev, payload = {}) {
+    const ran = [];
+    RULES.filter(r => r.on === ev).forEach(r => {
+      if (!r.enabled) { ran.push(`<span class="skip">${r.id} is off</span>`); return; }
+      if (r.when?.cwd_matches && !new RegExp(r.when.cwd_matches).test(payload.cwd || '')) {
+        ran.push(`<span class="skip">${r.id} skipped: cwd "${esc(payload.cwd)}" does not match</span>`); return;
+      }
+      const el = $('#rule-' + r.id);
+      if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+      r.acts.forEach(([a, v, tab]) => {
+        if (a === 'pulse') { S.pulse = true; renderIsland(); }
+        if (a === 'sound') sound(v);
+        if (a === 'expand') { if (!(S.mode === 'expanded' && S.pinned)) setMode('expanded', { tab, auto: v }); }
+        if (a === 'peek') { if (S.mode === 'collapsed') { S.peek = { kind: 'track' }; setMode('peek', { auto: v }); } }
+      });
+      ran.push(`<span class="act">${r.id} → ${r.acts.map(([a, v]) => a + '(' + (typeof v === 'number' ? v / 1000 + 's' : v) + ')').join(', ')}</span>`);
+    });
+    if (!ran.length) ran.push('<span class="skip">no matching rule</span>');
+    log(ev + (payload.cwd ? ' ' + payload.cwd : ''), ran.join('<br>'));
+  }
+
+  /* ---------- actions ---------- */
+  function focusSession(id) {
+    const s = S.sessions.find(x => x.id === id);
+    S.focused = id;
+    if (s.state === 'needs') S.pulse = false;
+    renderTerm();
+    const term = $('#term'); term.classList.add('lit');
+    clearTimeout(T.lit); T.lit = setTimeout(() => term.classList.remove('lit'), 1800);
+    toast(`Activated ${s.app}`);
+    log('notch.click ' + s.cwd, `<span class="act">focus → ${esc(s.app)}</span>`);
+    renderClaude(); renderIsland();
+    if (s.state === 'needs') {
+      clearTimeout(T['resume' + id]);
+      T['resume' + id] = setTimeout(() => {
+        if (s.state !== 'needs') return;
+        s.state = 'running'; s.msg = 'Resumed after your answer'; renderClaude(); renderIsland();
+      }, 2500);
+    }
+  }
+
+  function simulate(kind) {
+    const s = S.sessions.find(x => x.id === S.target);
+    if (kind === 'claude.needs_input') {
+      s.state = 'needs'; s.ended = null; s.msg = NEEDS_MSGS[Math.floor(Math.random() * NEEDS_MSGS.length)];
+      renderClaude(); renderIsland();
+      fire(kind, { cwd: s.cwd });
+    } else if (kind === 'claude.done') {
+      s.state = 'done'; s.ended = now(); s.msg = DONE_MSGS[s.id];
+      renderClaude(); renderIsland();
+      fire(kind, { cwd: s.cwd });
+    } else if (kind === 'claude.started') {
+      s.state = 'running'; s.started = now(); s.ended = null; s.msg = 'Read CLAUDE.md';
+      renderClaude(); renderIsland();
+      fire(kind, { cwd: s.cwd });
+    } else if (kind === 'spotify.track_changed') {
+      if (!S.spotify.on) { log('spotify.track_changed', '<span class="skip">Spotify is not running</span>'); return; }
+      changeTrack(1);
+    } else if (kind === 'spotify.toggle') {
+      if (S.spotify.on) togglePlay();
+    } else if (kind === 'spotify.quit') {
+      S.spotify.on = !S.spotify.on;
+      $('#quitBtn').textContent = S.spotify.on ? 'Quit Spotify' : 'Open Spotify';
+      log(S.spotify.on ? 'spotify.launched' : 'spotify.quit', `<span class="skip">module ${S.spotify.on ? 'shown' : 'hidden'}</span>`);
+      renderMusic(); renderIsland();
+    } else if (kind === 'config.break') {
+      S.configOk = !S.configOk;
+      $('#cfgBtn').textContent = S.configOk ? 'Save a broken config.toml' : 'Fix config.toml';
+      log('config.reload', S.configOk ? '<span class="act">loaded 3 rules</span>' : '<span class="skip">parse error, kept last good config</span>');
+      renderRules(); renderTabs();
+    }
+  }
+
+  function changeTrack(dir, to) {
+    S.spotify.idx = to ?? (S.spotify.idx + dir + TRACKS.length) % TRACKS.length;
+    S.spotify.pos = 0; S.spotify.playing = true;
+    renderMusic(); renderIsland();
+    fire('spotify.track_changed');
+  }
+  function togglePlay() { S.spotify.playing = !S.spotify.playing; renderMusic(); renderIsland(); }
+
+  function addFiles(list, move) {
+    const room = 20 - S.shelf.length;
+    const files = [...list].slice(0, Math.max(0, room));
+    files.forEach(f => { const id = S.nextId++; S.shelf.push({ id, name: f.name, size: f.size, moved: move }); S.newIds.add(id); });
+    renderTray();
+    if (files.length) {
+      toast(`${move ? 'Moved' : 'Copied'} ${files.length} file${files.length > 1 ? 's' : ''} to the shelf`);
+      fire('shelf.dropped');
+    }
+    if (list.length > files.length) toast('The shelf holds 20 files');
+  }
+
+  /* ---------- events: island hover / click ---------- */
+  island.addEventListener('mouseenter', () => {
+    S.hover = true; clearTimeout(T.leave); clearTimeout(T.auto);
+    if (S.mode !== 'expanded') T.enter = setTimeout(() => setMode('expanded', { pinned: S.pinned }), 90);
+  });
+  island.addEventListener('mouseleave', () => {
+    S.hover = false; clearTimeout(T.enter);
+    if (!S.pinned) T.leave = setTimeout(() => setMode('collapsed'), 300);
+  });
+  island.addEventListener('click', e => {
+    if (S.mode !== 'expanded') { clearTimeout(T.enter); setMode('expanded', { pinned: S.pinned }); return; }
+    const tab = e.target.closest('[data-tab]');
+    if (tab) { S.tab = tab.dataset.tab; renderTabs(); renderStates(); return; }
+    const sp = e.target.closest('[data-sp]');
+    if (sp) { const a = sp.dataset.sp; if (a === 'toggle') togglePlay(); else changeTrack(a === 'next' ? 1 : -1); return; }
+    const q = e.target.closest('[data-play]');
+    if (q) { changeTrack(0, +q.dataset.play); return; }
+    const bar = e.target.closest('#bar');
+    if (bar) { const r = bar.getBoundingClientRect(); S.spotify.pos = (e.clientX - r.left) / r.width * TRACKS[S.spotify.idx].len; tickMusic(); return; }
+    const row = e.target.closest('[data-session]');
+    if (row) { focusSession(row.dataset.session); return; }
+    const chip = e.target.closest('[data-file]');
+    if (chip) { const id = +chip.dataset.file; S.selected.has(id) ? S.selected.delete(id) : S.selected.add(id); renderTray(); return; }
+    const tr = e.target.closest('[data-tray]');
+    if (tr) {
+      if (tr.dataset.tray === 'clear') { S.shelf = []; S.selected.clear(); renderTray(); toast('Shelf cleared'); }
+      else { S.sheet = true; renderSheet(); }
+    }
+  });
+  island.addEventListener('change', e => {
+    const id = e.target.dataset.rule; if (!id) return;
+    const r = RULES.find(x => x.id === id); r.enabled = e.target.checked;
+    $('#rule-' + id).classList.toggle('off', !r.enabled);
+    log('config.reload', `<span class="act">${id} ${r.enabled ? 'on' : 'off'}</span>`);
+  });
+
+  // desktop click collapses
+  screen.addEventListener('click', e => {
+    if (e.target.closest('.island-wrap, .sheet')) return;
+    if (S.mode !== 'collapsed') collapse();
+  });
+  $('#sheetHost').addEventListener('click', e => {
+    const d = e.target.closest('[data-dev]'); if (!d) return;
+    const name = d.dataset.dev;
+    S.sheet = false; renderSheet();
+    if (name) { toast(`Sent to ${name}`); log('airdrop', `<span class="act">sent to ${esc(name)}</span>`); }
+  });
+
+  /* ---------- drag and drop ---------- */
+  const isOwn = e => [...(e.dataTransfer?.types || [])].includes('application/x-shima');
+  const hasFiles = e => [...(e.dataTransfer?.types || [])].includes('Files');
+  island.addEventListener('dragenter', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); clearTimeout(T.dragLeave);
+    if (!(S.mode === 'expanded' && S.tab === 'tray')) setMode('expanded', { tab: 'tray', pinned: S.pinned });
+  });
+  island.addEventListener('dragover', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); clearTimeout(T.dragLeave);
+    e.dataTransfer.dropEffect = e.altKey ? 'move' : 'copy';
+    $('#dropzone')?.classList.add('over');
+    const m = $('#dropMode'); if (m) m.textContent = e.altKey ? 'Move' : 'Copy · hold ⌥ to move';
+  });
+  island.addEventListener('dragleave', e => {
+    if (island.contains(e.relatedTarget)) return;
+    $('#dropzone')?.classList.remove('over');
+    if (!S.pinned) T.dragLeave = setTimeout(() => setMode('collapsed'), 300);
+  });
+  island.addEventListener('drop', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); e.stopPropagation();
+    addFiles(e.dataTransfer.files, e.altKey);
+  });
+  island.addEventListener('dragstart', e => {
+    const chip = e.target.closest('[data-file]'); if (!chip) return;
+    const f = S.shelf.find(x => x.id === +chip.dataset.file);
+    e.dataTransfer.setData('application/x-shima', String(f.id));
+    e.dataTransfer.setData('text/plain', f.name);
+    e.dataTransfer.effectAllowed = 'copy';
+    if (!S.pinned) T.dragOut = setTimeout(() => setMode('collapsed'), 250); // get out of the way, like the real thing
+  });
+  screen.addEventListener('dragover', e => { if (isOwn(e)) { e.preventDefault(); screen.classList.add('drop-ok'); } });
+  screen.addEventListener('dragleave', e => { if (!screen.contains(e.relatedTarget)) screen.classList.remove('drop-ok'); });
+  screen.addEventListener('drop', e => {
+    screen.classList.remove('drop-ok');
+    if (!isOwn(e)) { if (hasFiles(e)) e.preventDefault(); return; }
+    e.preventDefault();
+    const f = S.shelf.find(x => x.id === +e.dataTransfer.getData('application/x-shima')); if (!f) return;
+    const r = screen.getBoundingClientRect(), s = r.width / 1440;
+    S.desk.push({ name: f.name, x: Math.min(1380, Math.max(60, (e.clientX - r.left) / s)), y: Math.min(800, Math.max(44, (e.clientY - r.top) / s - 30)), fresh: true });
+    renderDesk();
+    log('shelf.dragged_out', `<span class="skip">${esc(f.name)} copied to Desktop</span>`);
+  });
+  document.addEventListener('dragend', () => { screen.classList.remove('drop-ok'); clearTimeout(T.dragOut); });
+  // keep stray file drops from navigating the page away
+  window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('drop', e => { if (hasFiles(e)) e.preventDefault(); });
+
+  /* ---------- controls outside the screen ---------- */
+  $('#states').addEventListener('click', e => {
+    const b = e.target.closest('[data-state]'); if (!b) return;
+    const st = b.dataset.state;
+    if (st === 'idle') collapse();
+    else if (st === 'peek') { S.peek = { kind: 'track' }; setMode('peek', { pinned: true }); }
+    else setMode('expanded', { tab: st, pinned: true });
+  });
+  document.querySelector('.controls').addEventListener('click', e => {
+    const b = e.target.closest('[data-sim]'); if (b) simulate(b.dataset.sim);
+  });
+  $('#sessPick').addEventListener('change', e => { S.target = e.target.value; });
+  $('#soundOn').addEventListener('change', e => { S.sound = e.target.checked; });
+
+  /* ---------- keyboard ---------- */
+  const TABS = ['music', 'claude', 'tray', 'rules'];
+  document.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target.matches('input[type="text"], textarea')) return;
+    if (e.key === 'Escape') { if (S.sheet) { S.sheet = false; renderSheet(); } else collapse(); return; }
+    const n = +e.key;
+    if (n >= 1 && n <= 4) { setMode('expanded', { tab: TABS[n - 1], pinned: true }); }
+  });
+
+  /* ---------- clock + ticking (a real build only ticks while expanded) ---------- */
+  function tick() {
+    const d = new Date();
+    $('#clock').textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + '  ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (S.spotify.on && S.spotify.playing) {
+      S.spotify.pos += 1;
+      if (S.spotify.pos >= TRACKS[S.spotify.idx].len) changeTrack(1);
+      else tickMusic();
+    }
+    tickClaude();
+  }
+  setInterval(tick, 1000);
+  // running sessions narrate their work now and then
+  setInterval(() => {
+    S.sessions.filter(s => s.state === 'running').forEach(s => {
+      s.msg = s.work[Math.floor(Math.random() * s.work.length)];
+    });
+    if (S.mode === 'expanded' && S.tab === 'claude' && !S.hover) renderClaude();
+  }, 6000);
+
+  /* ---------- fit the device to the page ---------- */
+  const fitEl = $('#fit'), sizer = $('#sizer'), device = $('#device');
+  const DW = 1552, DH = 956;
+  let centered = false;
+  function fit() {
+    const avail = fitEl.clientWidth;
+    const s = Math.max(avail / DW, Math.min(1, 0.42));
+    device.style.transform = `scale(${s})`;
+    sizer.style.width = DW * s + 'px';
+    sizer.style.height = DH * s + 'px';
+    if (!centered && DW * s > avail) { fitEl.scrollLeft = (DW * s - avail) / 2; centered = true; }
+  }
+  new ResizeObserver(fit).observe(fitEl);
+  fit();
+
+  /* ---------- start ---------- */
+  log('claude.needs_input shima', '<span class="act">r1 → pulse(orange), sound(Ping)</span>');
+  renderAll();
+  tick();
+})();
+</script>

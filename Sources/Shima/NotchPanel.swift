@@ -3,6 +3,8 @@ import SwiftUI
 
 /// Borderless, non-activating panel that hosts the pill. Never activates the app (design doc 6.4).
 final class NotchPanel: NSPanel {
+    static let islandLevel: NSWindow.Level = .statusBar
+
     init(contentRect: NSRect) {
         super.init(contentRect: contentRect,
                    styleMask: [.borderless, .nonactivatingPanel],
@@ -11,20 +13,17 @@ final class NotchPanel: NSPanel {
         backgroundColor = .clear
         hasShadow = false
         hidesOnDeactivate = false
-        level = .statusBar
+        level = Self.islandLevel
+        animationBehavior = .none
+        isReleasedWhenClosed = false
+        becomesKeyOnlyIfNeeded = true
         collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
         isMovable = false
         contentView = NSHostingView(rootView: PillView())
     }
 
-    // Scaffold only: lets Esc reach the panel after a click. Per design doc 6.4 this goes back to
-    // `false` once real interaction lands (true only while a text field is being edited).
-    override var canBecomeKey: Bool { true }
+    override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
-
-    override func cancelOperation(_ sender: Any?) { // Esc
-        NSApp.terminate(nil)
-    }
 }
 
 struct PillView: View {

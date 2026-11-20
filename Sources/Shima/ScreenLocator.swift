@@ -3,20 +3,31 @@ import ShimaCore
 
 @MainActor
 enum ScreenLocator {
-    /// Built-in display if present (the one with the notch), else the main screen.
-    static func targetScreen() -> NSScreen? {
-        NSScreen.screens.first { screen in
-            guard let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
-            else { return false }
-            return CGDisplayIsBuiltin(id) != 0
-        } ?? NSScreen.main ?? NSScreen.screens.first
+    private static let screenNumberKey = NSDeviceDescriptionKey("NSScreenNumber")
+
+    private static func displayID(of screen: NSScreen) -> UInt32? {
+        (screen.deviceDescription[screenNumberKey] as? NSNumber)?.uint32Value
     }
 
-    static func notchRect(on screen: NSScreen) -> CGRect {
-        NotchGeometry.notchRect(
-            screenFrame: screen.frame,
-            safeAreaInsetTop: screen.safeAreaInsets.top,
-            auxiliaryTopLeft: screen.auxiliaryTopLeftArea,
-            auxiliaryTopRight: screen.auxiliaryTopRightArea)
+    static func descriptors() -> [DisplayDescriptor] {
+        NSScreen.screens.compactMap { screen in
+            guard let id = displayID(of: screen) else { return nil }
+            return DisplayDescriptor(
+                id: id,
+                isBuiltIn: CGDisplayIsBuiltin(id) != 0,
+                frame: screen.frame,
+                safeAreaInsetTop: screen.safeAreaInsets.top,
+                auxiliaryTopLeft: screen.auxiliaryTopLeftArea,
+                auxiliaryTopRight: screen.auxiliaryTopRightArea)
+        }
+    }
+
+    /// The built-in display, or `nil` when there is none (no main-screen fallback).
+    static func target() -> DisplayDescriptor? {
+        DisplaySelector.target(descriptors())
+    }
+
+    static func screen(id: UInt32) -> NSScreen? {
+        NSScreen.screens.first { displayID(of: $0) == id }
     }
 }

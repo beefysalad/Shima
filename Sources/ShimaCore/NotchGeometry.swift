@@ -10,26 +10,37 @@ public enum NotchGeometry {
     /// so it is invisible until it expands or shows a live indicator. Set SHIMA_DEBUG=1 to see it.
     public static let pillOverhang: CGFloat = 0
 
-    /// The notch rect: the screen's top strip between `auxiliaryTopLeftArea` and `auxiliaryTopRightArea`,
-    /// `safeAreaInsetTop` tall. Falls back to a virtual notch centred at the top of the screen when the
-    /// display has no notch (no inset, or missing/degenerate auxiliary areas).
+    /// The physical notch: the screen's top strip between `auxiliaryTopLeftArea` and `auxiliaryTopRightArea`,
+    /// `safeAreaInsetTop` tall. `nil` when the display has no notch (no inset, or missing/degenerate
+    /// auxiliary areas).
+    public static func physicalNotchRect(
+        screenFrame: CGRect,
+        safeAreaInsetTop: CGFloat,
+        auxiliaryTopLeft: CGRect?,
+        auxiliaryTopRight: CGRect?
+    ) -> CGRect? {
+        guard safeAreaInsetTop > 0,
+              let left = auxiliaryTopLeft, let right = auxiliaryTopRight,
+              right.minX > left.maxX else { return nil }
+        return CGRect(
+            x: left.maxX,
+            y: screenFrame.maxY - safeAreaInsetTop,
+            width: right.minX - left.maxX,
+            height: safeAreaInsetTop
+        )
+    }
+
+    /// The notch rect, or a virtual notch centred at the top of the screen when the display has none.
     public static func notchRect(
         screenFrame: CGRect,
         safeAreaInsetTop: CGFloat,
         auxiliaryTopLeft: CGRect?,
         auxiliaryTopRight: CGRect?
     ) -> CGRect {
-        if safeAreaInsetTop > 0,
-           let left = auxiliaryTopLeft, let right = auxiliaryTopRight,
-           right.minX > left.maxX {
-            return CGRect(
-                x: left.maxX,
-                y: screenFrame.maxY - safeAreaInsetTop,
-                width: right.minX - left.maxX,
-                height: safeAreaInsetTop
-            )
-        }
-        return CGRect(
+        physicalNotchRect(
+            screenFrame: screenFrame, safeAreaInsetTop: safeAreaInsetTop,
+            auxiliaryTopLeft: auxiliaryTopLeft, auxiliaryTopRight: auxiliaryTopRight
+        ) ?? CGRect(
             x: screenFrame.midX - virtualNotchSize.width / 2,
             y: screenFrame.maxY - virtualNotchSize.height,
             width: virtualNotchSize.width,

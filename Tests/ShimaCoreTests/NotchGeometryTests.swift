@@ -45,4 +45,9 @@ import Testing
         #expect(p.midX == notch.midX)
         #expect(p == notch)
     }
+
+    @Test func physicalNotchIsNilWithoutInset() {
+        #expect(NotchGeometry.physicalNotchRect(screenFrame: screen, safeAreaInsetTop: 0,
+                                                auxiliaryTopLeft: nil, auxiliaryTopRight: nil) == nil)
+    }
 }

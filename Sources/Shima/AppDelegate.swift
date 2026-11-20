@@ -17,10 +17,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func screensChanged() { showPanel() }
 
     private func showPanel() {
-        guard let screen = ScreenLocator.targetScreen() else { return }
-        let frame = NotchGeometry.pillFrame(notch: ScreenLocator.notchRect(on: screen))
+        guard let d = ScreenLocator.target() else { panel?.orderOut(nil); return }
+        let frame = NotchGeometry.pillFrame(notch: d.notchRect)
         if let panel {
             panel.setFrame(frame, display: true)
+            panel.orderFrontRegardless()
         } else {
             let p = NotchPanel(contentRect: frame)
             p.orderFrontRegardless()

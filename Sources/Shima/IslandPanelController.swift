@@ -9,7 +9,8 @@ final class IslandPanelController {
     private static let hitOpacity: Double = 0
     private static let spring = Animation.spring(response: 0.35, dampingFraction: 0.8)
 
-    private let panel: NotchPanel
+    /// Created lazily on the first non-nil `place`, then kept (only ordered out/in).
+    private var panel: NotchPanel?
     private let trackingView = HoverTrackingView()
     private let hostingView: NSHostingView<IslandView>
     private let state = AppState()
@@ -21,14 +22,12 @@ final class IslandPanelController {
     var phase: ShimaCore.HoverPhase{ hover.phase }
 
     init() {
-        panel = NotchPanel(contentRect: .zero)
         hostingView = NSHostingView(rootView: IslandView(
             state: state, notch: .zero, hasNotch: false,
             debug: Self.debug, hitOpacity: Self.hitOpacity))
         hostingView.frame = trackingView.bounds
         hostingView.autoresizingMask = [.width, .height]
         trackingView.addSubview(hostingView)
-        panel.contentView = trackingView
 
         hover = HoverController(scheduler: DispatchScheduler()) { [weak self] effect in
             self?.perform(effect)
@@ -42,15 +41,31 @@ final class IslandPanelController {
     }
 
     func place(on display: DisplayDescriptor?) {
-        guard let display else { return } // hidden-panel path is Task 10
+        guard let display else {
+            hover.reset()
+            panel?.orderOut(nil)
+            Log.display.info("display none: panel hidden")
+            return
+        }
+        let panel = ensurePanel()
         notch = display.notchRect
         hasNotch = display.hasNotch
+        let r = notch
+        Log.display.info("display built-in notch=\(display.hasNotch, privacy: .public) rect=\(r.minX, format: .fixed(precision: 1), privacy: .public),\(r.minY, format: .fixed(precision: 1), privacy: .public),\(r.width, format: .fixed(precision: 1), privacy: .public),\(r.height, format: .fixed(precision: 1), privacy: .public)")
         hostingView.rootView = IslandView(
             state: state, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity)
         hover.reset()
-        setPanelFrame(expanded: false)
+        setPanelFrame(expanded: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
+    }
+
+    private func ensurePanel() -> NotchPanel {
+        if let panel { return panel }
+        let p = NotchPanel(contentRect: .zero)
+        p.contentView = trackingView
+        panel = p
+        return p
     }
 
     private func perform(_ effect: HoverEffect) {
@@ -81,12 +96,12 @@ final class IslandPanelController {
 
     private func setPanelFrame(expanded: Bool) {
         let frame = IslandLayout.panelFrame(notch: notch, expanded: expanded)
-        panel.setFrame(frame, display: true)
+        panel?.setFrame(frame, display: true)
         Log.layout.info("frame \(expanded ? "expanded" : "idle", privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public)")
         refreshHotRect()
     }
 
     private func refreshHotRect() {
-        trackingView.hotRect = IslandLayout.hotRect(region, notch: notch, panelFrame: panel.frame)
+        trackingView.hotRect = IslandLayout.hotRect(region, notch: notch, panelFrame: panel?.frame ?? .zero)
     }
 }

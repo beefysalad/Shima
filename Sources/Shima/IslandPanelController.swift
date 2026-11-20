@@ -19,7 +19,6 @@ final class IslandPanelController {
     private var hasNotch = false
     private var region: HotRegion = .idle
 
-    var phase: ShimaCore.HoverPhase{ hover.phase }
 
     init() {
         hostingView = NSHostingView(rootView: IslandView(

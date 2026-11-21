@@ -22,12 +22,12 @@ A personal, free "Dynamic Island" for the MacBook notch, replacing a NotchBox su
 **Anti-goals (must never happen)**
 | Anti-goal | Guard |
 |---|---|
-| CPU use while idle | No timers or polling when collapsed; event-driven only. Target 0.0% CPU idle |
+| CPU use while idle | No timers or polling when collapsed; event-driven only. Target 0.0% CPU idle. **Exception [You, 2026-11-21]:** while Spotify is playing, the collapsed live indicator's equalizer animates continuously (budget in section 8). The rule is unchanged whenever Spotify is not playing |
 | Accounts or API keys | None. The only network request is Spotify artwork from its CDN **[You]** |
 | Flicker or jitter at the notch | One persistent panel; animate content, never recreate windows |
 | Stealing focus from the active app | Non-activating panel; see 6.4 |
 | Slowing Claude Code down | `shimactl` always exits 0 within 1 s, even when the app is not running |
-| Blocking clicks on the menu bar | The panel only covers the notch strip while idle; it grows only while expanded |
+| Blocking clicks on the menu bar | While idle the panel covers only the notch strip, plus the live wings (33 pt each side, clear of the status items) while Spotify plays; it grows only while expanded |
 
 ## 3. Constraints
 
@@ -39,7 +39,7 @@ A personal, free "Dynamic Island" for the MacBook notch, replacing a NotchBox su
 | UI | SwiftUI views in one borderless non-activating `NSPanel` **[You]** |
 | Sandbox | Off **[My call]**: Unix socket, `~/.claude` reads, shell actions and Apple Events to Spotify are awkward inside the sandbox, and a personal app gains nothing from it |
 | Hardened runtime | **Not enabled for now [My call]**. The current `bundle.sh` does not enable it. It only matters if we turn it on, which needs the `apple-events` entitlement in M1. Revisit in M1 |
-| Signing | M0: ad-hoc (`codesign -s -`), as scaffolded. **M1: a self-signed certificate in the login keychain for a stable identity [You, "go with recommended"]**, so Spotify automation permission survives rebuilds. It is free and needs no Apple account. It writes to the keychain outside the repo, so I will ask again before doing it |
+| Signing | M0: ad-hoc (`codesign -s -`), as scaffolded. **M1: an existing Apple Development identity from the login keychain [You], via `SHIMA_SIGN_ID`, for a stable identity (see 8.4)**, so Spotify automation permission survives rebuilds. No new keychain entry is created |
 | Automation (TCC) | Once for Spotify (`NSAppleEventsUsageDescription` in Info.plist, added in M1). Later maybe System Events or Terminal/iTerm |
 | Accessibility | Not needed in the POC. Carbon `RegisterEventHotKey` hotkeys and `NSTrackingArea` hover need none |
 | Files | Shelf in `~/Library/Application Support/Shima/Shelf/`. Socket at `~/Library/Application Support/Shima/shima.sock` |
@@ -81,7 +81,7 @@ SwiftPM only, with `scripts/bundle.sh` assembling `dist/Shima.app` **[You]**. Lo
 | M | Scope | Acceptance |
 |---|---|---|
 | **M0** | Pill, hover expand and collapse, display handling, status menu | See below |
-| **M1** | Spotify now playing with artwork, controls | Track, artist, artwork update within 1 s of a change. Play/pause, next, previous work. With Spotify quit, the module hides and nothing launches Spotify. Artwork is fetched from Spotify's CDN and cached by URL **[You]**. Stable signing identity set up |
+| **M1** | Spotify now playing with artwork, controls, live indicator | **See section 8 (M1 design) for the full scope and acceptance criteria.** Summary: live indicator while playing, open island with artwork, title, artist, controls and a read-only progress bar; event-driven; nothing launches Spotify; artwork from Spotify's CDN; stable signing identity |
 | **M2** | Claude sessions | `shimactl` round trip under 50 ms; hook exits 0 in under 600 ms with the app not running. Three concurrent sessions are shown separately (`session_id`) with state, cwd basename, elapsed, last message. "Needs you" changes the island to the attention style. Click activates the terminal app (by bundle id) |
 | **M3** | File shelf and AirDrop | Drop 1 to 20 files, **copied** to the shelf by default **[You]** (Option moves). Drag out into Finder, Mail, a terminal. AirDrop opens the system sheet via `NSSharingService(named: .sendViaAirDrop)`. Survives relaunch. Clear empties it. **First task: a spike proving drops and the AirDrop sheet work from a non-activating panel [Unverified]** |
 | **M4** | Automations | Edit `config.json`, reload within 1 s (FSEvents). A malformed file keeps the last good config and shows an error badge. Each trigger and action below has a test with a fake event bus |
@@ -186,3 +186,72 @@ No timers while collapsed. SwiftUI animations run only while animating. Elapsed-
 - Drag and drop and the AirDrop sheet from a non-activating panel (M3 spike).
 - Spotify's distributed notification is undocumented and could change (M1).
 - macOS 26 pasteboard privacy (only if clipboard history is revived).
+
+## 8. M1 design: Spotify (2026-11-21)
+
+Written after the M0 build and revised after an independent review (an Opus pass over the author's calls, 2026-11-21). Tags: **[You]** = decided by the user, **[My call]** = the author's, **[Review]** = changed or added by the independent review, **[Verified]**, **[Unverified]**. M1 gets its own plan and review; this section is the spec that plan argues from.
+
+### 8.1 Decisions
+| # | Question | Answer |
+|---|---|---|
+| 1 | Does the collapsed island do anything while music plays? | **Yes: a small live indicator [You]** |
+| 2 | How does the indicator move? | **Animated equalizer, continuously [You].** Explicit exception to the 0.0% idle-CPU rule, only while Spotify is playing |
+| 3 | What does the open island show? | **Artwork, title, artist, play/pause, next, previous, plus a read-only progress bar with elapsed and remaining time [You]** |
+| 4 | Peek when the track changes? | **No peek in M1 [You].** It returns in M4 as an automation action |
+| 5 | How do we get Spotify state? | **Event-driven [You]**: system launch/quit notifications plus Spotify's playback-changed broadcast; no polling |
+| 6 | Artwork from Spotify's CDN | Allowed [You] |
+| 7 | Wing width and sides | **33 pt wings, mini artwork on the left, equalizer on the right [You, accepting the review's pick].** The mockup's 58 pt wings would cover the first status item |
+| 8 | Paused Spotify | **Show nothing [You].** The indicator exists only while playing |
+| 9 | Signing | **Use an existing Apple Development identity, no new keychain entry [You: "existing one"].** Which one: **#1 `Apple Development: jpatrickzephyr@gmail.com (<cert-id>)` [My call: the personal one; #2 looks like a work account]** |
+| 10 | Test playback | **A muted Spotify Private Session on the user's account is fine for hands-on checks [You]** |
+
+### 8.2 Behavior
+- **Spotify not running:** nothing is drawn while idle. The open island shows "Spotify is not running". No Apple Event is ever sent and Spotify is never launched (see 8.4).
+- **Playing, island collapsed (live state):** the collapsed island widens beyond the notch by **33 pt on each side** (live width = notch + 66; on this Mac 245 pt, frame x 613 to 858, y 0 to 32) **[Review]**. No wing may overlap the first menu bar status item, which starts at x 860 here; the gap from the notch to that item is 35 pt **[Verified, M0 acceptance]**. Left wing: 20x20 mini artwork (rounded 5). Right wing: 4 equalizer bars (2.5 pt wide, about 16 pt in all, 14 pt tall) in Spotify green `#1ED760`, white if green looks loud **[My call]**. Both vertically centred in the 32 pt strip; collapsed ear radius stays 0. The mockup puts artwork and bars both on the left and keeps the right wing for Claude session dots; M2 will rearrange the wings when it lands.
+- **Paused, stopped, no track, or Spotify quit:** no indicator, the island is invisible at idle as in M0 **[You]**.
+- **Open island** (hover as in M0), proposed layout inside 360x165 (content area below the 32 pt notch strip is 133 pt) **[Review, arithmetic only]**: artwork 88x88 at x 14, y 44 to 132; right column x 116 to 346: title 15 pt semibold, artist 12.5 pt, progress bar 4 pt with elapsed/remaining times in 11 pt monospaced digits, then the controls row (previous and next 28 pt, play/pause 32 pt). No growth of the island is expected; if it looks cramped when first seen, the height grows and the user decides.
+- **Progress bar:** the position is read when the island opens and on each Spotify notification, then extrapolated by a pure function `position(at:)` clamped to the track duration. A `TimelineView(.periodic(by: 1))` runs only while the island is open and playing; paused shows a static value with no timeline. Whether a seek inside Spotify posts a notification is unverified; if not, the value re-syncs on open **[Review]**.
+- **Clicks:** the three buttons work; everything else still ignores clicks. Buttons sit only on opaque island pixels (transparent pixels pass clicks through, Spike 1). A click never activates Shima or Spotify: the panel stays non-key, the hosting view returns `acceptsFirstMouse` true, no key focus, the arrow cursor stays **[Review]**.
+- **Ads on the free tier** appear as ordinary tracks. A missing or empty artwork URL shows the placeholder **[My call]**.
+- **Artwork:** ephemeral `URLSession` (no disk cache), `NSCache` with `countLimit` about 10, downsampled to 176 px; the in-flight fetch is cancelled on a track change and stale results are dropped; failure shows the placeholder and retries only on the next track. This is the only network access **[Review]**.
+- **Permission:** the first Apple Event triggers the macOS Automation prompt for Spotify (`NSAppleEventsUsageDescription` in Info.plist). Denial is detected from error **-1743** on a real event and the open island shows an instruction (System Settings, Privacy & Security, Automation). Retry only on the next Spotify notification or the next island open, never on a timer, so a grant made later is noticed. Launch the app only through `open` (as `scripts/run.sh` does) so the prompt is attributed to Shima and not to the terminal **[Review]**.
+
+### 8.3 Acceptance criteria (each checkable by running the app)
+1. Track, artist and artwork update within 1 s of a change in Spotify.
+2. Play/pause, next and previous work from the island, and the island follows changes made in Spotify itself.
+3. With Spotify quit: no indicator, "Spotify is not running" when open, and Shima never launches Spotify (`pgrep -x Spotify` stays empty).
+4. The live indicator appears when playback starts and disappears when Spotify pauses, stops or quits.
+5. The progress bar ticks only while the island is open and playing (no timer while collapsed).
+6. M0 behaviors still hold in the live state: dwell, collapse, no flicker, focus never stolen **with real button clicks** (`scripts/verify-focus.sh` extended, `NSApp.isActive` stays false), menu bar clicks outside the island still work, **and menu bar items at x 860 and right stay clickable while live**. The live frame matches the layout values within 1 pt (`scripts/verify-alignment.sh` gets a live mode) **[Review]**.
+7. **CPU [Review]:** with Spotify not playing, `scripts/verify-idle.sh` stays strict at 0.0%. With Spotify playing and the island collapsed, **Shima's own CPU stays at or below 0.1% on average and the WindowServer increase stays at or below about 1.5%**, measured as an A/B of bars animating versus frozen (the fake-Spotify flag below makes this repeatable). Numbers are reported honestly even if worse. `verify-idle.sh`'s static check also flags `repeatCount` and similar, with a file allowlist for the equalizer layer.
+8. The Automation permission survives a rebuild (stable signing identity).
+
+### 8.4 Architecture
+- **ShimaCore (pure, tested):**
+  - `NowPlaying` (title, artist, album, artworkURL, duration, position, state), `PlaybackState`, `SpotifyEvent`.
+  - `SpotifyModel.apply(SpotifyEvent) -> (NowPlaying?, [SpotifyChange])` where `SpotifyChange` includes `.trackChanged(id)` and `.stateChanged`. One `@MainActor` coordinator applies results to `AppState.spotify`. M2 forwards `SpotifyChange` to the event bus unchanged, and M4's `spotify.track_changed` trigger is that change. No bus now **[My call, seam from Review]**.
+  - A `SpotifyClient` protocol with a fake for tests; `position(at:)`.
+  - `IslandLayout`: the idle frame and idle hot rect become functions of `(notch, live)`.
+  - **HoverMachine gains one input, `.idleGeometryChanged`.** It emits `[.shrinkPanel]` (re-apply the idle frame) only when the panel is small; when the panel is large (expanded, or dwelling after a re-entry during a collapse) it returns `[]` and the next `shrinkPanel` after the collapse picks up the new idle frame. The collapsed shape's live flag changes only while the panel is small, so no metrics change retargets an in-flight collapse. Live start animates the wings in after an instant frame grow; stop snaps. `reset()` re-applies the idle frame with the current live flag. Tests cover the input in all five phases and the large-`dwelling` case **[Review]**.
+- **Shima (glue):**
+  - **Scripting [Review, replaces the earlier plan]:** `SpotifyScripting` is a `final class` marked `@unchecked Sendable` with its own private serial `DispatchQueue`. It sends raw Apple Events with `NSAppleEventDescriptor(processIdentifier:)` and `sendEvent(options: .waitForReply, timeout: 2s)`. **No `NSAppleScript` and no `tell application`**: compiling AppleScript on a background thread can deadlock on macOS 26.2+ (XProtect's one-time setup must run on the main thread, FB21334477), and `tell application "Spotify"` launches Spotify if it quit a moment ago. The target pid comes from `NSRunningApplication(bundleIdentifier: "com.spotify.client")`; an event to a dead pid returns -600 and launches nothing (tested by the reviewer). Event codes from the sdef: `pPlS` player state, `pPos` position, `pTrk` current track; track `pnam`, `pArt`, `pAlb`, `pDur`, `aUrl`, `'ID  '`; commands `spfyPlPs`, `spfyNext`, `spfyPrev`.
+  - Requests are coalesced (one in flight plus a dirty flag), tagged with a sequence number and pid; stale results are dropped on the main actor; `didTerminate` clears state; errors -600 and -609 mean "not running"; -1712 is a timeout.
+  - The playback notification observer uses `suspensionBehavior: .deliverImmediately`, and parses `userInfo` into a `Sendable` struct in the callback. If the payload already carries name, artist, state and position, it is used directly and scripting is only for `artwork url` and the controls. **No Apple Events on `didLaunchApplication`**; one snapshot at Shima start only if Spotify is already running.
+  - **Equalizer:** Core Animation layer animations in an `NSViewRepresentable`, not SwiftUI's repeating animation. Measured by the reviewer on this Mac (4 bars): Shima at 0.00% with Core Animation versus 2.45% with `repeatForever`, at the cost of about 1% more in WindowServer. Rules: add animations idempotently in `viewDidMoveToWindow`/`updateNSView`, keep the view identity stable, `isRemovedOnCompletion = false`, wrap changes in `CATransaction.setDisableActions(true)`, pause by removing the animations and setting the rest transform (measure that a frozen layer costs nothing), and re-add them after `orderOut`/`orderFront`.
+  - `ArtworkCache` as in 8.2; SwiftUI views for the wings and the open island.
+  - **Fake mode:** `SHIMA_FAKE_SPOTIFY=playing|paused` drives the real UI without Spotify, so the CGEvent hover scripts, the alignment live mode and the CPU A/B run without music.
+- **Signing [Review]:** `scripts/bundle.sh` takes `SHIMA_SIGN_ID` and falls back to ad-hoc; hardened runtime stays off, so no `apple-events` entitlement is needed; `NSAppleEventsUsageDescription` goes in Info.plist; the first signing shows a "codesign wants to access key" prompt; the identity expires yearly and Automation must then be re-granted; the app is unsandboxed, so no network entitlement. The ad-hoc requirement is `cdhash`-based and changes with every rebuild, so the grant would not survive without this.
+
+### 8.5 Verified and unverified
+- **[Verified]** Spotify 1.3.10 is installed on the dev Mac; its sdef (read without launching it) exposes current track name, artist, album, duration, artwork url, id, player state, player position (read/write), and play, pause, playpause, next track, previous track. There is **no queue**, so the mockup's "next three tracks" is out.
+- **[Verified by the reviewer]** Core Animation versus SwiftUI CPU numbers above; an Apple Event to a dead pid returns -600 and launches nothing; the login keychain has two valid Apple Development identities.
+- **[Unverified, first-spike items in the M1 plan]:** the payload and rate of `com.spotify.client.PlaybackStateChanged`; whether seeks post it; `acceptsFirstMouse` and button behavior in the non-key panel; the Automation prompt and persistence with the chosen identity; whether a frozen Core Animation layer costs nothing; the artwork URL form; and **a live-frame change during hover**. The live-frame spike toggles live while the pointer is on the notch, while dwelling, mid-expand, and mid-collapse with a re-entry, and checks the log for exactly one frame change per transition and no `collapsing` loops. Last-resort fallback if it flickers: a constant-width idle frame (notch plus wings, transparent when not live) with only the hot rect changing, which would break M0 criterion 1 and depends on click-through over menu items.
+
+### 8.6 Verification
+Automated: reducer and fake-client tests, layout tests (live frame, hot rects), `.idleGeometryChanged` tests, and fake-mode scripts for hover, alignment and the CPU A/B. Needs the user: the Automation prompt, the payload spike, the controls, and criterion 1, using a muted Private Session.
+
+### 8.7 Out of scope for M1
+Peek (M4), seeking, volume, a queue, colour extraction from artwork, Apple Music, any account or Web API use, a menu reachable from the island (the status icon is still hidden on a full menu bar), and Launch at login (retry later with the app in `/Applications`, which needs the user's OK).
+
+### 8.8 Left to the builder
+Exact view layout and animation curves, the shape of the fake client, file organization within 6.1, and how the live-frame change is made flicker-free within the machine described above.

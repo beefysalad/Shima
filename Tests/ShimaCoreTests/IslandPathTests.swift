@@ -3,16 +3,16 @@ import Testing
 @testable import ShimaCore
 
 @Suite struct IslandPathTests {
-    let box = CGRect(x: 0, y: 0, width: 764, height: 338) // expanded panel bounds
+    let box = CGRect(x: 0, y: 0, width: 396, height: 173) // expanded panel bounds
     var expanded: CGPath { IslandPath.make(in: box, metrics: IslandLayout.expanded) }
 
     @Test func expandedBoundsIncludeEars() {
-        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 748, height: 330))
+        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 380, height: 165))
     }
-    @Test func earCornerIsFilled() { #expect(expanded.contains(CGPoint(x: 21, y: 1))) }
-    @Test func earCircleIsTransparent() { #expect(!expanded.contains(CGPoint(x: 10, y: 12))) }
-    @Test func bottomCornerIsRounded() { #expect(!expanded.contains(CGPoint(x: 22.5, y: 329.5))) }
-    @Test func middleIsFilled() { #expect(expanded.contains(CGPoint(x: 382, y: 165))) }
+    @Test func earCornerIsFilled() { #expect(expanded.contains(CGPoint(x: 17, y: 1))) }
+    @Test func earCircleIsTransparent() { #expect(!expanded.contains(CGPoint(x: 10, y: 8))) }
+    @Test func bottomCornerIsRounded() { #expect(!expanded.contains(CGPoint(x: 18.5, y: 164.5))) }
+    @Test func middleIsFilled() { #expect(expanded.contains(CGPoint(x: 198, y: 82))) }
     @Test func collapsedFillsTheNotchExactly() {
         let p = IslandPath.make(in: CGRect(x: 0, y: 0, width: 179, height: 32),
             metrics: IslandShapeMetrics(width: 179, height: 32, bottomRadius: 9, earRadius: 0))

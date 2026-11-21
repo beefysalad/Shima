@@ -34,7 +34,7 @@ A personal, free "Dynamic Island" for the MacBook notch, replacing a NotchBox su
 | Item | Decision |
 |---|---|
 | OS | macOS 26 on Apple Silicon (dev machine); deployment target 14.0 (for `UnevenRoundedRectangle`, `@Observable`) |
-| Toolchain | **Swift 6.1 and SwiftPM only; Command Line Tools, no Xcode, no `.xcodeproj`** **[You]**. Everything builds with `swift build` |
+| Toolchain | **SwiftPM only, no `.xcodeproj`** **[You]**. Everything builds with `swift build`. Xcode 27.2 is now installed (it was not when this was decided), but the SwiftPM-only choice stands. The scaffold was built with Swift 6.1 from the Command Line Tools; re-check the toolchain version after the Xcode license is accepted |
 | Dependencies | None third-party without asking **[You]** |
 | UI | SwiftUI views in one borderless non-activating `NSPanel` **[You]** |
 | Sandbox | Off **[My call]**: Unix socket, `~/.claude` reads, shell actions and Apple Events to Spotify are awkward inside the sandbox, and a personal app gains nothing from it |

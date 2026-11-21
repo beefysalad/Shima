@@ -10,7 +10,7 @@ Native Swift 6.1, SwiftPM, macOS 14+. SwiftUI views in a borderless non-activati
 - `scripts/bundle.sh` builds `dist/Shima.app` (ad-hoc signed); `scripts/run.sh` builds and launches it
 
 ## Rules
-- **No Xcode.** Only Command Line Tools are installed. Everything must build with `swift build`; no `.xcodeproj`.
+- **SwiftPM only, no `.xcodeproj`.** Xcode (27.2) is now installed, but everything must still build with `swift build` / `swift test`. This is a project choice, not a tooling limit.
 - No third-party dependencies without asking the user first.
 - Do not touch `~/.claude/settings.json` or any file outside this repo.
 - Use "shima" where the design doc says "notch" (`~/.config/shima/config.json`, `shimactl`).

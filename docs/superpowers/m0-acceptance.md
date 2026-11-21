@@ -1,0 +1,31 @@
+# M0 acceptance record
+
+Date: 2026-11-21. macOS 26.6.2, Swift 6.4.2 (Xcode 27.2 installed; SwiftPM-only build), built-in display 1470x956, notch (646, 924, 179, 32), menu bar 33 pt. Build: `scripts/bundle.sh` from commit `dcc0161` plus the working tree. 59 unit tests pass.
+
+Spike decisions in force: `islandLevel = .statusBar`, `hitOpacity = 0`, `frameStrategy = growOnce` (see `docs/superpowers/spikes/2026-11-21-m0-spikes.md`).
+Island size after the user's feedback: 360x165, bottom radius 24, ear 10 (panel 396x173, `x=537.5 y=783` on this Mac).
+
+How evidence was gathered: the user looked at the real screen for the visual criteria. Everything else was driven by synthetic mouse/keyboard events (CGEvent) and read back from Shima's `os.Logger` output and the window list. The terminal has no Screen Recording permission, so there are no recordings and no frame-by-frame analysis.
+
+| # | Criterion | Result | Evidence and notes |
+|---|---|---|---|
+| 1 | Alignment | **PASS** | `scripts/verify-alignment.sh`: `window layer=25 x=646 y=0 w=179 h=32`, `PASS idle frame matches notch within 1pt`. Unit tests `thisMacNotch`, geometry tests |
+| 2 | Invisible when idle | **PASS** | User: the notch looks exactly like the bare notch. `SHIMA_DEBUG=1` tint seen in the user's screenshots |
+| 3 | Hover (80 ms dwell, 300 ms collapse, click no-op) | **PASS** | Log: `collapsed -> dwelling` to `dwelling -> expanded` in 87 ms; a flick logs `dwelling -> collapsed` after 25 ms with no `expanded` and no `frame`; `expanded -> leaving` to `leaving -> collapsing` in about 320 ms; a click on the island logs nothing. Top-screen-row pointer bug found in the final review, fixed (`4fd00b5`), re-measured: expands once and stays open |
+| 4 | No flicker | **PASS (eyes only)** | Log: wiggling along the island edges only alternates `expanded <-> leaving`, never `collapsing`; re-entering mid-collapse gives `collapsing -> dwelling -> expanded` with no extra frame change; user watched Spike 2 and the real island and saw no flicker or box. Not frame-measured (no screen recording) |
+| 5 | Animation | **PASS** | Exactly one `frame expanded` after each expand and one `frame idle` after each collapse; `verify-alignment.sh` reports the 396x173 window while open. User: corners, "shima" label and spring look good at 360x165 |
+| 6 | Focus | **PASS** | `scripts/verify-focus.sh` with TextEdit frontmost through a real hover, expand, click on the island and Esc: `PASS frontmost unchanged: TextEdit`; Shima still running afterwards; `canBecomeKey` is false; no `cancelOperation` |
+| 7 | Menu bar | **PASS** for items outside the island | The Apple menu opens while idle and while the island is open (clicked within the 300 ms leave window). Items directly under the open island (about x 555 to 915) are covered while it is open, which design section 2 allows. Clicks in the small transparent margin around the island were not tested separately (Spike 1 showed transparent pixels pass clicks through) |
+| 8 | Displays | **PARTIAL** | Verified: built-in only, launch logs `display built-in notch=true rect=646.0,924.0,179.0,32.0`, alignment PASS; lazy panel creation and the `place(nil)` path traced in the final review. **Not hardware-tested:** external monitor plugged in, main-display swap, clamshell with the lid closed, unplug while expanded, launch with the lid closed. The notchless 200x32 hot zone is covered by unit tests only (no such hardware here) |
+| 9 | Spaces and fullscreen | **PASS (fullscreen), partial (Spaces)** | Fullscreen Safari (menu bar window gone): the island expands to 396x173 over it and collapses (log + window list). User screenshots earlier showed the idle pill over fullscreen Safari with the menu bar slid down, and on another Space. The expanded island on a second Space was not retested (no second Space existed). No fullscreen-detection code (`grep` shows only `.fullScreenAuxiliary`) |
+| 10 | Idle cost | **PASS** (6 of 7 real runs) | Hands-off run: 0.000 CPU s in 60 s, 47 MB RSS, no timer callbacks in `sample`, per-second CPU log flat; static scan finds no timers or event monitors. **One run failed (1.200 s in 60 s) and could not be reproduced** in the six runs since; cause unknown (suspected pointer movement near the notch during that run; the final code review found no code-level suspect) |
+| 11 | Status menu | **PASS for Quit; Launch at login MOVED to M1** | `Quit shima` through the real menu ends the process. `Launch at login` showed `unavailable` (`SMAppService.mainApp` status `.notFound`) for the ad-hoc dev bundle and Shima did not appear in Login Items; the item and `LoginItem.swift` were removed per the plan's fallback, `LoginItemMenu` and its tests kept (commit `4e593e4`) |
+
+## Findings worth carrying forward
+- **The status icon is hidden on a full menu bar.** macOS dropped Shima's capsule icon because the gap between the notch (right edge x=825) and the first icon (x=860) is 35 pt and an icon needs about 38. It appeared only after the user freed a slot. Until then Quit was unreachable from the UI (`pkill -x Shima` works). M1 or later should give Shima a menu reachable independent of the menu bar (for example from the island).
+- **Launch at login (M1):** cause not isolated (ad-hoc signing and/or running from `dist/` instead of `/Applications`). Retry with the stable self-signed certificate and with the app in `/Applications` (needs the user's OK, it is outside the repo).
+- **Two measured behaviors the glue relies on:** resizing the panel makes macOS re-send `mouseEntered` (handled by an idempotent hover machine and a pointer re-sample), and a collapse animation's completion can arrive after a re-expand (handled by generation numbers).
+- **Rulings and parked minors** from the build are in the build ledger; notable ones: the notchless idle fill stays at alpha 0.001 (unverifiable on this Mac; could swallow menu clicks on a notchless MacBook), `place(on:)` with an unchanged display still resets an open island, and the dead-code leftovers (`pillFrame`, `pillOverhang`, `screen(id:)`, `Log.menu`).
+
+## Still to do before calling M0 fully accepted
+- Criterion 8 hardware checks (external monitor, main-display swap, lid close/open in clamshell, unplug while expanded) when a monitor is available.

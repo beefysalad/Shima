@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         versionText: SettingsText.version(
             short: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
             build: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String),
+        bundlePath: Bundle.main.bundlePath,
         readSigning: { SigningInfo.read() })
     private lazy var settingsWindow = SettingsWindowController(
         model: settings, onToggleLogin: { [weak self] in self?.toggleLoginFromWindow() })

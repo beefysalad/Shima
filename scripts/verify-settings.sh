@@ -120,6 +120,7 @@ if (( login )); then
     || { echo "$APP is not signed with the Apple Development identity (SHIMA_SIGN_ID=... scripts/install.sh)"; exit 2; }
   launch SHIMA_FAKE_SPOTIFY=paused SHIMA_SETTINGS_DRY_OPEN=1
   m="$(mark)"; reopen || bad "L1 window bounds"
+  expect_log "L1 Launch at login control enabled for the installed app" "$m" 'settings refresh loginItem=[A-Za-z]+ .*loginControl=enabled'
   before="$(since "$m" | grep -oE 'settings refresh loginItem=[A-Za-z]+' | tail -1 | sed 's/.*=//')"
   echo "     Launch at login before: ${before:-unknown}"
   [[ "$before" != enabled ]] || { echo "Launch at login is already ON; turn it off in the window, then re-run"; exit 2; }
@@ -154,6 +155,11 @@ if ! has "$LAUNCH_MARK" 'settings eq mode=animated loaded'; then wclick "$SEG_an
 m="$(mark)"; open "$APP"
 expect_log "A2 second reopen reuses it" "$m" 'settings opened via reopen created=false'
 expect_windows "A2 still one window" 1
+
+# A3. A dev build must not register itself as the login item: the control is disabled
+expect_log "A3 Launch at login control disabled outside /Applications" "$LAUNCH_MARK" 'settings refresh loginItem=[A-Za-z]+ .*loginControl=disabled'
+m="$(mark)"; wclick "$LOGIN"; sleep 0.7
+if has "$m" 'settings loginItem toggle'; then bad "A3 disabled control ignores clicks" "toggle logged"; else ok "A3 disabled control ignores clicks"; fi
 
 # B. Close: accessory, focus back
 m="$(mark)"; d "key cmd-w"

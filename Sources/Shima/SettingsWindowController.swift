@@ -38,7 +38,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         let window = self.window ?? makeWindow()
         self.window = window
         model.refresh()
-        Log.settings.info("settings refresh loginItem=\(String(describing: self.model.loginItemStatus), privacy: .public) spotify=\(self.model.spotifyRow.kind.rawValue, privacy: .public) eq=\(self.model.equalizerMode.rawValue, privacy: .public) version=\"\(self.model.versionText, privacy: .public)\" signing=\"\(self.model.signingText, privacy: .public)\"")
+        Log.settings.info("settings refresh loginItem=\(String(describing: self.model.loginItemStatus), privacy: .public) spotify=\(self.model.spotifyRow.kind.rawValue, privacy: .public) eq=\(self.model.equalizerMode.rawValue, privacy: .public) loginControl=\(self.model.loginItem.isEnabled ? "enabled" : "disabled", privacy: .public) version=\"\(self.model.versionText, privacy: .public)\" signing=\"\(self.model.signingText, privacy: .public)\"")
         if !window.isVisible { window.center() }
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)

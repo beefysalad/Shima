@@ -35,7 +35,7 @@ public struct LoginItemToggle: Equatable, Sendable {
     public let versionText: String
 
     public var loginItem: LoginItemMenuState {
-        LoginItemMenu.state(for: loginItemStatus, registrationFailed: loginRegistrationFailed)
+        LoginItemMenu.state(for: loginItemStatus, registrationFailed: loginRegistrationFailed, installed: installed)
     }
     public var spotifyRow: SpotifyStatusRow { SettingsText.spotifyRow(state.spotifyAvailability) }
 
@@ -47,10 +47,11 @@ public struct LoginItemToggle: Equatable, Sendable {
     @ObservationIgnored private let store: SettingsStore
     @ObservationIgnored private let loginItems: LoginItemService
     @ObservationIgnored private let readSigning: @MainActor () -> SigningSummary
+    @ObservationIgnored private let installed: Bool
     @ObservationIgnored private let now: @MainActor () -> Date
     @ObservationIgnored private var signingRead = false
 
-    public init(state: AppState, store: SettingsStore, loginItems: LoginItemService, versionText: String,
+    public init(state: AppState, store: SettingsStore, loginItems: LoginItemService, versionText: String, bundlePath: String = "/Applications/Shima.app",
                 readSigning: @escaping @MainActor () -> SigningSummary,
                 now: @escaping @MainActor () -> Date = { Date() }) {
         self.state = state
@@ -59,6 +60,7 @@ public struct LoginItemToggle: Equatable, Sendable {
         self.versionText = versionText
         self.readSigning = readSigning
         self.now = now
+        self.installed = LoginItemMenu.isInstalledLocation(bundlePath: bundlePath)
         self.loginItemStatus = loginItems.status
         let mode = store.equalizerMode
         self.equalizerMode = mode
@@ -76,7 +78,7 @@ public struct LoginItemToggle: Equatable, Sendable {
     @discardableResult
     public func toggleLaunchAtLogin() -> LoginItemToggle {
         let from = loginItems.status
-        let action = LoginItemMenu.action(for: from, registrationFailed: loginRegistrationFailed)
+        let action = LoginItemMenu.action(for: from, registrationFailed: loginRegistrationFailed, installed: installed)
         var succeeded = true
         if action != .none {
             succeeded = loginItems.perform(action)

@@ -20,11 +20,11 @@ import Testing
     }
 
     func make(stored: [String: String] = [:], login status: LoginItemStatus = .notFound,
-              signing: SigningSummary = .adHoc) -> Rig {
+              signing: SigningSummary = .adHoc, bundlePath: String = "/Applications/Shima.app") -> Rig {
         let state = AppState(), storage = InMemoryPreferenceStorage(stored)
         let login = FakeLoginItemService(status: status), taps = SettingsTaps()
         let model = SettingsModel(
-            state: state, store: SettingsStore(storage: storage), loginItems: login, versionText: "Version 0.0.1 (1)",
+            state: state, store: SettingsStore(storage: storage), loginItems: login, versionText: "Version 0.0.1 (1)", bundlePath: bundlePath,
             readSigning: { taps.signingReads += 1; return signing },
             now: { ISO8601DateFormatter().date(from: "2026-11-22T00:00:00Z")! })
         model.onOpenURL = { taps.urls.append($0) }
@@ -170,5 +170,13 @@ import Testing
             r.state.spotifyAvailability = .permissionDenied
         }
         #expect(r.model.spotifyRow.kind == .permissionDenied)
+    }
+
+    @Test func devBuildCannotToggleLaunchAtLogin() {
+        let r = make(login: .notFound, bundlePath: "/Users/x/shima/dist/Shima.app")
+        #expect(!r.model.loginItem.isEnabled)
+        #expect(r.model.loginItem.title == "Launch at login (install to /Applications first)")
+        let t = r.model.toggleLaunchAtLogin()
+        #expect(t.action == .none && r.login.performed.isEmpty)
     }
 }

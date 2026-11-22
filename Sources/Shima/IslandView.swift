@@ -22,6 +22,7 @@ struct IslandShape: Shape {
 
 struct IslandView: View {
     let state: AppState
+    let media: IslandMedia
     let notch: CGRect
     let hasNotch: Bool
     let debug: Bool

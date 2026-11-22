@@ -78,3 +78,12 @@ How evidence was gathered: fake mode, CGEvent input (`scripts/drive.swift`), `os
 3. **Status menu entry (D) not exercised**, as agreed (capsule hidden). `Settings...` via the menu is therefore HUMAN-untested here.
 4. `verify-live-hover.sh` leaves a paused instance live; `verify-idle.sh` then refuses (`the island is live`). Run `fake paused` between them. Not changed.
 5. Task 13 follow-ups still stand: `--pause` should re-activate Shima before clicking, and the Automation button logged its line twice for one click.
+
+## Final notes (fix wave, memory ruling, final install)
+
+Date 2026-11-22. A fix wave followed the final review (commits c6a1128 install.sh signature guard, e334a29 verify-settings hardening, 733fa27 Launch at login disabled outside /Applications, f55d140 Settings window opens on the pointer's screen, f0c53f1 activation log from windowDidBecomeKey, c34058c meaningful gear layout checks); the scoped re-review passed all six. 291 tests pass, zero build warnings.
+
+- **Memory ruling (accepted cost):** after the Settings window has been opened once, RSS sits at about 63 to 67 MB (fresh 53 MB) and `footprint` at 23 to 24 MB (fresh 17 MB); `vmmap` shows the growth is AppKit/SwiftUI framework state (small mallocs, mapped files, CoreUI images), identical whether the hosting view or the whole NSWindow is released on close. CPU stays 0.000 s. `scripts/verify-idle.sh` keeps its `rss < 60 MB` check unchanged: run it on a fresh instance (it passes at 53 MB); an instance that has opened Settings reports `FAIL rss` by design of that threshold.
+- **Duplicate `settings open url` line** and **`opened via menu ... active=false`:** no double dispatch exists in the code (one path); the second line was a second click, and the false active/key values were a logging race, fixed by logging from windowDidBecomeKey.
+- **Final install:** `SHIMA_SIGN_ID=... scripts/install.sh` installed `/Applications/Shima.app` (version 0.0.1), signed with the Apple Development certificate (`designated => identifier "local.shima" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: jpatrickzephyr@gmail.com (<cert-id>)"`, no cdhash), not running, Launch at login OFF. The certificate expires 2027-03-26.
+- **Known remaining:** the status-menu "Settings..." click is a SKIP while the menu-bar capsule is hidden (entries 1 and 2 cover that case); a dev bundle that already had the login item ON can only be switched off from the installed app or System Settings.

@@ -14,8 +14,12 @@ import Testing
         #expect(LoginItemMenu.state(for: .requiresApproval) == LoginItemMenuState(title: "Launch at login (approve in System Settings)", isOn: false, isEnabled: true))
         #expect(LoginItemMenu.action(for: .requiresApproval) == .openSettings)
     }
-    @Test func notFoundIsDisabled() {
-        #expect(LoginItemMenu.state(for: .notFound) == LoginItemMenuState(title: "Launch at login (unavailable)", isOn: false, isEnabled: false))
-        #expect(LoginItemMenu.action(for: .notFound) == .none)
+    @Test func notFoundIsRegistrableUntilRegistrationFails() {
+        #expect(LoginItemMenu.state(for: .notFound) == LoginItemMenuState(title: "Launch at login", isOn: false, isEnabled: true))
+        #expect(LoginItemMenu.action(for: .notFound) == .register)
+    }
+    @Test func notFoundAfterFailedRegistrationIsDisabled() {
+        #expect(LoginItemMenu.state(for: .notFound, registrationFailed: true) == LoginItemMenuState(title: "Launch at login (unavailable)", isOn: false, isEnabled: false))
+        #expect(LoginItemMenu.action(for: .notFound, registrationFailed: true) == .none)
     }
 }

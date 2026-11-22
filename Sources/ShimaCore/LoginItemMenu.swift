@@ -19,7 +19,9 @@ public struct LoginItemMenuState: Equatable, Sendable {
 }
 
 public enum LoginItemMenu {
-    public static func state(for status: LoginItemStatus) -> LoginItemMenuState {
+    /// `notFound` is what SMAppService reports for an app that has never been registered (seen for the
+    /// certificate-signed bundle in /Applications), so it stays toggleable until a register attempt fails.
+    public static func state(for status: LoginItemStatus, registrationFailed: Bool = false) -> LoginItemMenuState {
         switch status {
         case .enabled:
             LoginItemMenuState(title: "Launch at login", isOn: true, isEnabled: true)
@@ -28,16 +30,18 @@ public enum LoginItemMenu {
         case .requiresApproval:
             LoginItemMenuState(title: "Launch at login (approve in System Settings)", isOn: false, isEnabled: true)
         case .notFound:
-            LoginItemMenuState(title: "Launch at login (unavailable)", isOn: false, isEnabled: false)
+            registrationFailed
+                ? LoginItemMenuState(title: "Launch at login (unavailable)", isOn: false, isEnabled: false)
+                : LoginItemMenuState(title: "Launch at login", isOn: false, isEnabled: true)
         }
     }
 
-    public static func action(for status: LoginItemStatus) -> LoginItemAction {
+    public static func action(for status: LoginItemStatus, registrationFailed: Bool = false) -> LoginItemAction {
         switch status {
         case .enabled: .unregister
         case .notRegistered: .register
         case .requiresApproval: .openSettings
-        case .notFound: .none
+        case .notFound: registrationFailed ? .none : .register
         }
     }
 }

@@ -11,6 +11,7 @@ public enum HoverInput: Equatable, Sendable {
     case dwellElapsed, leaveElapsed
     case collapseFinished(generation: Int)
     case reset
+    case idleGeometryChanged
 }
 
 public enum HoverEffect: Equatable, Sendable {
@@ -44,6 +45,9 @@ public struct HoverMachine: Sendable {
             }
             panelLarge = false
             return effects
+
+        case (_, .idleGeometryChanged):
+            return panelLarge ? [] : [.shrinkPanel]
 
         case (.collapsed, .pointer(inside: true)), (.collapsing, .pointer(inside: true)):
             phase = .dwelling

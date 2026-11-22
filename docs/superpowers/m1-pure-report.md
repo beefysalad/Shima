@@ -61,3 +61,46 @@ Task 7's spike-independent data types are already present as the Task 8 prerequi
 - Main-actor application, private serial Apple Events, stale results across process relaunch, applied-versus-desired live state during collapse, and the wide-collapse-then-wing-drop rule still need their later coordinator/hover/glue verification. Pure layout tests do not claim to verify those transitions.
 
 The branch is ready for the controller to merge or cherry-pick; it has not been merged into main.
+
+## Resumed work: Tasks 7, 9, and 12 (2026-11-22)
+
+This section supersedes the earlier blocked-task status. All assigned pure-core tasks 6–12 are now complete. Resumed with a clean worktree and fast-forwarded main to `eae3a1c`; read Spike 1 and Spike 2 before Task 7. Before Task 9, merged main again (`Already up to date`) and re-read the notes. The user subsequently authorized Task 12 after Spike 3 landed: merged main including `b2314ba` into this branch (`e9b0e23`, a merge commit because Tasks 7 and 9 were already local commits), then read Spike 3. No changes were merged into main and nothing was pushed.
+
+Each task again used a fresh implementer, a separate fresh read-only reviewer, recorded failing tests before implementation, and passed review without blocking findings. All new implementation changes are under `Sources/ShimaCore`; tests use Swift Testing, injected dates or ManualScheduler, and no real timers/sleeps. No app glue was edited and no Spotify process or command was invoked. Main's glue/scripts/spike-note changes were incorporated only by the authorized merges.
+
+| Task | Commit | Tests added | Filtered result | Full `swift test` result |
+| --- | --- | --- | --- | --- |
+| 7 | `5de4237` | 15 SpotifyReading tests | 15 tests, 1 suite | 143 tests, 12 suites |
+| 9 | `e81b51e` | 30 coordinator/fake tests | 30 tests, 2 suites | 173 tests, 14 suites |
+| 12 | `f7a2459` | 9 machine, 2 controller, 2 layout tests | 58 tests, 3 suites, including existing hover/layout tests | 186 tests, 14 suites |
+
+Task 7 extends the existing data contract with notification parsing, `hasDisplayFields`, and the HTTPS artwork helper. Tests cover the seven plan cases plus sparse pause/play metadata, malformed state and optional fields, booleans masquerading as numbers, nonfinite/negative/oversized times, unit-specific inclusive bounds, metadata preservation when times are invalid, and safe direct initializer inputs. Empty strings become nil; artwork fields in notifications are ignored.
+
+Task 9 adds the main-actor client protocol, fake, coordinator and AppState fields. The eighteen plan tests plus twelve additional tests cover owner-controlled event wiring, sparse pause/play merge and refresh, collapsed position updates, callback ordering before synchronous refresh, artwork marking before reentry, Stopped-before-terminate order, applied live-state ownership, real coordinator/fake synchronous wiring, injected-clock pause/resume, wrap/reset while paused, duration clamping, no-op fake invalidation, and initial stopped/paused clocks. The coordinator leaves `AppState.live` unchanged and reports desired live changes through its callback.
+
+Task 12 adds `.idleGeometryChanged` and `HoverController.idleGeometryChanged()`. The rule is exactly `panelLarge ? [] : [.shrinkPanel]`, with no phase, pointer, generation, or timer mutations. Tests cover every phase, small/large dwell, preserving the original dwell deadline, reentry during collapse, stale collapse completion, and pointer deduplication. Two additional layout tests deliberately diverge applied/target live flags: live-on includes a point on the new wing before applied state changes; live-off excludes the old wing before applied state changes. `hotRect(live:)` now documents that its flag is the TARGET geometry state, independent of the rendered wings.
+
+All passing filtered/full/build logs have no `warning:` or `error:` lines; `git diff --check` is clean. Exact terminal summary output:
+
+```text
+Task 7:  ✔ Test run with 143 tests in 12 suites passed after 0.003 seconds.
+Task 9:  ✔ Test run with 173 tests in 14 suites passed after 0.004 seconds.
+Task 12: ✔ Test run with 186 tests in 14 suites passed after 0.004 seconds.
+Task 9 build:  Build complete! (0.46 sec)
+Task 12 build: Build complete! (0.21 sec)
+```
+
+Local logs: `.build/task7-{red,filtered,full}.log`, `.build/task9-{red,filtered,full,build}.log`, and `.build/task12-{red,filtered,full,build}.log`. Task 7's expected red failure references the missing notification initializer/helper APIs rather than a missing type because Task 8 already introduced the struct. Tasks 9 and 12 failed on their missing client/hover APIs as expected. A Task 7 test assertion was rewritten using a local variable to avoid a Swift Testing macro expansion issue; no production behavior changed for that workaround.
+
+### Spike overrides, deviations, and resolved questions
+
+1. **Numeric policy required by the resumed user instruction:** invalid optional times become nil. Valid seconds are finite and within inclusive `0...604800` (seven days); raw duration milliseconds are checked before conversion against `0...604800000` and strictly below `Double(Int.max)`. Negative, NaN, infinity, Boolean NSNumber, and absurd or out-of-Int-range samples are rejected. Seven days is a deliberately generous implementation ceiling, not a measured Spotify limit. The public seconds initializer uses the same validation for future script readings, extending the plan's simple member assignment. Existing mutable properties remain public as specified. This resolves the external-input question in the first report for parser/initializer paths; direct mutation or direct calls to `PlaybackTime` with invalid values remain outside that guarantee.
+2. **Spike 1 sparse payload:** pause/play leaves missing title/artist/album nil; the existing reducer retains metadata, and the coordinator refreshes incomplete notifications even if artwork is already known. Stopped-only parsing and Stopped-before-terminate ordering are tested. No after-quit reading can restore state while availability is not running.
+3. **Spike 1 rate:** measured zero periodic broadcasts, so the conditional position-only skip rule was not implemented. Collapsed position updates remain applied. Seek notification behavior is still only inferred; no new seek assumptions or code were added. Opening the island refreshes position.
+4. **Spike 2:** IDs are unchanged and artwork stays HTTPS-only; no track-ID normalization or HTTP upgrade. Per-property Apple Event reads and their units/timeouts belong to controller-owned Task 16; no Apple Events were added to ShimaCore.
+5. **Fake simplification/ambiguity:** next/previous wrap tracks, reset position, and preserve the playback state. Paused-next behavior was not established by the spike. The plan explicitly simplifies previous to moving tracks, whereas the real observed previous command restarted the current track after about three seconds. The fake follows the plan. Positions clamp to track duration without automatic track advance; transitions remain event-driven.
+6. **Spike 3 overrides the plan's glue assumption:** `liveFrameStrategy = growThenAnimate`; idle hot rectangles must use the TARGET live flag. The existing compatible `hotRect(..., live:, ...)` API already accepts that value, so its documentation plus regression tests establish the contract without adding a redundant API or touching app glue. Task 14 must pass the target flag when resizing/refreshing the hot rect; tests cannot enforce an unimplemented caller's argument choice.
+7. **Reset wording:** preserved M0 reset exactly. Section 8's broad reset-reapplies-frame statement is clarified by plan note 2: when already small, later `place(on:)` glue calls `applyIdleGeometry(animated: false)` after `hover.reset()`. Task 12 does not alter reset to emit extra effects.
+8. **Totals/order:** actual test totals supersede the historical plan totals. These resumed tasks add 58 tests to the earlier 128, totaling 186. No existing tests were removed, no dependencies added, and no further public interface deviations were needed.
+
+No assigned pure-core task remains blocked or incomplete. No approval question is pending. Controller follow-up is the target-live hot-rect argument, applied-versus-desired wing timing during collapse, reset reapplication in glue, and the later script-client pid/request-gate wiring. These pure tests do not claim to verify app frame delivery, real Automation, or live UI acceptance. Tasks 1–5 and 13–25 remain outside this engineer's scope.

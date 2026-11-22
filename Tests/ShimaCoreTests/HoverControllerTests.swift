@@ -137,4 +137,19 @@ import ShimaCore
         #expect(changes.map { $0.0 } == [.collapsed, .dwelling])
         #expect(changes.map { $0.1 } == [.dwelling, .expanded])
     }
+
+    @Test func idleGeometryChangeIsForwardedWhenSmall() {
+        let (controller, recorder) = make()
+        controller.idleGeometryChanged()
+        #expect(recorder.effects == [.shrinkPanel] && clock.pendingCount == 0)
+    }
+    @Test func liveToggleWhileDwellingKeepsOneTimer() {
+        let (controller, recorder) = make()
+        controller.pointer(inside: true)
+        clock.advance(by: .milliseconds(40))
+        controller.idleGeometryChanged()
+        #expect(clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(40))
+        #expect(controller.phase == .expanded && recorder.count(.growPanel) == 1)
+    }
 }

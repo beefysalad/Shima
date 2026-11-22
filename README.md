@@ -9,9 +9,15 @@
   <strong>島 · "island"</strong>
 </p>
 
-A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). It shows Claude Code session state, Spotify now-playing and a file shelf in the dead space around the notch. It is a small, local, hackable POC, not a product.
+A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). It shows Spotify now-playing today and is meant to show Claude Code session state and a file shelf next. It is a small, local, hackable POC, not a product.
 
-**Status:** M0 (the island shell) is built, and M1 (Spotify) is built. The idle island is flush with the notch and invisible. Hover it and a 360x165 black island springs out with concave corners; leave and it collapses. It has no content yet beyond a placeholder (Spotify is M1, Claude sessions M2). `shimactl` is still a stub. Scope and architecture: [docs/2026-11-20-notch-design.md](docs/2026-11-20-notch-design.md). UI target: [mockup/index.html](mockup/index.html).
+**Status**
+- **M0, the island shell:** the idle island is flush with the notch and invisible. Hover it and a 360x165 black island springs out with concave corners; leave and it collapses. Built-in display only.
+- **M1, Spotify:** while music plays, two small wings grow beside the notch (album art on the left, bouncing green bars on the right). Hover to open the island: artwork, title, artist, a progress bar, and previous, play/pause and next. It is event-driven (no polling), never launches Spotify, and needs the macOS Automation permission for Spotify.
+- **Settings window:** a normal window for Launch at login, Quit, Spotify status with a shortcut to the Automation pane, the equalizer mode (animated, only when open, or off), and version and signing info. Open it by launching Shima again (Spotlight or Finder), from the gear on the open island, or from "Settings…" in the status menu. None of these depend on the menu-bar icon having room.
+- **Next:** M2, Claude Code session state. `shimactl` is still a stub. Still open from M0: external-monitor and clamshell checks.
+
+Scope and architecture: [docs/2026-11-20-notch-design.md](docs/2026-11-20-notch-design.md). UI target: [mockup/index.html](mockup/index.html). Acceptance records: [M0](docs/superpowers/m0-acceptance.md), [M1](docs/superpowers/m1-acceptance.md), [Settings](docs/superpowers/settings-acceptance.md).
 
 ## Requirements
 - macOS 14+, Apple Silicon
@@ -21,22 +27,26 @@ A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). 
 ```sh
 swift build            # debug build
 swift test             # unit tests (ShimaCore)
-scripts/bundle.sh      # release build -> dist/Shima.app (Info.plist, LSUIElement, ad-hoc codesign)
-scripts/run.sh         # bundle + launch
+scripts/bundle.sh      # release build -> dist/Shima.app (Info.plist, icon, LSUIElement, codesign)
+scripts/run.sh         # bundle + launch (stops only this checkout's dist instance)
 scripts/install.sh     # build and install /Applications/Shima.app (--open to launch)
 scripts/package.sh     # build and zip dist/Shima-<version>.zip
 ```
-The island lives on the built-in display only. It is invisible when idle: on a notched Mac it sits exactly over the notch, and on a built-in display without a notch it is an invisible 200x32 hover zone at top centre. Quit from the menu-bar capsule icon (`Quit shima`, Cmd-Q), or run `pkill -x Shima`. If your menu bar is full, macOS hides the capsule icon (it needs about 38 pt next to the notch); free a slot or use `pkill`. Set `SHIMA_DEBUG=1` (for example `SHIMA_DEBUG=1 scripts/run.sh`) to tint the idle pill red and outline the panel.
+The island lives on the built-in display only. It is invisible when idle: on a notched Mac it sits exactly over the notch, and on a built-in display without a notch it is an invisible 200x32 hover zone at top centre. Quit from Settings or the menu-bar capsule icon (`Quit shima`, Cmd-Q), or run `pkill -x Shima`. If your menu bar is full, macOS hides the capsule icon (it needs about 38 pt next to the notch): use the Settings window instead. Set `SHIMA_DEBUG=1` (for example `SHIMA_DEBUG=1 scripts/run.sh`) to tint the idle pill red and outline the panel.
 
-**Install.** `SHIMA_SIGN_ID='Apple Development: you@example.com (TEAMID)' scripts/install.sh --open` builds, quits a running Shima, replaces `/Applications/Shima.app` and verifies the signature, so you do not have to build each time. `scripts/package.sh` builds the same bundle and writes `dist/Shima-<version>.zip` instead. The build is signed with a development certificate, not notarized: on another Mac, right-click Open once, or run `xattr -dr com.apple.quarantine /Applications/Shima.app`. Launch at login and the Spotify Automation grant need the app in `/Applications` signed with the same identity every time (the install script refuses an ad-hoc rebuild over a certificate-signed install).
+**Install.** `SHIMA_SIGN_ID='Apple Development: you@example.com (CERTID)' scripts/install.sh --open` builds, quits a running Shima, replaces `/Applications/Shima.app` and verifies the signature, so you do not have to build each time. `scripts/package.sh` builds the same bundle and writes `dist/Shima-<version>.zip` instead. The build is signed with a development certificate, not notarized: on another Mac, right-click Open once, or run `xattr -dr com.apple.quarantine /Applications/Shima.app`. Launch at login and the Spotify Automation grant need the app in `/Applications` signed with the same identity every time (the install script refuses an ad-hoc rebuild over a certificate-signed install). A development certificate expires after a year; Automation must be granted again then.
 
-Check scripts (run with the app running): `scripts/verify-alignment.sh` (panel vs notch), `scripts/verify-focus.sh` (focus never stolen), `scripts/verify-idle.sh` (60 s idle CPU and memory), `scripts/watch-hover.sh` (live hover and frame log).
+**Spotify.** Run `scripts/run.sh` with `SHIMA_SIGN_ID` set (real mode refuses to run ad-hoc). The first Apple Event triggers the macOS Automation prompt; if you deny it, the open island says so and Settings has a button to the right System Settings pane. For tests without touching your Spotify, use fake mode: `SHIMA_FAKE_SPOTIFY=playing scripts/run.sh`, then drive it with `swift scripts/drive.swift "fake next; fake paused"` (see `scripts/drive.swift` for the commands).
+
+**Check scripts** (run with the app running; they drive the pointer and keys with synthetic events): `scripts/verify-alignment.sh [--live|--expanded|--menus]` (panel vs notch), `verify-focus.sh [--clicks]` (focus never stolen), `verify-live-hover.sh`, `verify-idle.sh [--playing]` (60 s idle CPU and memory), `verify-settings.sh` (Settings window, entry points, equalizer modes), `verify-view-layout.sh` (offscreen pixel check of the views), and `watch-hover.sh` (live hover and frame log).
 
 ## Layout
 | Path | What |
 |---|---|
-| `Sources/ShimaCore` | Library: geometry, display selection, island layout and path, hover state machine; event bus and Unix-socket server next |
-| `Sources/Shima` | The accessory app: SwiftUI in a borderless, non-activating `NSPanel` |
+| `Sources/ShimaCore` | Library: geometry, display selection, island layout and path, hover state machine, Spotify model, reducer and request gate, artwork request gate, settings model and store; event bus and Unix-socket server next |
+| `Sources/Shima` | The accessory app: SwiftUI in a borderless, non-activating `NSPanel`, the wings and open-island views, the Settings window, Apple Event glue |
 | `Sources/shimactl` | CLI the Claude Code hooks will call (`shimactl event <name>`, always exits 0) |
 | `Tests/ShimaCoreTests` | Swift Testing tests |
-| `scripts/` | `bundle.sh`, `run.sh`, `install.sh`, `package.sh`, and the `verify-*` / `watch-hover` check scripts |
+| `scripts/` | `bundle.sh`, `run.sh`, `install.sh`, `package.sh`, the `verify-*` / `watch-hover` checks and the `drive` / `shima-windows` / `with-log` helpers |
+| `docs/` | Design, plus `superpowers/` specs, plans, spike notes and acceptance records for each milestone |
+| `assets/branding/` | Logo and icon sources (`generate.swift`, `export.sh`) and exports |

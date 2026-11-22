@@ -11,7 +11,7 @@
 
 A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). It shows Claude Code session state, Spotify now-playing and a file shelf in the dead space around the notch. It is a small, local, hackable POC, not a product.
 
-**Status:** M0 (the island shell) is built. The idle island is flush with the notch and invisible. Hover it and a 360x165 black island springs out with concave corners; leave and it collapses. It has no content yet beyond a placeholder (Spotify is M1, Claude sessions M2). `shimactl` is still a stub. Scope and architecture: [docs/2026-11-20-notch-design.md](docs/2026-11-20-notch-design.md). UI target: [mockup/index.html](mockup/index.html).
+**Status:** M0 (the island shell) is built, and M1 (Spotify) is built. The idle island is flush with the notch and invisible. Hover it and a 360x165 black island springs out with concave corners; leave and it collapses. It has no content yet beyond a placeholder (Spotify is M1, Claude sessions M2). `shimactl` is still a stub. Scope and architecture: [docs/2026-11-20-notch-design.md](docs/2026-11-20-notch-design.md). UI target: [mockup/index.html](mockup/index.html).
 
 ## Requirements
 - macOS 14+, Apple Silicon
@@ -23,8 +23,12 @@ swift build            # debug build
 swift test             # unit tests (ShimaCore)
 scripts/bundle.sh      # release build -> dist/Shima.app (Info.plist, LSUIElement, ad-hoc codesign)
 scripts/run.sh         # bundle + launch
+scripts/install.sh     # build and install /Applications/Shima.app (--open to launch)
+scripts/package.sh     # build and zip dist/Shima-<version>.zip
 ```
 The island lives on the built-in display only. It is invisible when idle: on a notched Mac it sits exactly over the notch, and on a built-in display without a notch it is an invisible 200x32 hover zone at top centre. Quit from the menu-bar capsule icon (`Quit shima`, Cmd-Q), or run `pkill -x Shima`. If your menu bar is full, macOS hides the capsule icon (it needs about 38 pt next to the notch); free a slot or use `pkill`. Set `SHIMA_DEBUG=1` (for example `SHIMA_DEBUG=1 scripts/run.sh`) to tint the idle pill red and outline the panel.
+
+**Install.** `SHIMA_SIGN_ID='Apple Development: you@example.com (TEAMID)' scripts/install.sh --open` builds, quits a running Shima, replaces `/Applications/Shima.app` and verifies the signature, so you do not have to build each time. `scripts/package.sh` builds the same bundle and writes `dist/Shima-<version>.zip` instead. The build is signed with a development certificate, not notarized: on another Mac, right-click Open once, or run `xattr -dr com.apple.quarantine /Applications/Shima.app`. Launch at login and the Spotify Automation grant need the app in `/Applications` signed with the same identity every time (the install script refuses an ad-hoc rebuild over a certificate-signed install).
 
 Check scripts (run with the app running): `scripts/verify-alignment.sh` (panel vs notch), `scripts/verify-focus.sh` (focus never stolen), `scripts/verify-idle.sh` (60 s idle CPU and memory), `scripts/watch-hover.sh` (live hover and frame log).
 
@@ -35,4 +39,4 @@ Check scripts (run with the app running): `scripts/verify-alignment.sh` (panel v
 | `Sources/Shima` | The accessory app: SwiftUI in a borderless, non-activating `NSPanel` |
 | `Sources/shimactl` | CLI the Claude Code hooks will call (`shimactl event <name>`, always exits 0) |
 | `Tests/ShimaCoreTests` | Swift Testing tests |
-| `scripts/` | `bundle.sh`, `run.sh`, and the `verify-*` / `watch-hover` check scripts |
+| `scripts/` | `bundle.sh`, `run.sh`, `install.sh`, `package.sh`, and the `verify-*` / `watch-hover` check scripts |

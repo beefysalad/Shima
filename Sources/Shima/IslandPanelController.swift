@@ -153,7 +153,16 @@ final class IslandPanelController {
 
     private func setPanelFrame(expanded: Bool, live: Bool) {
         let frame = IslandLayout.panelFrame(notch: notch, live: live, expanded: expanded)
-        panel?.setFrame(frame, display: true)
+        // Settle the new container before starting the shape's spring. Otherwise
+        // SwiftUI can animate the pending resize/recentering along with the shape,
+        // making an opening look like it sweeps sideways from the old narrow frame.
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            panel?.setFrame(frame, display: false, animate: false)
+            trackingView.layoutSubtreeIfNeeded()
+            hostingView.layoutSubtreeIfNeeded()
+        }
         Log.layout.info("frame \(expanded ? "expanded" : "idle", privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public) live=\(live, privacy: .public)")
         refreshHotRect()
     }

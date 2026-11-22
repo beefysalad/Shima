@@ -1,6 +1,6 @@
 # shima
 
-Personal macOS notch app (free Dynamic Island clone). Design: `docs/2026-11-20-notch-design.md` (section 8 is the M1 Spotify design). Mockup (reference only, do not modify): `mockup/index.html`.
+Personal macOS notch app (free Dynamic Island clone). Design: `docs/2026-11-20-notch-design.md` (section 8 is the M1 Spotify design). Mockup: `mockup/index.html` is the approved visual reference; the real UI must match it, and UI changes start by updating it.
 
 ## Status
 M0 (island shell), M1 (Spotify) and the Settings window are built, reviewed and accepted (records in `docs/superpowers/*-acceptance.md`). Next: M2, Claude Code session state. Still open from M0: the external-monitor and clamshell checks (criterion 8). `shimactl` is a stub until M2.

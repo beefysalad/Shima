@@ -42,8 +42,19 @@ import ShimaCore
             return true
         }
         let notch = CGRect(x: 646, y: 924, width: 179, height: 32)
+        // Calendar tab with a fake client: the check never touches EventKit or asks for permission.
+        let calendarClient = FakeCalendarClient(eventsAccess: .authorized, remindersAccess: .authorized)
+        let calendarCoordinator = CalendarCoordinator(client: calendarClient, calendar: .autoupdatingCurrent, now: { Date() })
+        state.addTabContextObserver { mode, tab in calendarCoordinator.setContext(mode: mode, tab: tab, screenAvailable: true) }
+        let startOfToday = Calendar.autoupdatingCurrent.startOfDay(for: Date())
+        calendarClient.events = (1...5).map {
+            CalendarEvent(id: "e\($0)", title: "Event \($0)", start: startOfToday.addingTimeInterval(Double($0) * 3600),
+                          end: startOfToday.addingTimeInterval(Double($0) * 3600 + 1800), isAllDay: false, colorRGB: [0.3, 0.6, 1])
+        }
+        calendarClient.reminders = [ReminderItem(id: "r1", title: "Reminder", due: startOfToday, isCompleted: false)]
         let host = NSHostingView(rootView: IslandView(state: state, media: media,
-            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}, camera: camera))
+            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}, camera: camera,
+            calendar: calendarCoordinator))
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 245, height: 32),
             styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false
@@ -129,6 +140,46 @@ import ShimaCore
         check(!denied.rows(in: 50..<300, ys: 85..<110, matching: isGear).isEmpty,
               "denied camera must show inline recovery text")
         print("camera preview 258x146 + control column, unchanged silhouette/home button, denied text PASS")
+
+        // Calendar tab: same root, header icon drawn, notch zone empty, grid inside the island even with six weeks.
+        func notBlack(_ c: NSColor) -> Bool { c.alphaComponent > 0.9 && (c.redComponent > 0.12 || c.greenComponent > 0.12 || c.blueComponent > 0.12) }
+        func isAccent(_ c: NSColor) -> Bool { c.alphaComponent > 0.9 && c.redComponent > 0.7 && c.redComponent - c.blueComponent > 0.35 && c.greenComponent > 0.2 && c.greenComponent < 0.65 }
+        let shiftX = (436 - IslandLayout.expanded.width) / 2
+        state.selectedTab = .calendar
+        host.layoutSubtreeIfNeeded()
+        let calendarPixels = render(host)
+        check(calendarPixels.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200, "calendar must preserve expanded silhouette")
+        let calendarIcon = NowPlayingLayout.tabRect(.calendar).offsetBy(dx: shiftX, dy: 0)
+        let calendarGlyph = calendarPixels.rows(in: Int(calendarIcon.minX)..<Int(calendarIcon.maxX), ys: 0..<32, matching: isGear)
+        check(!calendarGlyph.isEmpty && calendarGlyph.lowerBound >= Int(calendarIcon.minY) && calendarGlyph.upperBound <= Int(calendarIcon.maxY),
+              "calendar icon glyph rows \(calendarGlyph) outside \(calendarIcon)")
+        check(calendarPixels.span(in: Int(110.5 + shiftX)..<Int(289.5 + shiftX), ys: 0..<32, matching: notBlack).isEmpty,
+              "calendar tab must leave the notch zone empty")
+        check(calendarPixels.span(in: Int(CalendarLayout.gridOrigin.x + shiftX)..<Int(386 + shiftX), ys: 72..<190, matching: isAccent).count > 8,
+              "calendar must draw today's accent circle in the grid")
+        let leftRows = calendarPixels.span(in: Int(18 + shiftX)..<Int(176 + shiftX), ys: 90..<190, matching: notBlack)
+        check(!leftRows.isEmpty && leftRows.first! >= 90 && leftRows.last! < 186, "calendar rows must sit in y 90..186, got \(leftRows)")
+        let grid = calendarPixels.span(in: Int(196 + shiftX)..<Int(386 + shiftX), ys: 60..<200, matching: notBlack)
+        check(grid.last! < 187, "calendar grid must end by y 186, got \(grid)")
+        // Six-week month (May 2026 needs 6 rows) and the denied state.
+        for _ in 0..<12 { calendarCoordinator.showMonth(offset: -1) }
+        host.layoutSubtreeIfNeeded()
+        let browsed = render(host)
+        let browsedGrid = browsed.span(in: Int(196 + shiftX)..<Int(386 + shiftX), ys: 60..<200, matching: notBlack)
+        check(browsedGrid.last! < 187, "browsed months must keep the grid by y 186, got \(browsedGrid)")
+        calendarCoordinator.goToToday()
+        calendarClient.eventsAccess = .denied
+        calendarClient.remindersAccess = .denied
+        calendarCoordinator.refreshAccess()
+        host.layoutSubtreeIfNeeded()
+        let deniedCalendar = render(host)
+        let notice = deniedCalendar.span(in: Int(18 + shiftX)..<Int(176 + shiftX), ys: 92..<180, matching: notBlack)
+        check(!notice.isEmpty && notice.last! < 180, "denied calendar must show the two notices in y 92..180, got \(notice)")
+        print("calendar tab: silhouette, header icon \(calendarIcon), empty notch zone, accent today circle, rows y90..186, six-week grid by y186, denied notices PASS")
+        calendarClient.eventsAccess = .authorized
+        calendarClient.remindersAccess = .authorized
+        calendarCoordinator.refreshAccess()
+        state.selectedTab = .music
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
         let hiddenCamera = render(host)
@@ -202,6 +253,16 @@ import ShimaCore
         }
 
         func rows(in xs: Range<Int>, ys: Range<Int>? = nil, matching predicate: (NSColor) -> Bool) -> Range<Int> {
+            let r = span(in: xs, ys: ys, matching: predicate)
+            if let first = r.first, let last = r.last {
+                precondition(r.count == last - first + 1, "Pixel rows must be contiguous: \(r)")
+                return first..<(last + 1)
+            }
+            return 0..<0
+        }
+
+        /// Every matching row, not necessarily contiguous (text with gaps between lines).
+        func span(in xs: Range<Int>, ys: Range<Int>? = nil, matching predicate: (NSColor) -> Bool) -> [Int] {
             let scaleX = CGFloat(bitmap.pixelsWide) / size.width
             let scaleY = CGFloat(bitmap.pixelsHigh) / size.height
             var matches: [Int] = []
@@ -212,9 +273,7 @@ import ShimaCore
                     if predicate(color) { matches.append(y); break }
                 }
             }
-            guard let first = matches.first, let last = matches.last else { return 0..<0 }
-            precondition(matches.count == last - first + 1, "Pixel rows must be contiguous: \(matches)")
-            return first..<(last + 1)
+            return matches
         }
     }
 }

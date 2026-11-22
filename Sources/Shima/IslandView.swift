@@ -59,75 +59,77 @@ struct IslandView: View {
         }
         .overlay(alignment: .top) {
             if state.mode == .expanded && state.selectedTab == .camera, let camera {
-                CameraContent(service: camera)
+                CameraContent(service: camera, state: state)
             }
         }
         .overlay(alignment: .top) {
-            HeaderTabIcon(state: state)
-                .opacity(state.mode == .expanded ? 1 : 0)
-                .allowsHitTesting(state.mode == .expanded)
-        }
-        .overlay(alignment: .top) {
-            SettingsGear(action: onSettings)
+            HeaderTabIcon(state: state, onSettings: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)
         }
     }
 }
 
-/// The settings gear of the open island: island-sized so it never changes the layout, one button at `settingsButton`.
-struct SettingsGear: View {
-    let action: @MainActor () -> Void
+/// Outlined 24-unit glyphs copied from mockup/index.html (stroke 1.7, round caps and joins).
+enum HeaderGlyph { case home, music, camera }
 
-    var body: some View {
-        let r = NowPlayingLayout.settingsButton
-        ZStack(alignment: .topLeading) {
-            Button { action() } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.white.opacity(0.7))
-                    .frame(width: r.width, height: r.height)
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(SettingsText.windowTitle)
-            .frame(width: r.width, height: r.height)
-            .position(x: r.midX, y: r.midY)
+struct HeaderGlyphShape: Shape {
+    let glyph: HeaderGlyph
+
+    func path(in rect: CGRect) -> Path {
+        let k = min(rect.width, rect.height) / 24
+        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: rect.minX + x * k, y: rect.minY + y * k) }
+        func circle(_ x: CGFloat, _ y: CGFloat, _ r: CGFloat) -> CGRect { CGRect(x: rect.minX + (x - r) * k, y: rect.minY + (y - r) * k, width: 2 * r * k, height: 2 * r * k) }
+        var path = Path()
+        switch glyph {
+        case .home:
+            path.move(to: p(4, 11)); path.addLine(to: p(12, 4)); path.addLine(to: p(20, 11)); path.addLine(to: p(20, 20))
+            path.addLine(to: p(15, 20)); path.addLine(to: p(15, 14)); path.addLine(to: p(9, 14)); path.addLine(to: p(9, 20))
+            path.addLine(to: p(4, 20)); path.closeSubpath()
+        case .music:
+            path.move(to: p(9, 18)); path.addLine(to: p(9, 6)); path.addLine(to: p(19, 4)); path.addLine(to: p(19, 16))
+            path.addEllipse(in: circle(6.5, 18, 2.5)); path.addEllipse(in: circle(16.5, 16, 2.5))
+        case .camera:
+            path.move(to: p(4, 8)); path.addLine(to: p(7, 8)); path.addLine(to: p(8.5, 6)); path.addLine(to: p(15.5, 6))
+            path.addLine(to: p(17, 8)); path.addLine(to: p(20, 8)); path.addLine(to: p(20, 19)); path.addLine(to: p(4, 19)); path.closeSubpath()
+            path.addEllipse(in: circle(12, 13, 3.5))
         }
-        .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
+        return path
     }
 }
 
-/// Island-sized overlay preserves the root layout and the original header position.
+/// The header strip left of the notch, as in the mockup: Home (opens Settings), Music, Camera.
+/// Island-sized overlay, so it never changes the layout.
 struct HeaderTabIcon: View {
     let state: AppState
+    let onSettings: @MainActor () -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
+            headerButton(.home, rect: NowPlayingLayout.settingsButton, selected: false, label: SettingsText.windowTitle) { onSettings() }
             ForEach([IslandTab.music, .camera], id: \.self) { tab in
-                let r = NowPlayingLayout.tabRect(tab)
-                Button {
+                headerButton(tab == .music ? .music : .camera, rect: NowPlayingLayout.tabRect(tab),
+                             selected: state.selectedTab == tab, label: tab == .music ? "Music" : "Camera") {
                     state.selectedTab = tab
                     Log.camera.info("camera tab clicked tab=\(tab.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public)")
-                } label: {
-                    Group {
-                        if tab == .music {
-                            BrandLogo(name: "SpotifyWhite").frame(width: 21, height: 21)
-                        } else {
-                            Image(systemName: "camera.fill").font(.system(size: 15))
-                        }
-                    }
-                    .foregroundStyle(.white.opacity(state.selectedTab == tab ? 1 : 0.65))
-                    .frame(width: r.width, height: r.height)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(state.selectedTab == tab ? 0.13 : 0)))
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(tab == .music ? "Music" : "Camera")
-                .accessibilityAddTraits(state.selectedTab == tab ? .isSelected : [])
-                .position(x: r.midX, y: r.midY)
             }
         }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
+    }
+
+    private func headerButton(_ glyph: HeaderGlyph, rect r: CGRect, selected: Bool, label: String, action: @escaping @MainActor () -> Void) -> some View {
+        Button { action() } label: {
+            HeaderGlyphShape(glyph: glyph)
+                .stroke(Color.white.opacity(selected ? 1 : 0.52), style: StrokeStyle(lineWidth: 1.05, lineCap: .round, lineJoin: .round))
+                .frame(width: 14, height: 14)
+                .frame(width: r.width, height: r.height)
+                .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(selected ? 0.13 : 0)))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .position(x: r.midX, y: r.midY)
     }
 }

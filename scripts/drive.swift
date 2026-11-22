@@ -34,8 +34,17 @@ for raw in CommandLine.arguments.dropFirst().joined(separator: ";").split(separa
             if down { wait(20) }
         }
     case "camera" where w.count > 1:
+        let command: String
+        if w[1] == "quit" {
+            guard w.count == 3, Int32(w[2]) != nil else {
+                stamp("camera quit requires the target app PID"); exit(2)
+            }
+            // The scoped object is deliberately not plain "quit": older fake
+            // instances must also ignore this command rather than terminate.
+            command = "quit:" + w[2]
+        } else { command = w[1] }
         DistributedNotificationCenter.default().postNotificationName(
-            .init("local.shima.fake-camera"), object: w[1], userInfo: nil, deliverImmediately: true)
+            .init("local.shima.fake-camera"), object: command, userInfo: nil, deliverImmediately: true)
         wait(5)
     case "fake" where w.count > 1:
         DistributedNotificationCenter.default().postNotificationName(

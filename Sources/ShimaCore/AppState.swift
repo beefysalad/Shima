@@ -3,7 +3,15 @@ import Observation
 
 @Observable @MainActor public final class AppState {
     public var mode: IslandMode = .collapsed {
-        didSet { onCameraContextChange?(mode, selectedTab) }
+        didSet {
+            if mode == .collapsed && selectedTab != .music {
+                // Reopening by hover must never implicitly reactivate the camera.
+                // The selectedTab observer delivers the single collapsed context.
+                selectedTab = .music
+            } else {
+                onCameraContextChange?(mode, selectedTab)
+            }
+        }
     }
     public var selectedTab: IslandTab = .music {
         didSet { onCameraContextChange?(mode, selectedTab) }

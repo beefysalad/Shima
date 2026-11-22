@@ -39,7 +39,7 @@ import Testing
         #expect(!camera.model.isRunning)
     }
 
-    @Test(arguments: ["screen lock", "screen sleep"])
+    @Test(arguments: ["screen lock", "screen sleep", "inactive user session"])
     func unavailableScreenStopsAndWakeRestarts(_ reason: String) {
         let client = FakeCameraClient(permission: .authorized)
         let camera = CameraCoordinator(client: client)
@@ -146,6 +146,49 @@ import Testing
         #expect(!camera.model.isRunning)
     }
 
+    @Test func collapseResetsCameraSelectionBeforeHoverReopens() {
+        let state = AppState()
+        let client = FakeCameraClient(permission: .authorized)
+        let camera = CameraCoordinator(client: client)
+        state.onCameraContextChange = { mode, tab in
+            camera.setContext(mode: mode, tab: tab, screenAvailable: true)
+        }
+        state.mode = .expanded
+        state.selectedTab = .camera
+        #expect(client.startCount == 1)
+        state.mode = .collapsed
+        #expect(state.selectedTab == .music)
+        #expect(client.stopCount == 1)
+        state.mode = .expanded
+        #expect(client.startCount == 1)
+        #expect(!camera.model.isRunning)
+        state.selectedTab = .camera
+        #expect(client.startCount == 2)
+    }
+
+    @Test func latePermissionAfterCollapseAndHoverNeedsExplicitCameraClick() {
+        for grantBeforeHover in [true, false] {
+            let state = AppState()
+            let client = FakeCameraClient(requestResult: nil)
+            let camera = CameraCoordinator(client: client)
+            state.onCameraContextChange = { mode, tab in
+                camera.setContext(mode: mode, tab: tab, screenAvailable: true)
+            }
+            state.mode = .expanded
+            state.selectedTab = .camera
+            #expect(client.requestCount == 1)
+            state.mode = .collapsed
+            if grantBeforeHover { client.completePermission(.authorized) }
+            state.mode = .expanded
+            if !grantBeforeHover { client.completePermission(.authorized) }
+            #expect(client.startCount == 0)
+            #expect(state.selectedTab == .music)
+            state.selectedTab = .camera
+            #expect(client.startCount == 1)
+            #expect(client.requestCount == 1)
+        }
+    }
+
     @Test func appStateDeliversEveryTransitionSynchronously() {
         let state = AppState()
         var transitions: [(IslandMode, IslandTab)] = []
@@ -155,6 +198,6 @@ import Testing
         state.mode = .collapsed
         #expect(transitions.count == 4)
         #expect(transitions.last?.0 == .collapsed)
-        #expect(transitions.last?.1 == .camera)
+        #expect(transitions.last?.1 == .music)
     }
 }

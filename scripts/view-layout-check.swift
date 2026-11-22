@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import SwiftUI
 import ShimaCore
 
@@ -6,6 +7,26 @@ import ShimaCore
 @main struct ViewLayoutCheck {
     @MainActor static func main() {
         NSApplication.shared.setActivationPolicy(.prohibited)
+        // Replacing a root view can mount a new host before dismantling the old
+        // one. Use an unattached layer: this regression opens no capture device.
+        let sharedPreview = AVCaptureVideoPreviewLayer()
+        let oldPreviewHost = CameraPreviewNSView(preview: sharedPreview)
+        oldPreviewHost.frame = CGRect(x: 0, y: 0, width: 100, height: 50)
+        oldPreviewHost.layout()
+        let newPreviewHost = CameraPreviewNSView(preview: sharedPreview)
+        newPreviewHost.frame = CGRect(x: 0, y: 0, width: 332, height: 118)
+        newPreviewHost.layout()
+        let mountedFrame = sharedPreview.frame
+        oldPreviewHost.layout()
+        oldPreviewHost.setMirrored(false)
+        CameraPreview.dismantleNSView(oldPreviewHost, coordinator: ())
+        check(sharedPreview.superlayer === newPreviewHost.layer,
+              "old preview host must not detach a replacement host's layer")
+        check(sharedPreview.frame == mountedFrame && mountedFrame.size == newPreviewHost.bounds.size,
+              "old preview host must not resize a replacement host's layer")
+        CameraPreview.dismantleNSView(newPreviewHost, coordinator: ())
+        check(sharedPreview.superlayer == nil, "current preview host must detach its own layer")
+        print("preview replacement host ownership PASS (no capture session)")
         let state = AppState()
         state.live = true
         state.spotifyAvailability = .running
@@ -80,10 +101,10 @@ import ShimaCore
             check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
         }
         let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
-        let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear)
+        let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear)
         check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
-              "gear glyph rows \(gear) outside \(gearRect)")
-        print("gear at \(gearRect): glyph rows \(gear) PASS")
+              "home glyph rows \(gear) outside \(gearRect)")
+        print("home button at \(gearRect): glyph rows \(gear) PASS")
         let tabRect = NowPlayingLayout.tabIcon.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
         let tabGlyph = expanded.rows(in: Int(tabRect.minX)..<Int(tabRect.maxX), ys: 0..<32, matching: isGear)
         check(!tabGlyph.isEmpty && tabGlyph.lowerBound >= Int(tabRect.minY) && tabGlyph.upperBound <= Int(tabRect.maxY),
@@ -99,29 +120,29 @@ import ShimaCore
         } == Int(previewRect.minY)..<Int(previewRect.maxY), "camera gradient must fill preview height")
         check(cameraPixels.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200,
               "camera must preserve expanded silhouette")
-        check(cameraPixels.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear) == gear,
-              "camera must leave gear unchanged")
+        check(cameraPixels.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear) == gear,
+              "camera must leave the home button unchanged")
         camera.fake?.permission = .denied
         camera.coordinator.refreshPermission()
         host.layoutSubtreeIfNeeded()
         let denied = render(host)
-        check(!denied.rows(in: 50..<300, ys: 60..<100, matching: isGear).isEmpty,
+        check(!denied.rows(in: 50..<300, ys: 85..<110, matching: isGear).isEmpty,
               "denied camera must show inline recovery text")
-        print("camera preview 332x118, unchanged silhouette/gear, denied text PASS")
+        print("camera preview 258x146 + control column, unchanged silhouette/home button, denied text PASS")
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
         let hiddenCamera = render(host)
-        check(hiddenCamera.rows(at: previewRect.midX, ys: 36..<154) { $0.greenComponent > 0.15 && $0.blueComponent > 0.2 }.isEmpty,
+        check(hiddenCamera.rows(at: previewRect.midX, ys: 40..<186) { $0.greenComponent > 0.15 && $0.blueComponent > 0.2 }.isEmpty,
               "collapsed camera must be hidden")
         state.selectedTab = .music
         state.mode = .expanded
         host.layoutSubtreeIfNeeded()
-        // The gear is an expanded-only control: the same frame rendered collapsed must show no gear pixel.
+        // The home button is an expanded-only control: the same frame rendered collapsed must show no glyph pixel.
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
         let collapsedSameFrame = render(host)
-        check(collapsedSameFrame.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear).isEmpty,
-              "collapsed island must not show the gear (436x208 frame, gear area)")
+        check(collapsedSameFrame.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear).isEmpty,
+              "collapsed island must not show the home button (436x208 frame)")
         state.mode = .expanded
         host.layoutSubtreeIfNeeded()
         print("expanded 436x208: silhouette 0..<200, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 50..<154 PASS")

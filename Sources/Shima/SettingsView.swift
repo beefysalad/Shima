@@ -75,11 +75,7 @@ struct SettingsView: View {
             ForEach(SettingsPage.allCases, id: \.self) { item in
                 Button { page = item } label: {
                     HStack(spacing: 9) {
-                        if item == .music {
-                            BrandLogo(name: "SpotifyWhite").frame(width: 21, height: 21)
-                        } else {
-                            Image(systemName: item.symbol).frame(width: 21, height: 21)
-                        }
+                        Image(systemName: item.symbol).frame(width: 21, height: 21)
                         Text(item.rawValue)
                     }
                         .font(.system(size: 13, weight: page == item ? .semibold : .regular))

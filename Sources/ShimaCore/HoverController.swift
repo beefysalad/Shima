@@ -27,6 +27,10 @@
         handle(.collapseFinished(generation: generation))
     }
 
+    public func idleGeometryChanged() {
+        handle(.idleGeometryChanged)
+    }
+
     public func reset() {
         handle(.reset)
     }

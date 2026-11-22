@@ -50,6 +50,10 @@ public enum IslandLayout {
         return CGRect(x: notch.midX - width / 2, y: notch.maxY - height, width: width, height: height)
     }
 
+    /// Returns the hot region in panel-local coordinates.
+    /// - Parameter live: The TARGET live state for idle geometry, independent of
+    ///   whether the wings have been applied or animated in. Pass the target when
+    ///   resizing the panel so a newly added wing is immediately hoverable.
     public static func hotRect(_ region: HotRegion, notch: CGRect, live: Bool = false, panelFrame: CGRect) -> CGRect {
         switch region {
         case .idle:

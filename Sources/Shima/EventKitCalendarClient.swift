@@ -57,7 +57,7 @@ import ShimaCore
             return CalendarEvent(
                 id: "\(id):\(occurrence.timeIntervalSinceReferenceDate)",
                 title: event.title ?? "", start: start, end: end, isAllDay: event.isAllDay,
-                colorRGB: Self.rgbComponents(of: event.calendar.cgColor))
+                colorRGB: Self.rgbComponents(of: event.calendar?.cgColor))
         }
     }
 

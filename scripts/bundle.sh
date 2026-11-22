@@ -33,6 +33,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSCameraUsageDescription</key><string>shima shows a live camera preview while the Camera tab is open.</string>
+    <key>NSCalendarsFullAccessUsageDescription</key><string>shima shows your calendar events while the Calendar tab is open.</string>
+    <key>NSRemindersFullAccessUsageDescription</key><string>shima shows due reminders and lets you complete them from the Calendar tab.</string>
     <key>NSAppleEventsUsageDescription</key><string>shima shows what Spotify is playing and sends it play, pause, next and previous when you click the island's buttons.</string>
 </dict>
 </plist>

@@ -19,16 +19,19 @@ public enum NowPlayingLayout {
     public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 20) }
 
     /// Header icons, upper left of the open island in the menu-bar-height strip left of the notch
-    /// (the notch occupies x 110.5..289.5 of the 400 pt island): Home (opens Settings), Music, Camera.
-    /// 24 x 22 pt hit areas with a 14 pt outlined glyph, matching mockup/index.html.
-    public static let tabIcon = CGRect(x: 42, y: 5, width: 24, height: 22)
+    /// (the notch occupies x 110.5..289.5 of the 400 pt island): Home (opens Settings), then one icon per tab
+    /// in `IslandTab.allCases` order (Music, Camera, Calendar). 22 x 22 pt hit areas on a 24 pt pitch with a 14 pt
+    /// outlined glyph, matching mockup/index.html. The last icon ends at x 106, clear of the notch.
+    public static let headerPitch: CGFloat = 24
+    public static let tabIcon = CGRect(x: 36, y: 5, width: 22, height: 22)
 
     public static func tabRect(_ tab: IslandTab) -> CGRect {
-        tabIcon.offsetBy(dx: tab == .camera ? 28 : 0, dy: 0)
+        let index = IslandTab.allCases.firstIndex(of: tab) ?? 0
+        return tabIcon.offsetBy(dx: CGFloat(index) * headerPitch, dy: 0)
     }
 
     /// Home button: first icon of the header. It opens the Settings window (it replaces the old gear).
-    public static let settingsButton = CGRect(x: 14, y: 5, width: 24, height: 22)
+    public static let settingsButton = CGRect(x: 12, y: 5, width: 22, height: 22)
 
     /// Camera tab, as in the mockup: the preview on the left, a column of Live / Mirror / Switch camera / Close / note on the right.
     public static let cameraPreview = CGRect(x: 14, y: 40, width: 258, height: 146)

@@ -6,21 +6,29 @@ front() { lsappinfo info -only name "$(lsappinfo front)" | sed 's/.*="\(.*\)"/\1
 if [[ "${1:-}" == "--clicks" ]]; then
   # Hands-off, fake mode only: real clicks on the island buttons must not change the frontmost app.
   cd "$(dirname "$0")/.."
-  dir="$(mktemp -d -t shima-focus)"
+  mkdir -p .build
+  dir="$(mktemp -d .build/shima-focus.XXXXXX)"
+  pid=""
+  for candidate in $(pgrep -x Shima || true); do
+    [[ "$(ps -o command= -p "$candidate" || true)" != "$PWD/dist/Shima.app/Contents/MacOS/Shima" ]] || pid="$candidate"
+  done
+  [[ -n "$pid" ]] || { echo "Start this checkout with SHIMA_FAKE_SPOTIFY=paused scripts/run.sh"; exit 2; }
   scripts/with-log.sh "$dir/ping.log" -- swift scripts/drive.swift "fake ping" >/dev/null
-  grep -q 'fake ping' "$dir/ping.log" || { echo "not in fake mode (SHIMA_FAKE_SPOTIFY=playing scripts/run.sh)"; exit 2; }
-  read -r music camera header mid hover away mirrorX mirrorY previousX previousY playX playY nextX nextY blankX blankY < <(scripts/island-input-geometry.sh)
+  grep -q "Shima\[$pid:.*\[local.shima:spotify\] fake ping" "$dir/ping.log" || { echo "not in fake mode (SHIMA_FAKE_SPOTIFY=playing scripts/run.sh)"; exit 2; }
+  read -r music camera header mid hover away mirrorX mirrorY previousX previousY playX playY nextX nextY blankX blankY calendar < <(scripts/island-input-geometry.sh)
   before="$(front)"
-  scripts/with-log.sh "$dir/clicks.log" -- swift scripts/drive.swift "fake ping; fake playing; move $mid $away; sleep 500; move $mid $hover; sleep 700; click $music $header; sleep 200; click $previousX $previousY; sleep 400; click $playX $playY; sleep 400; click $nextX $nextY; sleep 400; click $blankX $blankY; sleep 300; move $mid $away; sleep 1500" >/dev/null
+  scripts/with-log.sh "$dir/clicks.log" -- swift scripts/drive.swift "fake ping; fake playing; move $mid $away; sleep 500; move $mid $hover; sleep 700; click-owned $pid $music $header; sleep 200; click-owned $pid $previousX $previousY; sleep 400; click-owned $pid $playX $playY; sleep 400; click-owned $pid $nextX $nextY; sleep 400; click-owned $pid $blankX $blankY; sleep 300; move $mid $away; sleep 1500" > "$dir/drive.log" || { cat "$dir/drive.log" >&2; exit 2; }
   after="$(front)"
-  n="$(grep -c 'spotify command [A-Za-z]* active=false key=false' "$dir/clicks.log" || true)"
+  target_log="$dir/checkout.log"
+  grep -F "Shima[$pid:" "$dir/clicks.log" > "$target_log" || true
+  n="$(grep -c 'spotify command [A-Za-z]* active=false key=false' "$target_log" || true)"
   fail=""
-  [[ "$n" == 3 ]] || fail="expected 3 commands with active=false key=false, got $n ($dir/clicks.log)"
-  if grep -qE 'spotify command .*(active=true|key=true)' "$dir/clicks.log"; then fail="a command ran with active=true or key=true"; fi
-  if grep -q 'app became active' "$dir/clicks.log"; then fail="app became active"; fi
+  [[ "$n" == 3 ]] || fail="expected 3 commands with active=false key=false, got $n ($target_log)"
+  if grep -qE 'spotify command .*(active=true|key=true)' "$target_log"; then fail="a command ran with active=true or key=true"; fi
+  if grep -q 'app became active' "$target_log"; then fail="app became active"; fi
   [[ "$before" == "$after" ]] || fail="frontmost changed: $before -> $after"
   [[ "$after" != "Shima" ]] || fail="Shima is frontmost"
-  pgrep -x Shima >/dev/null || fail="Shima is not running"
+  kill -0 "$pid" 2>/dev/null || fail="Checkout Shima is not running"
   if [[ -n "$fail" ]]; then echo "FAIL $fail"; exit 1; fi
   echo "PASS clicks: 3 commands, frontmost unchanged: $after"
   exit 0

@@ -18,12 +18,19 @@ import ShimaCore
         let previous = NowPlayingLayout.controlRect(.previous)
         let play = NowPlayingLayout.controlRect(.playPause)
         let next = NowPlayingLayout.controlRect(.next)
+        if CommandLine.arguments.dropFirst().contains("--calendar-controls") {
+            let previous = CalendarLayout.previousMonth
+            let next = CalendarLayout.nextMonth
+            print(left + previous.midX, left + next.midX, top + previous.midY)
+            return
+        }
         print(left + music.midX, left + camera.midX, top + music.midY,
               mid, top + notch.height / 2, top + IslandLayout.expanded.height + 200,
               left + mirror.midX, top + mirror.midY,
               left + previous.midX, top + previous.midY,
               left + play.midX, top + play.midY,
               left + next.midX, top + next.midY,
-              left + NowPlayingLayout.artwork.midX, top + NowPlayingLayout.artwork.midY)
+              left + NowPlayingLayout.artwork.midX, top + NowPlayingLayout.artwork.midY,
+              left + NowPlayingLayout.tabRect(.calendar).midX)
     }
 }

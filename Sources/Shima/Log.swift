@@ -1,6 +1,7 @@
 import os
 
 enum Log {
+    static let calendar = Logger(subsystem: "local.shima", category: "calendar")
     static let camera = Logger(subsystem: "local.shima", category: "camera")
     static let hover = Logger(subsystem: "local.shima", category: "hover")
     static let layout = Logger(subsystem: "local.shima", category: "layout")

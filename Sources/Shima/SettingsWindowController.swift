@@ -39,12 +39,26 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         self.window = window
         model.refresh()
         Log.settings.info("settings refresh loginItem=\(String(describing: self.model.loginItemStatus), privacy: .public) spotify=\(self.model.spotifyRow.kind.rawValue, privacy: .public) eq=\(self.model.equalizerMode.rawValue, privacy: .public) loginControl=\(self.model.loginItem.isEnabled ? "enabled" : "disabled", privacy: .public) version=\"\(self.model.versionText, privacy: .public)\" signing=\"\(self.model.signingText, privacy: .public)\"")
-        if !window.isVisible { window.center() }
+        if !window.isVisible { placeOnPointerScreen(window) }
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
         DispatchQueue.main.async { [weak window] in
             Log.settings.info("settings opened via \(entry.rawValue, privacy: .public) created=\(created, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(window?.isKeyWindow ?? false, privacy: .public)")
         }
+    }
+
+    /// `center()` uses the window's current screen, so first move it to the screen under the pointer
+    /// (else the island's screen, else the main one).
+    private func placeOnPointerScreen(_ window: NSWindow) {
+        let screens = NSScreen.screens
+        let islandFrame = ScreenLocator.target().flatMap { ScreenLocator.screen(id: $0.id) }?.frame
+        let islandIndex = islandFrame.flatMap { f in screens.firstIndex { $0.frame == f } }
+        let mainIndex = NSScreen.main.flatMap { m in screens.firstIndex { $0.frame == m.frame } }
+        if let i = ScreenPick.choose(pointer: NSEvent.mouseLocation, frames: screens.map(\.frame), island: islandIndex, main: mainIndex) {
+            let f = screens[i].visibleFrame
+            window.setFrameOrigin(NSPoint(x: f.midX - window.frame.width / 2, y: f.midY - window.frame.height / 2))
+        }
+        window.center()
     }
 
     func windowWillClose(_ notification: Notification) {

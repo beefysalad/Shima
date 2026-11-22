@@ -100,7 +100,8 @@ SW
 }
 
 if (( login )); then
-  codesign -dvv "$APP" 2>&1 | grep -q '^Authority=Apple Development' \
+  sig="$(codesign -dvv "$APP" 2>&1 || true)"   # capture first: `grep -q` closing the pipe early fails under pipefail
+  grep -q '^Authority=Apple Development' <<< "$sig" \
     || { echo "$APP is not signed with the Apple Development identity (SHIMA_SIGN_ID=... scripts/install.sh)"; exit 2; }
   launch SHIMA_FAKE_SPOTIFY=paused SHIMA_SETTINGS_DRY_OPEN=1
   m="$(mark)"; reopen || bad "L1 window bounds"

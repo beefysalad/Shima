@@ -381,6 +381,46 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .peek-batt { display: flex; align-items: center; gap: 8px; flex: none; font: 600 12px var(--font); font-variant-numeric: tabular-nums; color: var(--i-ink2); }
 .peek-batt.low { color: var(--danger); }
 
+
+/* --- Home --- */
+.home { display: grid; grid-template-rows: auto 1fr; gap: 12px; height: 100%; }
+.home-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 2px 2px 0; }
+.home-date { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--claude); }
+.home-hi { font-size: 24px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin-top: 2px; }
+.home-sub { font-size: 12.5px; color: var(--i-ink2); margin-top: 3px; }
+.home-sub b { color: var(--i-ink); font-weight: 600; }
+.home-gear { width: 30px; height: 30px; border-radius: 9px; }
+.home-gear svg { width: 17px; height: 17px; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; min-height: 0; }
+.htile { display: flex; flex-direction: column; min-width: 0; padding: 14px 14px 12px; border-radius: 16px; background: var(--i-fill); border: 0; color: var(--i-ink); text-align: left; transition: background .15s; }
+.htile[data-go] { cursor: pointer; }
+.htile[data-go]:hover { background: var(--i-fill2); }
+.hlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--i-ink3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.hlabel i { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--i-ink3); font-size: 11px; }
+.hev { display: grid; grid-template-columns: 3px 1fr; gap: 10px; min-width: 0; }
+.hev .bar3 { border-radius: 2px; background: var(--c, #C86BE0); }
+.hev b { display: block; font-size: 16px; font-weight: 650; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hev em { display: block; font-style: normal; font-size: 12px; color: var(--i-ink2); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.hev em.now { color: var(--c, #C86BE0); font-weight: 650; }
+.hthen { margin-top: 12px; font-size: 12px; color: var(--i-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hthen b { color: var(--i-ink); font-weight: 600; }
+.hmuted { font-size: 12.5px; color: var(--i-ink3); line-height: 1.4; }
+.hlink { margin-top: auto; align-self: flex-start; font-size: 11.5px; font-weight: 600; color: var(--i-ink); background: var(--i-fill2); border-radius: 7px; padding: 4px 9px; }
+.hnp { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; }
+.hnp .art { width: 56px; height: 56px; border-radius: 10px; box-shadow: none; }
+.hnp b { display: block; font-size: 14px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hnp span { display: block; font-size: 12px; color: var(--i-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.hprog { height: 3px; border-radius: 2px; background: var(--i-fill2); margin-top: auto; overflow: hidden; }
+.hprog i { display: block; height: 100%; width: 41%; background: var(--i-ink); border-radius: 2px; }
+.hctl { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; }
+.hdev { display: grid; gap: 8px; }
+.hrow { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; min-width: 0; }
+.hrow .ic { width: 26px; height: 26px; border-radius: 50%; background: var(--i-fill2); display: grid; place-items: center; }
+.hrow .ic svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.hrow b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hrow em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--i-ink2); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+.hrow em.low { color: var(--danger); }
+
 /* --- Automations --- */
 .rules-wrap { display: grid; grid-template-columns: 1fr 250px; gap: 16px; height: 100%; }
 .rules { display: grid; gap: 6px; align-content: start; min-width: 0; }
@@ -554,7 +594,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                   <div class="topbar">
                     <div class="wing l" role="tablist" aria-label="Island tabs">
                       <span class="brand">shima</span>
-                      <button class="gear" data-act="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></button>
+                      <button class="tab" role="tab" data-tab="home" id="tab-home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></button>
                       <button class="tab" role="tab" data-tab="music" id="tab-music" aria-label="Music" title="Music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
                       <button class="tab" role="tab" data-tab="tray" id="tab-tray" aria-label="File tray" title="File tray"><svg viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/></svg></button>
                       <button class="tab" role="tab" data-tab="camera" id="tab-camera" aria-label="Camera" title="Camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
@@ -565,6 +605,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                     <div class="wing r" id="wingRight"></div>
                   </div>
                   <div class="body">
+                    <div class="panel" data-panel="home" id="pHome"></div>
                     <div class="panel" data-panel="music" id="pMusic"></div>
                     <div class="panel" data-panel="claude" id="pClaude" hidden></div>
                     <div class="panel" data-panel="camera" id="pCamera" hidden></div>
@@ -590,6 +631,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <div class="states" id="states">
         <button class="sbtn" data-state="idle">Idle <small>M0</small></button>
         <button class="sbtn" data-state="peek">Peek <small>M1</small></button>
+        <button class="sbtn" data-state="home">Home <small>new</small></button>
         <button class="sbtn" data-state="music">Now Playing <small>M1</small></button>
         <button class="sbtn" data-state="camera">Camera <small>new</small></button>
         <button class="sbtn" data-state="calendar">Calendar <small>new</small></button>
@@ -627,6 +669,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
           <button class="btn" data-sim="device.keyboard">Keychron K3 <code>no battery</code></button>
           <button class="btn" data-sim="device.mouse">MX Master 3S <code>64%</code></button>
           <button class="btn" data-sim="device.long">Long name <code>5%</code></button>
+          <button class="btn" data-sim="device.clear">Disconnect all</button>
         </div>
         <p class="note">Shown only while the island is collapsed; folds after 3 s; hovering it opens the island; dropped (logged) if the island is already open or Device pop-ups is off in Settings.</p>
       </div>
@@ -651,7 +694,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <h2>Keyboard and pointer</h2>
       <dl class="keys">
         <div><dt><kbd>Esc</kbd></dt><dd>Collapse the island</dd></div>
-        <div><dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Music, Tray, Camera, Calendar, (Claude), Rules</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Home, Music, Tray, Camera, Calendar, (Claude), Rules</dd></div>
         <div><dt>Hover</dt><dd>Expand; leave to collapse</dd></div>
         <div><dt>Drop</dt><dd>Drag files from Finder onto the notch. Hold <kbd>⌥</kbd> to move instead of copy</dd></div>
         <div><dt>Drag out</dt><dd>Drag a tray chip onto the desktop</dd></div>
@@ -753,7 +796,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   ];
 
   const S = {
-    mode: 'collapsed', dev: false, mirror: true, tab: 'music', pinned: false, hover: false, pulse: true,
+    mode: 'collapsed', dev: false, mirror: true, tab: 'home', pinned: false, hover: false, pulse: true,
     spotify: { on: true, playing: true, idx: 0, pos: 71 },
     sessions: SESSIONS, target: 'kaze', focused: null,
     shelf: [
@@ -774,6 +817,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     rem: [ { id: 'r1', t: 'Reply to landlord', due: 'Overdue', over: true, done: false },
            { id: 'r2', t: 'Renew passport', due: 'Today', over: false, done: false } ] };
   S.devPop = true;
+  S.devices = [ { name: 'AirPods 4', kind: 'earbuds', battery: 82 }, { name: 'Keychron K3', kind: 'keyboard', battery: null } ];
   const DEVICES = {
     airpods: { name: 'Patrick’s AirPods 4', kind: 'earbuds', battery: 82 },
     keyboard: { name: 'Keychron K3', kind: 'keyboard', battery: null },
@@ -795,6 +839,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   /* ---------- mode control ---------- */
   function setMode(mode, o = {}) {
     clearTimeout(T.auto); clearTimeout(T.leave);
+    if (mode === 'expanded' && S.mode !== 'expanded' && !o.tab) S.tab = 'home';
     if (mode === 'expanded' && (S.mode !== 'expanded' || (o.tab === 'calendar' && S.tab !== 'calendar'))) resetCal();
     S.mode = mode;
     if (o.tab) S.tab = o.tab;
@@ -822,7 +867,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     wrap.dataset.mode = S.mode;
     const attention = S.dev && S.pulse && S.sessions.some(s => s.state === 'needs');
     wrap.classList.toggle('attn', attention && S.mode !== 'expanded');
-    renderCollapsed(); renderPeek(); renderTabs(); renderWing();
+    renderCollapsed(); renderPeek(); renderTabs(); renderWing(); renderHome();
   }
 
   function renderCollapsed() {
@@ -948,6 +993,60 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     } else if (a === 'open-cal' || a === 'open-rem') { toast('Opens System Settings → Privacy'); return; }
     renderCalendar();
   });
+
+  /* ---------- Home tab: the overview, and where the island opens ---------- */
+  function renderHome() {
+    const el = $('#pHome'); if (!el) return;
+    const c = S.cal, t = TRACKS[S.spotify.idx];
+    const open = c.rem.filter(r => !r.done), over = open.filter(r => r.over).length;
+    const evs = c.denied ? [] : calEvents(CAL.today);
+    const running = evs.find(e => e.ph === 'running'), next = evs.find(e => e.ph === 'upcoming');
+    const parts = [];
+    if (running) parts.push(`<b>${esc(running.t)}</b> is on now`);
+    else if (next) parts.push(`<b>${esc(next.t)}</b> at ${next.time.split(' – ')[0]}`);
+    if (!c.denied) parts.push(open.length ? `${open.length} reminder${open.length > 1 ? 's' : ''} due${over ? ` · ${over} overdue` : ''}` : 'nothing due');
+    const sub = parts.length ? parts.join(' · ') : 'All quiet.';
+    const gearIcon = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4Z"/></svg>';
+
+    let up;
+    if (c.denied) {
+      up = `<div class="hlabel">Up next</div><div class="hmuted">Calendar access is off.</div><span class="hlink">Open Settings</span>`;
+    } else if (running || next) {
+      const e = running || next;
+      up = `<div class="hlabel">Up next <i>${running ? 'Now' : ''}</i></div>
+        <div class="hev" style="--c:${e.c}"><i class="bar3"></i><div><b>${esc(e.t)}</b><em class="${running ? 'now' : ''}">${running ? 'Until ' + e.time.split(' – ')[1] : e.time}</em></div></div>` +
+        (running && next ? `<div class="hthen">Then <b>${esc(next.t)}</b> · ${next.time.split(' – ')[0]}</div>` : '');
+    } else {
+      up = `<div class="hlabel">Up next</div><div class="hmuted">Nothing else today.</div>`;
+    }
+
+    let np;
+    if (!S.spotify.on) {
+      np = `<div class="hlabel">Now playing</div><div class="hmuted">Spotify isn’t running.</div>`;
+    } else {
+      np = `<div class="hlabel">Now playing <i>${S.spotify.playing ? 'Spotify' : 'Paused'}</i></div>
+        <div class="hnp"><div class="art" style="background:${art(t)}"></div><div><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div></div>
+        <div class="hctl"><button class="ibtn" data-sp="prev" aria-label="Previous">${ICON.prev}</button><button class="ibtn big" data-sp="toggle" aria-label="${S.spotify.playing ? 'Pause' : 'Play'}">${S.spotify.playing ? ICON.pause : ICON.play}</button><button class="ibtn" data-sp="next" aria-label="Next">${ICON.next}</button></div>`;
+    }
+
+    let dev;
+    if (!S.devices.length) {
+      dev = `<div class="hlabel">Connected</div><div class="hmuted">No Bluetooth devices connected.</div>`;
+    } else {
+      dev = `<div class="hlabel">Connected <i>${S.devices.length}</i></div><div class="hdev">` + S.devices.slice(0, 4).map(d =>
+        `<div class="hrow"><span class="ic"><svg viewBox="0 0 24 24">${DEVGLYPH[d.kind] || DEVGLYPH.other}</svg></span><b>${esc(d.name)}</b>` +
+        (d.battery != null ? `<em class="${d.battery <= 15 ? 'low' : ''}">${d.battery}%${battGlyph(d.battery)}</em>` : '<em></em>') + '</div>').join('') + '</div>';
+    }
+
+    el.innerHTML = `<div class="home">
+      <div class="home-head"><div><div class="home-date">FRIDAY 20 NOV</div><div class="home-hi">Good morning</div><div class="home-sub">${sub}</div></div>
+        <button class="gear home-gear" data-act="settings" aria-label="Settings" title="Settings">${gearIcon}</button></div>
+      <div class="tiles">
+        <div class="htile" ${c.denied ? '' : 'data-go="calendar"'} role="${c.denied ? 'group' : 'button'}">${up}</div>
+        <div class="htile" ${S.spotify.on ? 'data-go="music"' : ''}>${np}</div>
+        <div class="htile">${dev}</div>
+      </div></div>`;
+  }
 
   function renderCamera() {
     $('#pCamera').innerHTML = `<div class="cam">
@@ -1100,7 +1199,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     $('#sessPick').innerHTML = S.sessions.map(s => `<label><input type="radio" name="sess" id="pick-${s.id}" value="${s.id}" ${S.target === s.id ? 'checked' : ''}><span>${esc(s.cwd)}</span></label>`).join('');
   }
 
-  function renderAll() { renderIsland(); renderMusic(); renderCamera(); renderCalendar(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
+  function renderAll() { renderIsland(); renderHome(); renderMusic(); renderCamera(); renderCalendar(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
 
   /* ---------- sound ---------- */
   let ac;
@@ -1184,8 +1283,12 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       $('#quitBtn').textContent = S.spotify.on ? 'Quit Spotify' : 'Open Spotify';
       log(S.spotify.on ? 'spotify.launched' : 'spotify.quit', `<span class="skip">module ${S.spotify.on ? 'shown' : 'hidden'}</span>`);
       renderMusic(); renderIsland();
+    } else if (kind === 'device.clear') {
+      S.devices = []; renderHome();
+      log('device.disconnected', '<span class="skip">all devices</span>');
     } else if (kind.startsWith('device.')) {
       const d = DEVICES[kind.slice(7)];
+      S.devices = S.devices.filter(x => x.name !== d.name).concat({ name: d.name, kind: d.kind, battery: d.battery }); renderHome();
       if (!S.devPop) { log('device.connected', `<span class="skip">${esc(d.name)}: Device pop-ups is off</span>`); return; }
       if (S.mode !== 'collapsed') { log('device.connected', `<span class="skip">${esc(d.name)}: island is open, banner dropped</span>`); return; }
       S.peek = { kind: 'device', dev: d };
@@ -1246,6 +1349,8 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     if (cam) { const c = cam.dataset.cam; if (c === 'mirror') { S.mirror = !S.mirror; renderCamera(); } else if (c === 'close') { S.tab = 'music'; renderTabs(); renderStates(); } else toast('Only one camera found'); return; }
     const tab = e.target.closest('[data-tab]');
     if (tab) { if (tab.dataset.tab === 'calendar' && S.tab !== 'calendar') { resetCal(); renderCalendar(); } S.tab = tab.dataset.tab; renderTabs(); renderStates(); return; }
+    const go = e.target.closest('[data-go]');
+    if (go && !e.target.closest('[data-sp]')) { if (go.dataset.go === 'calendar' && S.tab !== 'calendar') { resetCal(); renderCalendar(); } S.tab = go.dataset.go; renderTabs(); renderStates(); return; }
     const sp = e.target.closest('[data-sp]');
     if (sp) { const a = sp.dataset.sp; if (a === 'toggle') togglePlay(); else changeTrack(a === 'next' ? 1 : -1); return; }
     const q = e.target.closest('[data-play]');
@@ -1353,7 +1458,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   $('#soundOn').addEventListener('change', e => { S.sound = e.target.checked; });
 
   /* ---------- keyboard ---------- */
-  const tabsNow = () => ['music', 'tray', 'camera', 'calendar'].concat(S.dev ? ['claude'] : [], ['rules']);
+  const tabsNow = () => ['home', 'music', 'tray', 'camera', 'calendar'].concat(S.dev ? ['claude'] : [], ['rules']);
   document.addEventListener('keydown', e => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.matches('input[type="text"], textarea')) return;

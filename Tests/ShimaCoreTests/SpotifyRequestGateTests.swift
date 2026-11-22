@@ -150,4 +150,43 @@ import Testing
         let new = g.request(pid: 9)!
         #expect(g.finish(new, currentPid: 9) == O(apply: true, next: nil))
     }
+
+    @Test func sameTrackIDBothTimesIsConsistent() {
+        #expect(SpotifySnapshotConsistency.isConsistent(firstTrackID: "a", lastTrackID: "a"))
+        #expect(SpotifySnapshotConsistency.isConsistent(firstTrackID: nil, lastTrackID: nil))
+    }
+    @Test func differingTrackIDsAreInconsistent() {
+        #expect(!SpotifySnapshotConsistency.isConsistent(firstTrackID: "a", lastTrackID: "b"))
+        #expect(!SpotifySnapshotConsistency.isConsistent(firstTrackID: "a", lastTrackID: nil))
+    }
+    @Test func consistentSnapshotIsAppliedWithoutRetry() {
+        var g = SpotifyRequestGate(); let t = g.request(pid: 7)!
+        #expect(g.finish(t, currentPid: 7, consistent: true) == O(apply: true, next: nil))
+    }
+    @Test func inconsistentSnapshotIsDiscardedAndReReadOnce() {
+        var g = SpotifyRequestGate(); let t = g.request(pid: 7)!
+        let o = g.finish(t, currentPid: 7, consistent: false)
+        #expect(o == O(apply: false, next: T(seq: 2, pid: 7)) && g.inFlight)
+        #expect(g.finish(o.next!, currentPid: 7, consistent: true) == O(apply: true, next: nil))
+    }
+    @Test func secondInconsistentSnapshotInARowDoesNotLoop() {
+        var g = SpotifyRequestGate(); let t = g.request(pid: 7)!
+        let o = g.finish(t, currentPid: 7, consistent: false)
+        let o2 = g.finish(o.next!, currentPid: 7, consistent: false)
+        #expect(o2 == O(apply: false, next: nil) && !g.inFlight)
+    }
+    @Test func retryAllowanceResetsAfterAConsistentSnapshot() {
+        var g = SpotifyRequestGate(); let t = g.request(pid: 7)!
+        let o = g.finish(t, currentPid: 7, consistent: false)
+        _ = g.finish(o.next!, currentPid: 7, consistent: true)
+        let t2 = g.request(pid: 7)!
+        #expect(g.finish(t2, currentPid: 7, consistent: false).next != nil)
+    }
+    @Test func inconsistentSnapshotAfterQuitOrInvalidateIsNotReRead() {
+        var g = SpotifyRequestGate(); let t = g.request(pid: 7)!
+        #expect(g.finish(t, currentPid: nil, consistent: false) == O(apply: false, next: nil))
+        var h = SpotifyRequestGate(); let u = h.request(pid: 7)!
+        h.invalidate()
+        #expect(h.finish(u, currentPid: 7, consistent: false) == O(apply: false, next: nil))
+    }
 }

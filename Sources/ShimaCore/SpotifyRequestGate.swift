@@ -24,6 +24,7 @@ public struct SpotifyRequestGate: Equatable, Sendable {
     private var current: Ticket?
     private var dirty = false
     private var staleThrough = 0
+    private var retried = false
 
     public init() {}
 
@@ -48,15 +49,24 @@ public struct SpotifyRequestGate: Equatable, Sendable {
     }
 
     /// Call when a request or command finishes on the owning actor.
-    public mutating func finish(_ ticket: Ticket, currentPid: Int32?) -> Outcome {
-        let apply = ticket.seq > staleThrough && ticket.pid == currentPid
+    /// Pass `consistent: false` when the snapshot read two different track ids (the track changed mid-read).
+    /// Such a snapshot is never applied and is re-read once; a second inconsistent snapshot in a row is dropped.
+    public mutating func finish(_ ticket: Ticket, currentPid: Int32?, consistent: Bool = true) -> Outcome {
         guard ticket == current else {
-            return Outcome(apply: apply, next: nil)
+            return Outcome(apply: ticket.seq > staleThrough && ticket.pid == currentPid && consistent, next: nil)
         }
+        let live = ticket.seq > staleThrough && ticket.pid == currentPid
+        let apply = live && consistent
 
         current = nil
-        let needsFollowUp = dirty
+        var needsFollowUp = dirty
         dirty = false
+        if !consistent && live && !retried {
+            retried = true
+            needsFollowUp = true
+        } else {
+            retried = false
+        }
         let next: Ticket?
         if needsFollowUp, let currentPid {
             next = request(pid: currentPid)
@@ -71,6 +81,7 @@ public struct SpotifyRequestGate: Equatable, Sendable {
     public mutating func invalidate() {
         staleThrough = nextSeq - 1
         dirty = false
+        retried = false
     }
 }
 
@@ -87,5 +98,12 @@ public enum SpotifyScriptError: Error, Equatable, Sendable {
         case -1712: self = .timeout
         default: self = .other(code: code)
         }
+    }
+}
+
+/// A snapshot reads the track id before and after the other track properties; a change in between mixes two tracks.
+public enum SpotifySnapshotConsistency {
+    public static func isConsistent(firstTrackID: String?, lastTrackID: String?) -> Bool {
+        firstTrackID == lastTrackID
     }
 }

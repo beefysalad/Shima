@@ -40,15 +40,16 @@ final class SpotifyAppleEventClient: SpotifyClient {
 
     private func run(_ ticket: SpotifyRequestGate.Ticket) {
         Log.spotify.info("spotify refresh seq=\(ticket.seq, privacy: .public) pid=\(ticket.pid, privacy: .public)")
-        scripting.snapshot(pid: ticket.pid) { [weak self] result, date in
-            Task { @MainActor in self?.finished(ticket, result, date) }
+        scripting.snapshot(pid: ticket.pid) { [weak self] result, date, consistent in
+            Task { @MainActor in self?.finished(ticket, result, date, consistent) }
         }
     }
 
-    private func finished(_ ticket: SpotifyRequestGate.Ticket, _ result: Result<SpotifyReading, SpotifyScriptError>, _ date: Date) {
-        let outcome = gate.finish(ticket, currentPid: Self.spotifyPID())
+    private func finished(_ ticket: SpotifyRequestGate.Ticket, _ result: Result<SpotifyReading, SpotifyScriptError>, _ date: Date, _ consistent: Bool) {
+        let outcome = gate.finish(ticket, currentPid: Self.spotifyPID(), consistent: consistent)
         var suffix = ""
         if case let .failure(error) = result { suffix = " error=\(Self.code(error))" }
+        if !consistent { suffix += " inconsistent" }
         Log.spotify.info("spotify result seq=\(ticket.seq, privacy: .public) applied=\(outcome.apply, privacy: .public)\(suffix, privacy: .public)")
         if outcome.apply {
             switch result {

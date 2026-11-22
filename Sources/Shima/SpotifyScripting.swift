@@ -8,13 +8,14 @@ final class SpotifyScripting: @unchecked Sendable {
 
     /// Reads state, position and (unless stopped) the current track, one property per event (Spike 2).
     /// The date passed to `completion` is taken right after the position reply.
-    func snapshot(pid: pid_t, completion: @escaping @Sendable (Result<SpotifyReading, SpotifyScriptError>, Date) -> Void) {
+    /// `consistent` is false when the track id read first differs from the one read last (track changed mid-snapshot).
+    func snapshot(pid: pid_t, completion: @escaping @Sendable (Result<SpotifyReading, SpotifyScriptError>, Date, _ consistent: Bool) -> Void) {
         queue.async {
             do {
-                let (reading, date) = try self.readSnapshot(pid: pid)
-                completion(.success(reading), date)
+                let (reading, date, consistent) = try self.readSnapshot(pid: pid)
+                completion(.success(reading), date, consistent)
             } catch {
-                completion(.failure(Self.map(error)), Date())
+                completion(.failure(Self.map(error)), Date(), true)
             }
         }
     }
@@ -30,28 +31,30 @@ final class SpotifyScripting: @unchecked Sendable {
         }
     }
 
-    private func readSnapshot(pid: pid_t) throws -> (SpotifyReading, Date) {
+    private func readSnapshot(pid: pid_t) throws -> (SpotifyReading, Date, Bool) {
         dispatchPrecondition(condition: .onQueue(queue))
         let state = try playbackState(pid: pid)
         let position = try SpotifyAppleEvents.get(SpotifyAppleEvents.property("pPos"), pid: pid).doubleValue
         let date = Date()
-        if state == .stopped { return (SpotifyReading(state: .stopped), date) }
+        if state == .stopped { return (SpotifyReading(state: .stopped), date, true) }
 
         let track = SpotifyAppleEvents.property("pTrk")
         func text(_ code: String) throws -> String? {
             try SpotifyAppleEvents.get(SpotifyAppleEvents.property(code, of: track), pid: pid).stringValue
         }
+        let firstID = try text("ID  ")
         let title = try text("pnam")
         let artist = try text("pArt")
         let album = try text("pAlb")
         let durationMs = try SpotifyAppleEvents.get(SpotifyAppleEvents.property("pDur", of: track), pid: pid).int32Value
         let artwork = try text("aUrl")
         let trackID = try text("ID  ")
+        let consistent = SpotifySnapshotConsistency.isConsistent(firstTrackID: firstID, lastTrackID: trackID)
         let reading = SpotifyReading(
             state: state, trackID: trackID, title: title, artist: artist, album: album,
             duration: TimeInterval(durationMs) / 1000, position: position,
             artworkURL: SpotifyReading.artworkURL(from: artwork))
-        return (reading, date)
+        return (reading, date, consistent)
     }
 
     private func playbackState(pid: pid_t) throws -> PlaybackState {

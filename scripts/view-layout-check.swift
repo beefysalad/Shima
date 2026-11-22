@@ -70,6 +70,16 @@ import ShimaCore
             check(expanded.rows(at: 76.5, matching: isMagenta).isEmpty, "expanded mini artwork must be hidden")
         }
         print("expanded 396x173: silhouette 0..<165, wings hidden\(expectsNowPlaying ? ", artwork 44..<132" : "") PASS")
+        state.mode = .collapsed
+        state.live = false
+        window.setContentSize(NSSize(width: 179, height: 32))
+        host.layoutSubtreeIfNeeded()
+        let idle = render(host)
+        let idleBlack = idle.rows(at: 89.5) { $0.alphaComponent > 0.9 && $0.redComponent < 0.05 && $0.greenComponent < 0.05 && $0.blueComponent < 0.05 }
+        check(idleBlack == 0..<32, "not-live black rows: \(idleBlack)")
+        check(idle.rows(in: 0..<179, matching: isMagenta).isEmpty, "not-live artwork must be hidden")
+        check(idle.rows(in: 0..<179, matching: isGreen).isEmpty, "not-live equalizer must be hidden")
+        print("not-live 179x32: black 0..<32, no wings content PASS")
         check(!window.isVisible, "diagnostic window must remain offscreen")
         print("cacheDisplay pixel checks PASS; no window shown, no image file written")
     }

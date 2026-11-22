@@ -50,10 +50,7 @@ struct IslandView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .top) {
-            Text("shima")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .padding(.top, notch.height + 12)
+            NowPlayingView(state: state, media: media)
                 .opacity(state.mode == .expanded ? 1 : 0)
         }
     }

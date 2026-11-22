@@ -12,9 +12,10 @@ final class IslandPanelController {
     /// Created lazily on the first non-nil `place`, then kept (only ordered out/in).
     private var panel: NotchPanel?
     private let trackingView = HoverTrackingView()
-    private let hostingView: NSHostingView<IslandView>
+    private let hostingView: ClickHostingView<IslandView>
     let state = AppState()
     let media = IslandMedia()
+    var onCommand: (@MainActor (SpotifyCommand) -> Void)?
     var onIslandOpened: (@MainActor () -> Void)?
     private var hover: HoverController!
     private var notch: CGRect = .zero
@@ -25,9 +26,9 @@ final class IslandPanelController {
 
 
     init() {
-        hostingView = NSHostingView(rootView: IslandView(
+        hostingView = ClickHostingView(rootView: IslandView(
             state: state, media: media, notch: .zero, hasNotch: false,
-            debug: Self.debug, hitOpacity: Self.hitOpacity))
+            debug: Self.debug, hitOpacity: Self.hitOpacity, onCommand: { _ in }))
         hostingView.frame = trackingView.bounds
         hostingView.autoresizingMask = [.width, .height]
         trackingView.addSubview(hostingView)
@@ -70,10 +71,16 @@ final class IslandPanelController {
         Log.display.info("display built-in notch=\(display.hasNotch, privacy: .public) rect=\(r.minX, format: .fixed(precision: 1), privacy: .public),\(r.minY, format: .fixed(precision: 1), privacy: .public),\(r.width, format: .fixed(precision: 1), privacy: .public),\(r.height, format: .fixed(precision: 1), privacy: .public)")
         hostingView.rootView = IslandView(
             state: state, media: media, notch: notch, hasNotch: hasNotch,
-            debug: Self.debug, hitOpacity: Self.hitOpacity)
+            debug: Self.debug, hitOpacity: Self.hitOpacity,
+            onCommand: { [weak self] in self?.handle($0) })
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
+    }
+
+    private func handle(_ command: SpotifyCommand) {
+        Log.spotify.info("spotify command \(command.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(self.panel?.isKeyWindow ?? false, privacy: .public)")
+        onCommand?(command)
     }
 
     private func ensurePanel() -> NotchPanel {

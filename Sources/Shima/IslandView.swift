@@ -27,6 +27,7 @@ struct IslandView: View {
     let hasNotch: Bool
     let debug: Bool
     let hitOpacity: Double
+    let onCommand: @MainActor (SpotifyCommand) -> Void
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -50,7 +51,7 @@ struct IslandView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .top) {
-            NowPlayingView(state: state, media: media)
+            NowPlayingView(state: state, media: media, onCommand: onCommand)
                 .opacity(state.mode == .expanded ? 1 : 0)
         }
     }

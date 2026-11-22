@@ -5,6 +5,7 @@ import ShimaCore
 struct NowPlayingView: View {
     let state: AppState
     let media: IslandMedia
+    let onCommand: @MainActor (SpotifyCommand) -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -66,7 +67,38 @@ struct NowPlayingView: View {
                 progressRow(nowPlaying, at: Date())
             }
         }
+        .overlay(alignment: .topLeading) { controls(nowPlaying) }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height)
+    }
+
+    private func controls(_ nowPlaying: NowPlaying) -> some View {
+        ZStack(alignment: .topLeading) {
+            controlButton(.previous, symbol: "backward.fill", size: 13)
+            controlButton(.playPause, symbol: nowPlaying.state == .playing ? "pause.fill" : "play.fill", size: 14)
+                .background {
+                    let r = NowPlayingLayout.controlRect(.playPause)
+                    Circle().fill(Color.white.opacity(0.12))
+                        .frame(width: r.width, height: r.height)
+                        .position(x: r.midX, y: r.midY)
+                }
+            controlButton(.next, symbol: "forward.fill", size: 13)
+        }
+        .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
+        .allowsHitTesting(state.mode == .expanded && state.content == .track)
+    }
+
+    private func controlButton(_ command: SpotifyCommand, symbol: String, size: CGFloat) -> some View {
+        let r = NowPlayingLayout.controlRect(command)
+        return Button { onCommand(command) } label: {
+            Image(systemName: symbol)
+                .font(.system(size: size))
+                .foregroundStyle(.white)
+                .frame(width: r.width, height: r.height)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .frame(width: r.width, height: r.height)
+        .position(x: r.midX, y: r.midY)
     }
 
     private var artwork: some View {

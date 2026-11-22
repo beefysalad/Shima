@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         showPanel()
         spotify.onLiveChange = { [weak self] in self?.islandController.setLive($0) }
         islandController.onIslandOpened = { [weak self] in self?.spotify.islandOpened() }
+        islandController.onCommand = { [weak self] in self?.spotify.perform($0) }
         spotify.start()
         NotificationCenter.default.addObserver(
             self, selector: #selector(appBecameActive),

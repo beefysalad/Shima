@@ -21,7 +21,7 @@ import ShimaCore
         }
         let notch = CGRect(x: 646, y: 924, width: 179, height: 32)
         let host = NSHostingView(rootView: IslandView(state: state, media: media,
-            notch: notch, hasNotch: true, debug: false, hitOpacity: 0))
+            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }))
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 245, height: 32),
             styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false
@@ -61,6 +61,11 @@ import ShimaCore
         check(expanded.rows(in: 290..<320, matching: isGreen).isEmpty, "expanded equalizer must be hidden")
         if expectsNowPlaying {
             check(expanded.rows(at: 76.5, matching: isMagenta) == 44..<132, "expanded artwork must occupy y44..<132")
+            for command in SpotifyCommand.allCases {
+                let r = NowPlayingLayout.controlRect(command)
+                let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 100..<160) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
+                check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
+            }
         } else {
             check(expanded.rows(at: 76.5, matching: isMagenta).isEmpty, "expanded mini artwork must be hidden")
         }
@@ -105,11 +110,11 @@ import ShimaCore
             rows(in: Int(x)..<(Int(x) + 1), matching: predicate)
         }
 
-        func rows(in xs: Range<Int>, matching predicate: (NSColor) -> Bool) -> Range<Int> {
+        func rows(in xs: Range<Int>, ys: Range<Int>? = nil, matching predicate: (NSColor) -> Bool) -> Range<Int> {
             let scaleX = CGFloat(bitmap.pixelsWide) / size.width
             let scaleY = CGFloat(bitmap.pixelsHigh) / size.height
             var matches: [Int] = []
-            for y in 0..<Int(size.height) {
+            for y in (ys ?? 0..<Int(size.height)) {
                 for x in xs {
                     guard let color = bitmap.colorAt(x: Int((CGFloat(x) + 0.5) * scaleX),
                         y: Int((CGFloat(y) + 0.5) * scaleY))?.usingColorSpace(.sRGB) else { continue }

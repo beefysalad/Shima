@@ -150,7 +150,7 @@ import Testing
         let state = AppState()
         let client = FakeCameraClient(permission: .authorized)
         let camera = CameraCoordinator(client: client)
-        state.onCameraContextChange = { mode, tab in
+        state.addTabContextObserver { mode, tab in
             camera.setContext(mode: mode, tab: tab, screenAvailable: true)
         }
         state.mode = .expanded
@@ -171,7 +171,7 @@ import Testing
             let state = AppState()
             let client = FakeCameraClient(requestResult: nil)
             let camera = CameraCoordinator(client: client)
-            state.onCameraContextChange = { mode, tab in
+            state.addTabContextObserver { mode, tab in
                 camera.setContext(mode: mode, tab: tab, screenAvailable: true)
             }
             state.mode = .expanded
@@ -192,7 +192,7 @@ import Testing
     @Test func appStateDeliversEveryTransitionSynchronously() {
         let state = AppState()
         var transitions: [(IslandMode, IslandTab)] = []
-        state.onCameraContextChange = { transitions.append(($0, $1)) }
+        state.addTabContextObserver { transitions.append(($0, $1)) }
         state.mode = .expanded
         state.selectedTab = .camera
         state.mode = .collapsed

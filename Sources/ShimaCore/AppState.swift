@@ -5,21 +5,38 @@ import Observation
     public var mode: IslandMode = .collapsed {
         didSet {
             if mode == .collapsed && selectedTab != .music {
-                // Reopening by hover must never implicitly reactivate the camera.
+                // Reopening by hover must return to Music.
                 // The selectedTab observer delivers the single collapsed context.
                 selectedTab = .music
             } else {
-                onCameraContextChange?(mode, selectedTab)
+                notifyTabContextObservers()
             }
         }
     }
     public var selectedTab: IslandTab = .music {
-        didSet { onCameraContextChange?(mode, selectedTab) }
+        didSet { notifyTabContextObservers() }
     }
 
+    @ObservationIgnored private var tabContextObservers: [(id: UUID, handler: @MainActor (IslandMode, IslandTab) -> Void)] = []
+
     /// Deliver lifecycle changes synchronously; view updates may coalesce collapse/reopen.
-    @ObservationIgnored public var onCameraContextChange: (@MainActor (IslandMode, IslandTab) -> Void)? {
-        didSet { onCameraContextChange?(mode, selectedTab) }
+    @discardableResult
+    public func addTabContextObserver(_ handler: @escaping @MainActor (IslandMode, IslandTab) -> Void) -> UUID {
+        let id = UUID()
+        tabContextObservers.append((id, handler))
+        handler(mode, selectedTab)
+        return id
+    }
+
+    public func removeTabContextObserver(_ id: UUID) {
+        tabContextObservers.removeAll { $0.id == id }
+    }
+
+    private func notifyTabContextObservers() {
+        let context = (mode, selectedTab)
+        for observer in tabContextObservers {
+            observer.handler(context.0, context.1)
+        }
     }
 
     public var live: Bool = false

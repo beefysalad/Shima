@@ -15,6 +15,7 @@ import ShimaCore
     private var systemAwake = true
     private var locked: Bool
     private var sessionActive: Bool
+    @ObservationIgnored private var tabContextObserver: UUID?
     @ObservationIgnored private var focusObserver: NSObjectProtocol?
 
     init(state: AppState, environment: [String: String] = ProcessInfo.processInfo.environment) {
@@ -41,10 +42,10 @@ import ShimaCore
         locked = (session?["CGSSessionScreenIsLocked"] as? Bool) == true
         sessionActive = (session?[kCGSessionOnConsoleKey as String] as? Bool) ?? true
         super.init()
-        state.onCameraContextChange = { [weak self] mode, tab in
+        self.state = state
+        tabContextObserver = state.addTabContextObserver { [weak self] mode, tab in
             self?.update(mode: mode, tab: tab)
         }
-        self.state = state
         let workspace = NSWorkspace.shared.notificationCenter
         workspace.addObserver(self, selector: #selector(slept), name: NSWorkspace.screensDidSleepNotification, object: nil)
         workspace.addObserver(self, selector: #selector(woke), name: NSWorkspace.screensDidWakeNotification, object: nil)
@@ -61,7 +62,6 @@ import ShimaCore
         if fakeMode {
             distributed.addObserver(self, selector: #selector(fakeControl(_:)), name: .init("local.shima.fake-camera"), object: nil, suspensionBehavior: .deliverImmediately)
         }
-        update()
     }
 
     @ObservationIgnored private weak var state: AppState?
@@ -82,6 +82,10 @@ import ShimaCore
     @objc private func sessionBecameActive() { sessionActive = true; update() }
 
     func shutdown(completion: @escaping @MainActor () -> Void = {}) {
+        if let tabContextObserver {
+            state?.removeTabContextObserver(tabContextObserver)
+            self.tabContextObserver = nil
+        }
         coordinator.shutdown()
         if let capture { capture.stop(completion: completion) }
         else {

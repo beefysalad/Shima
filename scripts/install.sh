@@ -19,7 +19,8 @@ if [[ -d "$DEST" ]]; then
     echo "Refusing: $DEST exists but its CFBundleIdentifier is '${id:-unreadable}', not local.shima." >&2
     exit 1
   fi
-  if [[ -z "${SHIMA_SIGN_ID:-}" ]] && codesign -dvv "$DEST" 2>&1 | grep -q '^Authority=Apple Development'; then
+  sig="$(codesign -dvv "$DEST" 2>&1 || true)"   # capture first: `grep -q` closing the pipe early fails under pipefail
+  if [[ -z "${SHIMA_SIGN_ID:-}" ]] && grep -q '^Authority=Apple Development' <<< "$sig"; then
     echo "Refusing: $DEST is signed with an Apple Development identity, and an ad-hoc build would lose the Automation (Spotify) grant." >&2
     echo "Set SHIMA_SIGN_ID to the same identity, for example: SHIMA_SIGN_ID='Apple Development: you@example.com (TEAMID)' scripts/install.sh" >&2
     exit 1

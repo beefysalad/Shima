@@ -38,3 +38,9 @@ sh assets/branding/export.sh
 
 Exports use a temporary directory inside the repository's ignored `.build/`.
 `scripts/bundle.sh` includes `shima.icns` as the macOS application icon.
+
+Spotify icons are the original assets from Spotify’s official developer kit:
+https://developer.spotify.com/images/guidelines/design/2024-spotify-logo-icon.zip
+SVG originals are retained here; the unmodified PNGs are bundled in Sources/Shima/Resources. Spotify trademarks belong to Spotify.
+ShimaBrand.png is copied from the canonical shima-icon-512.png export.
+ShimaMark.png is a raster export of the canonical shima-mark.svg for the menu bar.

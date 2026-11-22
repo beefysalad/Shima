@@ -14,7 +14,7 @@ let package = Package(
         // State, event bus and the Unix-socket server (logic only; testable).
         .target(name: "ShimaCore"),
         // The menu-bar-less accessory app: SwiftUI hosted in a non-activating NSPanel.
-        .executableTarget(name: "Shima", dependencies: ["ShimaCore"]),
+        .executableTarget(name: "Shima", dependencies: ["ShimaCore"], exclude: ["Resources"]),
         // CLI that Claude Code hooks call. Must always exit 0 quickly.
         .executableTarget(name: "shimactl"),
         .executableTarget(name: "ShimaUpdater", dependencies: ["ShimaCore"]),

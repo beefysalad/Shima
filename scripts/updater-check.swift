@@ -11,6 +11,12 @@ import CryptoKit
 @main struct UpdaterCheck {
     @MainActor static func main() async throws {
         NSApplication.shared.setActivationPolicy(.prohibited)
+        for name in ["ShimaBrand", "ShimaMark", "SpotifyWhite", "SpotifyGreen"] {
+            precondition(BrandAssets.image(name).size.width > 0)
+        }
+        let shippedShima = try Data(contentsOf: URL(fileURLWithPath: "Sources/Shima/Resources/ShimaBrand.png"))
+        let canonicalShima = try Data(contentsOf: URL(fileURLWithPath: "assets/branding/shima-icon-512.png"))
+        precondition(shippedShima == canonicalShima)
         if CommandLine.arguments.contains("--live-check") {
             let live = AppUpdater()
             live.check()

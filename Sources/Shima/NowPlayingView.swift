@@ -43,8 +43,7 @@ struct NowPlayingView: View {
                 .position(x: NowPlayingLayout.artwork.midX, y: NowPlayingLayout.artwork.midY)
 
             HStack(spacing: 5) {
-                SpotifyMark()
-                    .fill(Color(red: 0.12, green: 0.84, blue: 0.38), style: FillStyle(eoFill: true))
+                BrandLogo(name: "SpotifyGreen")
                     .frame(width: 12, height: 12)
                     .accessibilityHidden(true)
                 Text(nowPlaying.state == .playing ? "Playing on Spotify" : "Paused on Spotify")
@@ -174,22 +173,5 @@ struct NowPlayingView: View {
             .foregroundStyle(Color.white.opacity(0.6))
             .frame(width: IslandLayout.expanded.width - 28, height: IslandLayout.expanded.height - 32)
             .position(x: IslandLayout.expanded.width / 2, y: 32 + (IslandLayout.expanded.height - 32) / 2)
-    }
-}
-
-/// Compact Spotify glyph, drawn as vector geometry so it remains crisp at menu-bar scale.
-private struct SpotifyMark: Shape {
-    func path(in rect: CGRect) -> Path {
-        var result = Path(ellipseIn: rect)
-        for (y, endY, controlY, width) in [(0.35, 0.39, 0.23, 0.085),
-                                          (0.50, 0.54, 0.40, 0.07),
-                                          (0.65, 0.68, 0.57, 0.06)] {
-            var wave = Path()
-            wave.move(to: CGPoint(x: rect.minX + rect.width * 0.24, y: rect.minY + rect.height * y))
-            wave.addQuadCurve(to: CGPoint(x: rect.minX + rect.width * 0.77, y: rect.minY + rect.height * endY),
-                              control: CGPoint(x: rect.midX, y: rect.minY + rect.height * controlY))
-            result.addPath(wave.strokedPath(StrokeStyle(lineWidth: rect.width * width, lineCap: .round)))
-        }
-        return result
     }
 }

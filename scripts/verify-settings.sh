@@ -23,11 +23,11 @@ done
 if (( login )); then APP="/Applications/Shima.app"; else APP="$REPO/dist/Shima.app"; fi
 BIN="$APP/Contents/MacOS/Shima"
 [[ -x "$BIN" ]] || { echo "missing $BIN (scripts/bundle.sh, or scripts/install.sh for --login-item)"; exit 2; }
-H=460                                   # SettingsLayout.size.height
+H=620                                   # SettingsLayout.size.height
 N="735 16"; A="735 400"; GEAR="905.5 48" # NowPlayingLayout.settingsButtonCenter on this Mac
-SEG_animated="283 314"; SEG_whenOpen="424 314"; SEG_off="565 314"   # SettingsLayoutTests pins these
-LOGIN="610 156"; AUTOMATION="310 214"; QUIT="84 429"
-PAGE_general="84 109"; PAGE_music="84 147"
+SEG_animated="296 270"; SEG_whenOpen="415 270"; SEG_off="534 270"   # SettingsLayoutTests pins these
+LOGIN="815 68"; AUTOMATION="350 130"; QUIT="100 589"
+PAGE_general="100 141"; PAGE_music="100 179"
 dir="$(mktemp -d -t shima-settings)"; fail=0; pid=""; lp=""; cf=""; LAUNCH_MARK=0
 wx=0; wy=0; ww=0; wh=0
 tools="$REPO/.build/tools"; mkdir -p "$tools"
@@ -151,8 +151,8 @@ echo "     $(since "$LAUNCH_MARK" | grep -oE 'settings eq mode=[A-Za-z]+ loaded'
 m="$(mark)"; open "$APP"
 expect_log "A1 reopen opens the window, active and key" "$m" 'settings opened via reopen created=true active=true key=true'
 expect_windows "A1 one window" 1
-wrect && [[ "$ww" == 680 ]] && ok "A1 window width 680" || bad "A1 window bounds" "x=$wx y=$wy w=$ww h=$wh"
-if ! has "$LAUNCH_MARK" 'settings eq mode=animated loaded'; then wclick "$SEG_animated"; sleep 0.5; fi
+wrect && [[ "$ww" == 880 ]] && ok "A1 window width 880" || bad "A1 window bounds" "x=$wx y=$wy w=$ww h=$wh"
+if ! has "$LAUNCH_MARK" 'settings eq mode=animated loaded'; then wclick "$PAGE_music"; wclick "$SEG_animated"; wclick "$PAGE_general"; sleep 0.5; fi
 m="$(mark)"; open "$APP"
 expect_log "A2 second reopen reuses it" "$m" 'settings opened via reopen created=false'
 expect_windows "A2 still one window" 1
@@ -203,7 +203,7 @@ fi
 # E. Equalizer modes (live, collapsed, fake playing)
 if [[ "$(locked)" == 1 ]]; then bad "E screen unlocked" "the screen is locked; equalizer checks are invalid"; fi
 reopen || bad "E window bounds"
-wclick "$PAGE_general"
+wclick "$PAGE_music"
 expect_eq "E0 live wings animate (animated)" 'eq animating anims=4'
 m="$(mark)"; wclick "$SEG_off"; expect_log "E1 mode off saved" "$m" 'settings eq mode=off saved'
 expect_eq "E1 live wings frozen" 'eq frozen anims=0'
@@ -228,7 +228,7 @@ d "fake playing"; sleep 0.5
 
 # G. Persistence across a relaunch, and Quit
 reopen
-wclick "$PAGE_general"
+wclick "$PAGE_music"
 m="$(mark)"; wclick "$SEG_off"; expect_log "G1 mode off saved" "$m" 'settings eq mode=off saved'
 old="$pid"; m="$(mark)"; wclick "$QUIT"
 expect_log "G2 quit logged" "$m" 'settings quit'

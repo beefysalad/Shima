@@ -13,6 +13,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN/Shima" "$APP/Contents/MacOS/Shima"
 cp "$BIN/ShimaUpdater" "$APP/Contents/MacOS/ShimaUpdater"
 cp "$BIN/shimactl" "$APP/Contents/MacOS/shimactl"
+cp Sources/Shima/Resources/*.png "$APP/Contents/Resources/"
 cp assets/branding/shima.icns "$APP/Contents/Resources/shima.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
@@ -27,7 +28,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleIconFile</key><string>shima.icns</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleVersion</key><string>1</string>
-    <key>CFBundleShortVersionString</key><string>0.1.5</string>
+    <key>CFBundleShortVersionString</key><string>0.1.6</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>

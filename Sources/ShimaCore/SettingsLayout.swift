@@ -3,20 +3,20 @@ import CoreGraphics
 /// Window and diagnostic click regions for the native Settings shell.
 /// Content uses SwiftUI layout; scripts/verify-settings.sh copies the click points.
 public enum SettingsLayout {
-    public static let size = CGSize(width: 680, height: 460)
-    public static let sidebarWidth: CGFloat = 168
+    public static let size = CGSize(width: 880, height: 620)
+    public static let sidebarWidth: CGFloat = 200
 
     public static func navigation(_ page: SettingsPage) -> CGRect {
         let index = SettingsPage.allCases.firstIndex(of: page) ?? 0
-        return CGRect(x: 12, y: 92 + 38 * index, width: 144, height: 34)
+        return CGRect(x: 12, y: 124 + 38 * index, width: 176, height: 34)
     }
-    public static let quitButton = CGRect(x: 12, y: 410, width: 144, height: 38)
-    public static let launchAtLoginClick = CGPoint(x: 610, y: 156)
+    public static let quitButton = CGRect(x: 12, y: 570, width: 176, height: 38)
+    public static let launchAtLoginClick = CGPoint(x: 815, y: 68)
     public static func equalizerClick(_ mode: EqualizerMode) -> CGPoint {
         let index = EqualizerMode.allCases.firstIndex(of: mode) ?? 0
-        return CGPoint(x: 283 + 141 * index, y: 314)
+        return CGPoint(x: 296 + 119 * index, y: 270)
     }
-    public static let automationClick = CGPoint(x: 310, y: 214)
+    public static let automationClick = CGPoint(x: 350, y: 130)
     public static func center(_ rect: CGRect) -> CGPoint { CGPoint(x: rect.midX, y: rect.midY) }
 }
 

@@ -96,9 +96,8 @@ struct HeaderTabIcon: View {
     var body: some View {
         let r = NowPlayingLayout.tabIcon
         ZStack(alignment: .topLeading) {
-            Image(systemName: "music.note")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color.white)
+            BrandLogo(name: "SpotifyWhite")
+                .frame(width: 21, height: 21)
                 .frame(width: r.width, height: r.height)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.13)))
                 .position(x: r.midX, y: r.midY)

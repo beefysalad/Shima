@@ -23,23 +23,16 @@ struct SettingsView: View {
         self.onSpotifyRow = onSpotifyRow
     }
 
-    @Environment(\.colorScheme) private var colorScheme
-    private var groupFill: Color { colorScheme == .dark ? Color.white.opacity(0.055) : Color.black.opacity(0.035) }
-
-    private let accent = Color(red: 0.76, green: 0.28, blue: 0.12)
+    private let accent = Color(red: 224 / 255, green: 122 / 255, blue: 79 / 255)
+    private let groupFill = Color(red: 50 / 255, green: 50 / 255, blue: 52 / 255)
 
     var body: some View {
         HStack(spacing: 0) {
             sidebar
             Divider()
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(page.rawValue).font(.system(size: 24, weight: .bold))
-                    Text(page.subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
-                }
-                .padding(.bottom, 24)
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 18) {
                         switch page {
                         case .general: general
                         case .music: music
@@ -52,11 +45,12 @@ struct SettingsView: View {
                 }
                 .scrollIndicators(.hidden)
             }
-            .padding(28)
+            .padding(.init(top: 18, leading: 22, bottom: 26, trailing: 22))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Color(nsColor: .windowBackgroundColor))
+            .background(Color(red: 38 / 255, green: 38 / 255, blue: 40 / 255))
         }
         .frame(width: SettingsLayout.size.width, height: SettingsLayout.size.height)
+        .environment(\.colorScheme, .dark)
         .tint(accent)
         .confirmationDialog("Install the update and restart Shima?", isPresented: $confirmUpdate) {
             Button("Update and restart") { updater.install() }
@@ -69,28 +63,30 @@ struct SettingsView: View {
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 9) {
-                Image(systemName: "capsule.bottomhalf.filled")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(accent)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("shima").font(.system(size: 18, weight: .bold))
-                    Text("Settings").font(.system(size: 11)).foregroundStyle(.secondary)
-                }
+            VStack(spacing: 8) {
+                BrandLogo(name: "ShimaBrand")
+                    .frame(width: 64, height: 64)
+                Text("shima").font(.system(size: 12)).foregroundStyle(.secondary)
             }
-            .frame(height: 40)
-            .padding(.horizontal, 10)
-            .padding(.top, 24)
-            .padding(.bottom, 28)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 18)
+            .padding(.bottom, 20)
 
             ForEach(SettingsPage.allCases, id: \.self) { item in
                 Button { page = item } label: {
-                    Label(item.rawValue, systemImage: item.symbol)
+                    HStack(spacing: 9) {
+                        if item == .music {
+                            BrandLogo(name: "SpotifyWhite").frame(width: 21, height: 21)
+                        } else {
+                            Image(systemName: item.symbol).frame(width: 21, height: 21)
+                        }
+                        Text(item.rawValue)
+                    }
                         .font(.system(size: 13, weight: page == item ? .semibold : .regular))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 12)
                         .frame(height: 34)
-                        .background(page == item ? accent : Color.clear, in: RoundedRectangle(cornerRadius: 7))
+                        .background(page == item ? accent : Color.clear, in: RoundedRectangle(cornerRadius: 9))
                         .foregroundStyle(page == item ? Color.white : Color.primary)
                         .contentShape(Rectangle())
                 }
@@ -113,12 +109,12 @@ struct SettingsView: View {
         .padding(.horizontal, 12)
         .padding(.bottom, 12)
         .frame(width: SettingsLayout.sidebarWidth)
-        .background(colorScheme == .dark ? Color.white.opacity(0.025) : Color.black.opacity(0.025))
+        .background(Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255))
     }
 
     private var general: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            section("STARTUP") {
+        VStack(alignment: .leading, spacing: 18) {
+            section("Launch") {
                 Toggle(isOn: Binding(get: { model.loginItem.isOn }, set: { _ in onToggleLogin() })) {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Launch at login").font(.system(size: 13, weight: .medium))
@@ -130,9 +126,47 @@ struct SettingsView: View {
                 .toggleStyle(.switch)
                 .disabled(!model.loginItem.isEnabled)
             }
-            section("ISLAND") {
+            section("Show") {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Show on a display").font(.system(size: 13))
+                        Text("External monitors are not supported yet.")
+                            .font(.system(size: 12)).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Text("Built-in display").font(.system(size: 12)).foregroundStyle(.secondary)
+                }
+            }
+            section("Displays without a notch") {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Hover zone").font(.system(size: 13))
+                    Text("An invisible 200 × 32 pt zone at the top centre.")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var music: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            section("Spotify") {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Equalizer").font(.system(size: 13, weight: .medium))
+                    HStack(spacing: 12) {
+                        BrandLogo(name: "SpotifyWhite").frame(width: 28, height: 28)
+                        Text(model.spotifyRow.title).font(.system(size: 13, weight: .medium))
+                        Spacer()
+                        if model.spotifyRow.kind == .permissionDenied {
+                            Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange)
+                        }
+                    }
+                    Text(model.spotifyRow.detail).font(.system(size: 12)).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button(model.spotifyRow.buttonTitle) { model.openAutomationSettings() }.buttonStyle(.bordered)
+                }
+            }
+            section("Equalizer") {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Animation").font(.system(size: 13, weight: .medium))
                     Text("Choose when the music bars animate.")
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                     Picker("Equalizer", selection: Binding(get: { model.equalizerMode }, set: onEqualizerMode)) {
@@ -145,24 +179,9 @@ struct SettingsView: View {
         }
     }
 
-    private var music: some View {
-        section("SPOTIFY CONNECTION") {
-            VStack(alignment: .leading, spacing: 16) {
-                Label(model.spotifyRow.title, systemImage: model.spotifyRow.kind == .permissionDenied ? "exclamationmark.circle.fill" : "music.note")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(model.spotifyRow.kind == .permissionDenied ? Color.orange : Color.primary)
-                Text(model.spotifyRow.detail)
-                    .font(.system(size: 12)).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button(model.spotifyRow.buttonTitle) { model.openAutomationSettings() }
-                    .buttonStyle(.bordered)
-            }
-        }
-    }
-
     private var updates: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            section("SOFTWARE UPDATE") {
+        VStack(alignment: .leading, spacing: 18) {
+            section("Software update") {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: updater.canInstall ? "arrow.down.circle.fill" : "arrow.triangle.2.circlepath")
@@ -202,16 +221,19 @@ struct SettingsView: View {
     }
 
     private var about: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            section("SHIMA") {
+        VStack(alignment: .leading, spacing: 18) {
+            section("shima") {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("A little more from your notch.").font(.system(size: 16, weight: .semibold))
+                    HStack(spacing: 12) {
+                        BrandLogo(name: "ShimaBrand").frame(width: 44, height: 44)
+                        Text("shima").font(.system(size: 16, weight: .semibold))
+                    }
                     Text(model.versionText).font(.system(size: 12)).foregroundStyle(.secondary)
                     Link("View on GitHub ↗", destination: URL(string: "https://github.com/beefysalad/Shima")!)
                         .font(.system(size: 12))
                 }
             }
-            section("SIGNING") {
+            section("Signing") {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(model.signingText).font(.system(size: 12, weight: .medium))
                     Text("A consistent signing identity helps preserve Spotify permissions across updates.")
@@ -224,12 +246,13 @@ struct SettingsView: View {
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.system(size: 10, weight: .semibold)).tracking(0.7).foregroundStyle(.secondary)
+            Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
                 .padding(.leading, 2)
             content()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(groupFill, in: RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(groupFill, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

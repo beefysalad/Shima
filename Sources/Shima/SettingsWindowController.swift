@@ -105,6 +105,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private func makeWindow() -> SettingsWindow {
         let w = SettingsWindow(contentRect: NSRect(origin: .zero, size: SettingsLayout.size),
                                styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        w.appearance = NSAppearance(named: .darkAqua)
         w.title = SettingsText.windowTitle
         w.isReleasedWhenClosed = false
         w.tabbingMode = .disallowed

@@ -71,7 +71,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func setUpStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = NSImage(systemSymbolName: "capsule.fill", accessibilityDescription: "shima")
+        let menuLogo = BrandAssets.image("ShimaMark")
+        menuLogo.size = NSSize(width: 18, height: 18)
+        item.button?.image = menuLogo
+        item.button?.setAccessibilityLabel("shima")
         let menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false

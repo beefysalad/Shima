@@ -1,7 +1,7 @@
 import AppKit
 import CoreGraphics
 // Synthetic input for verification. Usage:
-//   swift scripts/drive.swift "move 735 16; sleep 500; click 786.5 128; fake playing; key esc"
+//   swift scripts/drive.swift "move 735 16; sleep 500; click 733.5 171; fake playing; key esc"
 // Keys: esc tab space return cmd-w cmd-comma (down, 20 ms, up). An unknown key exits 2.
 // Coordinates are global top-left CG points (as printed by scripts/shima-windows.swift).
 // `fake CMD` posts the distributed notification local.shima.fake-spotify (object CMD), read only by shima in fake mode.

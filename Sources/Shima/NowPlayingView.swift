@@ -42,15 +42,28 @@ struct NowPlayingView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NowPlayingLayout.artworkRadius))
                 .position(x: NowPlayingLayout.artwork.midX, y: NowPlayingLayout.artwork.midY)
 
+            HStack(spacing: 5) {
+                SpotifyMark()
+                    .fill(Color(red: 0.12, green: 0.84, blue: 0.38), style: FillStyle(eoFill: true))
+                    .frame(width: 12, height: 12)
+                    .accessibilityHidden(true)
+                Text(nowPlaying.state == .playing ? "Playing on Spotify" : "Paused on Spotify")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.6))
+            }
+            .frame(width: NowPlayingLayout.column.width - 30, height: 14, alignment: .leading)
+            .position(x: NowPlayingLayout.column.minX + (NowPlayingLayout.column.width - 30) / 2,
+                      y: NowPlayingLayout.sourceTop + 7)
+
             Text(nowPlaying.title)
                 .font(.system(size: NowPlayingLayout.titleSize, weight: .semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .frame(width: NowPlayingLayout.titleRect.width, height: 18, alignment: .leading)
+                .frame(width: NowPlayingLayout.titleRect.width, height: 20, alignment: .leading)
                 .position(x: NowPlayingLayout.titleRect.midX, y: NowPlayingLayout.titleRect.midY)
 
-            Text(nowPlaying.artist)
+            Text(nowPlaying.album.isEmpty ? nowPlaying.artist : "\(nowPlaying.artist) · \(nowPlaying.album)")
                 .font(.system(size: NowPlayingLayout.artistSize))
                 .foregroundStyle(Color.white.opacity(0.6))
                 .lineLimit(1)
@@ -97,8 +110,13 @@ struct NowPlayingView: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(command == .previous ? "Previous track" : command == .next ? "Next track" : nowPlayingControlLabel)
         .frame(width: r.width, height: r.height)
         .position(x: r.midX, y: r.midY)
+    }
+
+    private var nowPlayingControlLabel: String {
+        state.nowPlaying?.state == .playing ? "Pause" : "Play"
     }
 
     private var artwork: some View {
@@ -156,5 +174,22 @@ struct NowPlayingView: View {
             .foregroundStyle(Color.white.opacity(0.6))
             .frame(width: IslandLayout.expanded.width - 28, height: IslandLayout.expanded.height - 32)
             .position(x: IslandLayout.expanded.width / 2, y: 32 + (IslandLayout.expanded.height - 32) / 2)
+    }
+}
+
+/// Compact Spotify glyph, drawn as vector geometry so it remains crisp at menu-bar scale.
+private struct SpotifyMark: Shape {
+    func path(in rect: CGRect) -> Path {
+        var result = Path(ellipseIn: rect)
+        for (y, endY, controlY, width) in [(0.35, 0.39, 0.23, 0.085),
+                                          (0.50, 0.54, 0.40, 0.07),
+                                          (0.65, 0.68, 0.57, 0.06)] {
+            var wave = Path()
+            wave.move(to: CGPoint(x: rect.minX + rect.width * 0.24, y: rect.minY + rect.height * y))
+            wave.addQuadCurve(to: CGPoint(x: rect.minX + rect.width * 0.77, y: rect.minY + rect.height * endY),
+                              control: CGPoint(x: rect.midX, y: rect.minY + rect.height * controlY))
+            result.addPath(wave.strokedPath(StrokeStyle(lineWidth: rect.width * width, lineCap: .round)))
+        }
+        return result
     }
 }

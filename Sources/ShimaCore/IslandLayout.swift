@@ -23,7 +23,7 @@ public enum HotRegion: Equatable, Sendable {
 }
 
 public enum IslandLayout {
-    public static let expanded = IslandShapeMetrics(width: 360, height: 165, bottomRadius: 24, earRadius: 10)
+    public static let expanded = IslandShapeMetrics(width: 400, height: 200, bottomRadius: 24, earRadius: 10)
     public static let collapsedBottomRadius: CGFloat = 9
     public static let hoverMargin: CGFloat = 8
     public static let liveWingWidth: CGFloat = 33

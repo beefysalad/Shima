@@ -84,7 +84,7 @@ case "--live", "--live-frame-only":
     expected = R(x: notch.x - 33, y: notch.y, w: notch.w + 66, h: notch.h)
     okMessage = "PASS live frame matches notch+wings within 1pt"
 case "--expanded":
-    expected = R(x: notch.x + notch.w / 2 - 198, y: notch.y, w: 396, h: 173)
+    expected = R(x: notch.x + notch.w / 2 - 218, y: notch.y, w: 436, h: 208)
     okMessage = "PASS expanded frame matches layout within 1pt"
 case "": break
 default: print("unknown mode \(mode)"); exit(2)

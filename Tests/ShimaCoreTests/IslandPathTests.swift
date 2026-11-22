@@ -3,15 +3,15 @@ import Testing
 @testable import ShimaCore
 
 @Suite struct IslandPathTests {
-    let box = CGRect(x: 0, y: 0, width: 396, height: 173) // expanded panel bounds
+    let box = CGRect(x: 0, y: 0, width: 436, height: 208) // expanded panel bounds
     var expanded: CGPath { IslandPath.make(in: box, metrics: IslandLayout.expanded) }
 
     @Test func expandedBoundsIncludeEars() {
-        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 380, height: 165))
+        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 420, height: 200))
     }
     @Test func earCornerIsFilled() { #expect(expanded.contains(CGPoint(x: 17, y: 1))) }
     @Test func earCircleIsTransparent() { #expect(!expanded.contains(CGPoint(x: 10, y: 8))) }
-    @Test func bottomCornerIsRounded() { #expect(!expanded.contains(CGPoint(x: 18.5, y: 164.5))) }
+    @Test func bottomCornerIsRounded() { #expect(!expanded.contains(CGPoint(x: 18.5, y: 199.5))) }
     @Test func middleIsFilled() { #expect(expanded.contains(CGPoint(x: 198, y: 82))) }
     @Test func collapsedFillsTheNotchExactly() {
         let p = IslandPath.make(in: CGRect(x: 0, y: 0, width: 179, height: 32),

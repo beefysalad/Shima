@@ -24,7 +24,7 @@ if (( login )); then APP="/Applications/Shima.app"; else APP="$REPO/dist/Shima.a
 BIN="$APP/Contents/MacOS/Shima"
 [[ -x "$BIN" ]] || { echo "missing $BIN (scripts/bundle.sh, or scripts/install.sh for --login-item)"; exit 2; }
 H=380                                   # SettingsLayout.size.height
-N="735 16"; A="735 400"; GEAR="889.5 50" # NowPlayingLayout.settingsButtonCenter on this Mac
+N="735 16"; A="735 400"; GEAR="905.5 48" # NowPlayingLayout.settingsButtonCenter on this Mac
 SEG_animated="185 108"; SEG_whenOpen="275 108"; SEG_off="365 108"   # SettingsLayoutTests pins these
 LOGIN="28 50"; AUTOMATION="135 240"; QUIT="370 352"
 dir="$(mktemp -d -t shima-settings)"; fail=0; pid=""; lp=""; cf=""; LAUNCH_MARK=0

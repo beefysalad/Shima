@@ -49,35 +49,40 @@ import ShimaCore
         print("live 245x32: black 0..<32, artwork 6..<26, equalizer 9..<23 PASS")
 
         state.mode = .expanded
-        window.setContentSize(NSSize(width: 396, height: 173))
+        window.setContentSize(NSSize(width: 436, height: 208))
         host.layoutSubtreeIfNeeded()
         let expandedRect = equalizer.convert(equalizer.bounds, to: host)
-        check(expandedRect == CGRect(x: 296, y: 9, width: 16, height: 14), "expanded equalizer bounds: \(expandedRect)")
+        check(expandedRect == CGRect(x: 316, y: 9, width: 16, height: 14), "expanded equalizer bounds: \(expandedRect)")
         let expanded = render(host)
+        if CommandLine.arguments.contains("--snapshot") {
+            let url = URL(fileURLWithPath: ".build/view-layout-regression/player.png")
+            try! expanded.bitmap.representation(using: .png, properties: [:])!.write(to: url)
+            print("Player preview: \(url.path)")
+        }
         // The centre can contain text; scan the black silhouette at a blank column instead.
-        let silhouette = expanded.rows(at: 150.5) { $0.alphaComponent > 0.9 }
-        check(silhouette == 0..<165, "expanded silhouette rows: \(silhouette)")
-        check(expanded.rows(in: 290..<320, ys: 0..<32, matching: isGreen) == 9..<23,
+        let silhouette = expanded.rows(at: 162.5) { $0.alphaComponent > 0.9 }
+        check(silhouette == 0..<200, "expanded silhouette rows: \(silhouette)")
+        check(expanded.rows(in: 310..<340, ys: 0..<32, matching: isGreen) == 9..<23,
               "expanded equalizer (track shown) must sit right of the notch, rows 9..<23")
         check(expanded.rows(in: 82..<102, ys: 0..<32, matching: isMagenta).isEmpty, "expanded mini artwork must be hidden")
         state.spotifyAvailability = .notRunning
         host.layoutSubtreeIfNeeded()
         let notRunning = render(host)
-        check(notRunning.rows(in: 290..<320, ys: 0..<32, matching: isGreen).isEmpty, "expanded equalizer must be hidden without a track")
+        check(notRunning.rows(in: 310..<340, ys: 0..<32, matching: isGreen).isEmpty, "expanded equalizer must be hidden without a track")
         state.spotifyAvailability = .running
         host.layoutSubtreeIfNeeded()
-        check(expanded.rows(at: 76.5, matching: isMagenta) == 44..<132, "expanded artwork must occupy y44..<132")
+        check(expanded.rows(at: 88.5, matching: isMagenta) == 50..<154, "expanded artwork must occupy y50..<154")
         for command in SpotifyCommand.allCases {
             let r = NowPlayingLayout.controlRect(command)
-            let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 100..<160) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
+            let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 150..<190) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
             check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
         }
-        let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (396 - IslandLayout.expanded.width) / 2, dy: 0)
+        let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
         let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear)
         check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
               "gear glyph rows \(gear) outside \(gearRect)")
         print("gear at \(gearRect): glyph rows \(gear) PASS")
-        let tabRect = NowPlayingLayout.tabIcon.offsetBy(dx: (396 - IslandLayout.expanded.width) / 2, dy: 0)
+        let tabRect = NowPlayingLayout.tabIcon.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
         let tabGlyph = expanded.rows(in: Int(tabRect.minX)..<Int(tabRect.maxX), ys: 0..<32, matching: isGear)
         check(!tabGlyph.isEmpty && tabGlyph.lowerBound >= Int(tabRect.minY) && tabGlyph.upperBound <= Int(tabRect.maxY),
               "tab icon glyph rows \(tabGlyph) outside \(tabRect)")
@@ -87,10 +92,10 @@ import ShimaCore
         host.layoutSubtreeIfNeeded()
         let collapsedSameFrame = render(host)
         check(collapsedSameFrame.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear).isEmpty,
-              "collapsed island must not show the gear (396x173 frame, gear area)")
+              "collapsed island must not show the gear (436x208 frame, gear area)")
         state.mode = .expanded
         host.layoutSubtreeIfNeeded()
-        print("expanded 396x173: silhouette 0..<165, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 44..<132 PASS")
+        print("expanded 436x208: silhouette 0..<200, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 50..<154 PASS")
         state.mode = .collapsed
         state.live = false
         window.setContentSize(NSSize(width: 179, height: 32))
@@ -102,7 +107,7 @@ import ShimaCore
         check(idle.rows(in: 0..<179, matching: isGreen).isEmpty, "not-live equalizer must be hidden")
         print("not-live 179x32: black 0..<32, no wings content PASS")
         check(!window.isVisible, "diagnostic window must remain offscreen")
-        print("cacheDisplay pixel checks PASS; no window shown, no image file written")
+        print("cacheDisplay pixel checks PASS; no window shown")
     }
 
     @MainActor private static func check(_ condition: Bool, _ message: String) {

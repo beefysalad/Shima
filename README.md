@@ -12,7 +12,7 @@
 A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). It shows Spotify now-playing today and is meant to show Claude Code session state and a file shelf next. It is a small, local, hackable POC, not a product.
 
 **Status**
-- **M0, the island shell:** the idle island is flush with the notch and invisible. Hover it and a 360x165 black island springs out with concave corners; leave and it collapses. Built-in display only.
+- **M0, the island shell:** the idle island is flush with the notch and invisible. Hover it and a 400x200 black island springs out with concave corners; leave and it collapses. Built-in display only.
 - **M1, Spotify:** while music plays, two small wings grow beside the notch (album art on the left, bouncing green bars on the right). Hover to open the island: artwork, title, artist, a progress bar, and previous, play/pause and next. It is event-driven (no polling), never launches Spotify, and needs the macOS Automation permission for Spotify.
 - **Settings window:** a normal window for Launch at login, Quit, Spotify status with a shortcut to the Automation pane, the equalizer mode (animated, only when open, or off), and version and signing info. Open it by launching Shima again (Spotlight or Finder), from the gear on the open island, or from "Settings…" in the status menu. None of these depend on the menu-bar icon having room.
 - **Next:** M2, Claude Code session state. `shimactl` is still a stub. Still open from M0: external-monitor and clamshell checks.
@@ -41,6 +41,13 @@ The island lives on the built-in display only. It is invisible when idle: on a n
 **Spotify.** Run `scripts/run.sh` with `SHIMA_SIGN_ID` set (real mode refuses to run ad-hoc). The first Apple Event triggers the macOS Automation prompt; if you deny it, the open island says so and Settings has a button to the right System Settings pane. For tests without touching your Spotify, use fake mode: `SHIMA_FAKE_SPOTIFY=playing scripts/run.sh`, then drive it with `swift scripts/drive.swift "fake next; fake paused"` (see `scripts/drive.swift` for the commands).
 
 **Check scripts** (run with the app running; they drive the pointer and keys with synthetic events): `scripts/verify-alignment.sh [--live|--expanded|--menus]` (panel vs notch), `verify-focus.sh [--clicks]` (focus never stolen), `verify-live-hover.sh`, `verify-idle.sh [--playing]` (60 s idle CPU and memory), `verify-settings.sh` (Settings window, entry points, equalizer modes), `verify-view-layout.sh` (offscreen pixel check of the views), and `watch-hover.sh` (live hover and frame log).
+
+## Roadmap
+
+- **Spotify Up next:** show the next few tracks beside the player. Spotify's local scripting interface does not expose the queue; this needs an optional Spotify sign-in through the Web API. Keep the current player without a queue until that integration is ready.
+- **Updates in Settings:** check for a new GitHub release, show what's new, and offer download, install and restart, with verification and rollback. Pair this with stable release signing to preserve Spotify Automation permission, and Developer ID signing plus notarization for the normal macOS first-launch experience.
+- **Claude Code sessions:** show running sessions, requests for attention and completion through `shimactl` hooks.
+- **File shelf:** temporarily park files in the island and drag them elsewhere.
 
 ## Layout
 | Path | What |

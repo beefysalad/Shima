@@ -35,7 +35,7 @@ check F "one idle frame" "$(count F 'frame idle')" 1;  check F "ends not live" "
 seq_run G "fake playing" "move $W; sleep 30; fake paused; sleep 500"
 check G "shrinks" "$(count G 'frame idle')" 1;  check G "dwell cancelled" "$(count G 'dwelling -> collapsed')" 1
 check G "no grow" "$(count G 'frame expanded')" 0
-seq_run H "fake playing" "move $N; sleep 700; $(printf 'move 735 178; sleep 50; move 735 165; sleep 50; %.0s' $(seq 20)) move $A; sleep 1500"
+seq_run H "fake playing" "move $N; sleep 700; $(printf 'move 735 213; sleep 50; move 735 200; sleep 50; %.0s' $(seq 20)) move $A; sleep 1500"
 check H "one collapse" "$(count H '-> collapsing')" 1;  check H "one grow" "$(count H 'frame expanded')" 1
 # Timing from B's log (compact style: field 2 is hh:mm:ss.mmm).
 ms() { grep -m1 -- "$2" "$dir/$1.log" | awk '{ split($2, t, ":"); printf "%d", (t[1]*3600 + t[2]*60 + t[3]) * 1000 }'; }

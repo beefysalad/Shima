@@ -4,10 +4,10 @@ import Testing
 
 @Suite struct IslandLayoutTests {
     let notch = CGRect(x: 646, y: 924, width: 179, height: 32) // this Mac
-    let big = CGRect(x: 537.5, y: 783, width: 396, height: 173)
+    let big = CGRect(x: 517.5, y: 748, width: 436, height: 208)
 
     @Test func expandedMetricsMatchMockup() {
-        #expect(IslandLayout.expanded == IslandShapeMetrics(width: 360, height: 165, bottomRadius: 24, earRadius: 10))
+        #expect(IslandLayout.expanded == IslandShapeMetrics(width: 400, height: 200, bottomRadius: 24, earRadius: 10))
         #expect(IslandLayout.hoverMargin == 8)
     }
     @Test func collapsedMetricsAreNotchSizedWithoutEars() {
@@ -22,13 +22,13 @@ import Testing
         #expect(f.maxY == 956 && f.midX == notch.midX)
     }
     @Test func idleHotRectInsideBigPanelIsTheNotch() {
-        #expect(IslandLayout.hotRect(.idle, notch: notch, live: false, panelFrame: big) == CGRect(x: 108.5, y: 141, width: 179, height: 32))
+        #expect(IslandLayout.hotRect(.idle, notch: notch, live: false, panelFrame: big) == CGRect(x: 128.5, y: 176, width: 179, height: 32))
     }
     @Test func idleHotRectInIdlePanelIsWholePanel() {
         #expect(IslandLayout.hotRect(.idle, notch: notch, live: false, panelFrame: notch) == CGRect(x: 0, y: 0, width: 179, height: 32))
     }
     @Test func expandedHotRectIsWholePanel() {
-        #expect(IslandLayout.hotRect(.expanded, notch: notch, live: false, panelFrame: big) == CGRect(x: 0, y: 0, width: 396, height: 173))
+        #expect(IslandLayout.hotRect(.expanded, notch: notch, live: false, panelFrame: big) == CGRect(x: 0, y: 0, width: 436, height: 208))
     }
     @Test func expandedFrameOnOffsetScreen() { // built-in left of an external main display
         let n = CGRect(x: -824, y: 1024, width: 179, height: 32)
@@ -37,7 +37,7 @@ import Testing
     }
     @Test func virtualHotZoneExpands() {
         let n = CGRect(x: 620, y: 868, width: 200, height: 32)
-        #expect(IslandLayout.panelFrame(notch: n, live: false, expanded: true) == CGRect(x: 522, y: 727, width: 396, height: 173))
+        #expect(IslandLayout.panelFrame(notch: n, live: false, expanded: true) == CGRect(x: 502, y: 692, width: 436, height: 208))
     }
     @Test @MainActor func appStateStartsCollapsed() { #expect(AppState().mode == .collapsed) }
     let live = CGRect(x: 613, y: 924, width: 245, height: 32)
@@ -59,7 +59,7 @@ import Testing
         #expect(IslandLayout.hotRect(.idle, notch: notch, live: true, panelFrame: live) == CGRect(x: 0, y: 0, width: 245, height: 32))
     }
     @Test func liveIdleHotRectInsideBigPanel() {
-        #expect(IslandLayout.hotRect(.idle, notch: notch, live: true, panelFrame: big) == CGRect(x: 75.5, y: 141, width: 245, height: 32))
+        #expect(IslandLayout.hotRect(.idle, notch: notch, live: true, panelFrame: big) == CGRect(x: 95.5, y: 176, width: 245, height: 32))
     }
     @Test func liveOnVirtualHotZone() {
         let n = CGRect(x: 620, y: 868, width: 200, height: 32)

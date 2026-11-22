@@ -2,29 +2,29 @@ import CoreGraphics
 
 /// Content geometry in the expanded island's local, top-left coordinates.
 public enum NowPlayingLayout {
-    public static let artwork = CGRect(x: 14, y: 44, width: 88, height: 88)
-    public static let artworkRadius: CGFloat = 10
-    public static let column = CGRect(x: 116, y: 44, width: 230, height: 100)
-    public static let titleTop: CGFloat = 44
-    public static let artistTop: CGFloat = 64
-    public static let progressTop: CGFloat = 88
-    public static let timesTop: CGFloat = 96
-    public static let titleSize: CGFloat = 15
-    public static let artistSize: CGFloat = 12.5
-    public static let timesSize: CGFloat = 11
-    public static let progressHeight: CGFloat = 4
+    public static let artwork = CGRect(x: 18, y: 50, width: 104, height: 104)
+    public static let artworkRadius: CGFloat = 12
+    public static let column = CGRect(x: 140, y: 48, width: 242, height: 140)
+    public static let sourceTop: CGFloat = 48
+    public static let titleTop: CGFloat = 72
+    public static let artistTop: CGFloat = 94
+    public static let progressTop: CGFloat = 123
+    public static let timesTop: CGFloat = 132
+    public static let titleSize: CGFloat = 16
+    public static let artistSize: CGFloat = 12
+    public static let timesSize: CGFloat = 10
+    public static let progressHeight: CGFloat = 3
 
-    /// The title is narrower than the column so the settings gear fits at the top right.
-    public static let titleWidth: CGFloat = 200
-    public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 18) }
+    public static let titleWidth: CGFloat = column.width
+    public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 20) }
 
     /// Header tab icon: upper left of the open island, in the menu-bar-height strip left of the notch
-    /// (the notch occupies x 90.5..269.5 of the 360 pt island). More tabs will follow it to the right.
+    /// (the notch occupies x 110.5..289.5 of the 400 pt island). More tabs will follow it to the right.
     public static let tabIcon = CGRect(x: 14, y: 4, width: 28, height: 24)
 
     /// Settings gear: top right of the open island, below the notch strip and the 33 pt menu bar
     /// (status items there are other windows at the island's level).
-    public static let settingsButton = CGRect(x: 322, y: 38, width: 24, height: 24)
+    public static let settingsButton = CGRect(x: 358, y: 36, width: 24, height: 24)
 
     /// Centre in global top-left CG points; topY is the screen's top edge.
     public static func settingsButtonCenter(notchMidX: CGFloat, topY: CGFloat) -> CGPoint {
@@ -33,9 +33,9 @@ public enum NowPlayingLayout {
 
     public static func controlRect(_ command: SpotifyCommand) -> CGRect {
         switch command {
-        case .previous: CGRect(x: 173, y: 114, width: 28, height: 28)
-        case .playPause: CGRect(x: 215, y: 112, width: 32, height: 32)
-        case .next: CGRect(x: 261, y: 114, width: 28, height: 28)
+        case .previous: CGRect(x: 140, y: 157, width: 28, height: 28)
+        case .playPause: CGRect(x: 182, y: 155, width: 32, height: 32)
+        case .next: CGRect(x: 228, y: 157, width: 28, height: 28)
         }
     }
 

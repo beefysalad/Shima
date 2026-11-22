@@ -43,6 +43,7 @@ struct IslandView: View {
             }
             IslandShape(metrics: IslandLayout.metrics(for: state.mode, notch: notch, live: state.live))
                 .fill(fill)
+            WingsView(state: state, media: media, notchWidth: notch.width)
             Text("shima")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.white)

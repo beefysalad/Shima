@@ -51,6 +51,20 @@ if mode == "--menus" {
     exit(0)
 }
 
+if mode == "--settings" {
+    // The Settings window is Shima's only layer-0 window (the island is layer 25, menus 101).
+    // Titles are unreadable without Screen Recording, so match owner, pid and layer.
+    let wantPID = CommandLine.arguments.dropFirst(2).first.flatMap { Int($0) }
+    let mine = info.filter {
+        ($0[kCGWindowOwnerName as String] as? String) == "Shima"
+            && (($0[kCGWindowLayer as String] as? Int) ?? -1) == 0
+            && (wantPID == nil || ($0[kCGWindowOwnerPID as String] as? Int) == wantPID)
+    }
+    print("settings windows: \(mine.count)")
+    for w in mine { if let r = rectOf(w) { print("settings window \(fmt(r))") } }
+    exit(mine.count == 1 ? 0 : (mine.count == 0 ? 1 : 3))
+}
+
 var best: (layer: Int, rect: R)?
 for w in info where (w[kCGWindowOwnerName as String] as? String) == "Shima" {
     guard let r = rectOf(w), abs(r.y) < 0.5 else { continue }

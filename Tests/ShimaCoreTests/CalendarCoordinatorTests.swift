@@ -159,6 +159,44 @@ import Testing
         #expect(coordinator.model.reminders == [calendarTestReminder("new")])
     }
 
+    @Test(arguments: [false, true])
+    func pendingCallbackRechecksAccessBeforeStoreChange(revokeEvents: Bool) {
+        let client = authorizedClient()
+        let event = CalendarEvent(id: "event", title: "Event", start: now,
+                                  end: now.addingTimeInterval(60), isAllDay: false, colorRGB: [1, 0, 0])
+        client.events = [event]
+        client.reminders = [calendarTestReminder("cached")]
+        let coordinator = makeCoordinator(client)
+        open(coordinator)
+        #expect(coordinator.model.events == [event])
+        #expect(coordinator.model.reminders == client.reminders)
+
+        client.autoCompleteReminders = false
+        client.reminders = [calendarTestReminder("pending")]
+        client.onStoreChanged?()
+        client.reminders = [calendarTestReminder("replacement")]
+        if revokeEvents {
+            client.eventsAccess = .denied
+        } else {
+            client.remindersAccess = .denied
+        }
+
+        client.completePendingReminders()
+        if revokeEvents {
+            #expect(coordinator.model.eventsAccess == .denied)
+            #expect(coordinator.model.events.isEmpty)
+            #expect(coordinator.model.reminders == [calendarTestReminder("cached")])
+            #expect(client.eventsReadCount == 2 && client.loadCount == 3)
+            client.completePendingReminders()
+            #expect(coordinator.model.reminders == [calendarTestReminder("replacement")])
+        } else {
+            #expect(coordinator.model.remindersAccess == .denied)
+            #expect(coordinator.model.reminders.isEmpty)
+            #expect(coordinator.model.events == [event])
+            #expect(client.eventsReadCount == 3 && client.loadCount == 2)
+        }
+    }
+
     @Test func shutdownDiscardsCallbacksAndStopsWork() {
         let client = FakeCalendarClient(eventsAccess: .authorized, remindersAccess: .notDetermined, requestResult: nil)
         let coordinator = makeCoordinator(client)

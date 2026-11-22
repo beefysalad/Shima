@@ -28,9 +28,13 @@ import Observation
 
     public func refreshAccess() {
         guard !terminated else { return }
+        refreshAccess(events: client.eventsAccess, reminders: client.remindersAccess)
+    }
+
+    private func refreshAccess(events: CalendarAccess, reminders: CalendarAccess) {
         let previousEvents = model.eventsAccess
         let previousReminders = model.remindersAccess
-        let effects = model.setAccess(events: client.eventsAccess, reminders: client.remindersAccess, now: now())
+        let effects = model.setAccess(events: events, reminders: reminders, now: now())
         if previousEvents != model.eventsAccess || previousReminders != model.remindersAccess {
             loadGeneration &+= 1
         }
@@ -120,11 +124,22 @@ import Observation
         guard generation == loadGeneration, model.isVisible else { return }
         if model.remindersAccess == .authorized {
             client.loadReminders { [weak self] reminders in
-                guard let self, self.model.isVisible, self.loadGeneration == generation else { return }
-                self.model.dataLoaded(events: events, reminders: reminders, range: range)
+                self?.publish(events: events, reminders: reminders, range: range, generation: generation)
             }
         } else {
-            model.dataLoaded(events: events, reminders: [], range: range)
+            publish(events: events, reminders: [], range: range, generation: generation)
         }
+    }
+
+    private func publish(events: [CalendarEvent], reminders: [ReminderItem], range: DateInterval, generation: Int) {
+        guard model.isVisible, loadGeneration == generation else { return }
+        // Authorization can change before the store change notification arrives.
+        let eventsAccess = client.eventsAccess
+        let remindersAccess = client.remindersAccess
+        guard eventsAccess == model.eventsAccess, remindersAccess == model.remindersAccess else {
+            refreshAccess(events: eventsAccess, reminders: remindersAccess)
+            return
+        }
+        model.dataLoaded(events: events, reminders: reminders, range: range)
     }
 }

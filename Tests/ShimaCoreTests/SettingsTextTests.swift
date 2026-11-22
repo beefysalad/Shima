@@ -122,4 +122,8 @@ import Testing
             #expect(content.contains(point))
         }
     }
+
+    @Test func devicePopupsCopyMatchesTheMockup() {
+        #expect(SettingsText.devicePopupsDetail == "A short banner under the notch when a Bluetooth device connects.")
+    }
 }

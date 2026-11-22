@@ -26,6 +26,7 @@ public enum SettingsText {
     public static let windowTitle = "shima Settings"
     public static let automationButton = "Open Automation Settings…"
     public static let quitButton = "Quit shima"
+    public static let devicePopupsDetail = "A short banner under the notch when a Bluetooth device connects."
     public static let expiryWarningDays = 30
 
     /// `.running` only means no denial was seen since Spotify launched (M1 marks denial on error -1743).

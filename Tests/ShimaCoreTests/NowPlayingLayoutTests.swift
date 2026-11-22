@@ -40,6 +40,13 @@ import Testing
         #expect(g == CGRect(x: 322, y: 38, width: 24, height: 24))
         #expect(island.contains(g) && g.minY >= 34 && g.maxX == NowPlayingLayout.column.maxX)
     }
+    @Test func tabIconSitsInTheHeaderLeftOfTheNotch() {
+        let g = NowPlayingLayout.tabIcon
+        let notchLeft = (island.width - 179) / 2
+        #expect(g == CGRect(x: 14, y: 4, width: 28, height: 24))
+        #expect(island.contains(g) && g.maxY <= 32 && g.maxX < notchLeft)
+        #expect(!g.intersects(NowPlayingLayout.artwork) && !g.intersects(NowPlayingLayout.settingsButton))
+    }
     @Test func settingsButtonClearsTitleArtworkAndControls() {
         let g = NowPlayingLayout.settingsButton
         #expect(NowPlayingLayout.titleRect == CGRect(x: 116, y: 44, width: 200, height: 18))

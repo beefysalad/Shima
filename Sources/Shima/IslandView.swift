@@ -56,6 +56,11 @@ struct IslandView: View {
                 .opacity(state.mode == .expanded ? 1 : 0)
         }
         .overlay(alignment: .top) {
+            HeaderTabIcon()
+                .opacity(state.mode == .expanded ? 1 : 0)
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .top) {
             SettingsGear(action: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)
@@ -81,6 +86,23 @@ struct SettingsGear: View {
             .accessibilityLabel(SettingsText.windowTitle)
             .frame(width: r.width, height: r.height)
             .position(x: r.midX, y: r.midY)
+        }
+        .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
+    }
+}
+
+/// The selected tab icon in the upper-left header strip (Music is the only tab so far). Island-sized, so it never changes the layout.
+struct HeaderTabIcon: View {
+    var body: some View {
+        let r = NowPlayingLayout.tabIcon
+        ZStack(alignment: .topLeading) {
+            Image(systemName: "music.note")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.white)
+                .frame(width: r.width, height: r.height)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.13)))
+                .position(x: r.midX, y: r.midY)
+                .accessibilityLabel("Music")
         }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
     }

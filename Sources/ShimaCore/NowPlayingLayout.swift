@@ -18,6 +18,10 @@ public enum NowPlayingLayout {
     public static let titleWidth: CGFloat = 200
     public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 18) }
 
+    /// Header tab icon: upper left of the open island, in the menu-bar-height strip left of the notch
+    /// (the notch occupies x 90.5..269.5 of the 360 pt island). More tabs will follow it to the right.
+    public static let tabIcon = CGRect(x: 14, y: 4, width: 28, height: 24)
+
     /// Settings gear: top right of the open island, below the notch strip and the 33 pt menu bar
     /// (status items there are other windows at the island's level).
     public static let settingsButton = CGRect(x: 322, y: 38, width: 24, height: 24)

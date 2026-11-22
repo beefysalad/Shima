@@ -77,6 +77,11 @@ import ShimaCore
         check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
               "gear glyph rows \(gear) outside \(gearRect)")
         print("gear at \(gearRect): glyph rows \(gear) PASS")
+        let tabRect = NowPlayingLayout.tabIcon.offsetBy(dx: (396 - IslandLayout.expanded.width) / 2, dy: 0)
+        let tabGlyph = expanded.rows(in: Int(tabRect.minX)..<Int(tabRect.maxX), ys: 0..<32, matching: isGear)
+        check(!tabGlyph.isEmpty && tabGlyph.lowerBound >= Int(tabRect.minY) && tabGlyph.upperBound <= Int(tabRect.maxY),
+              "tab icon glyph rows \(tabGlyph) outside \(tabRect)")
+        print("tab icon at \(tabRect): glyph rows \(tabGlyph) PASS")
         // The gear is an expanded-only control: the same frame rendered collapsed must show no gear pixel.
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()

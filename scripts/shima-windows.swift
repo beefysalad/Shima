@@ -65,7 +65,7 @@ print("window layer=\(island.layer) \(fmt(island.rect))")
 var expected = notch
 var okMessage = "PASS idle frame matches notch within 1pt"
 switch mode {
-case "--live":
+case "--live", "--live-frame-only":
     expected = R(x: notch.x - 33, y: notch.y, w: notch.w + 66, h: notch.h)
     okMessage = "PASS live frame matches notch+wings within 1pt"
 case "--expanded":
@@ -83,8 +83,9 @@ guard ok else {
     exit(1)
 }
 print(okMessage)
+if mode == "--live-frame-only" { exit(0) }
 
-if mode == "--live" {
+if mode == "--live" {  // --live-frame-only stops above: frame check only, no status item lookup
     // First status item: leftmost non-Shima window at layer 25, y == 0, right of the notch.
     var first: R?
     for w in info {

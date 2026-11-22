@@ -13,7 +13,7 @@ hits="$(grep -rnE 'addGlobalMonitorForEvents|addLocalMonitorForEvents|scheduledT
   | grep -vE '^Sources/Shima/NowPlayingView\.swift:[0-9]+:.*TimelineView' || true)"
 if [[ -n "$hits" ]]; then echo "$hits"; echo "FAIL static check"; fail=1; else echo "ok"; fi
 
-if swift scripts/shima-windows.swift --live >/dev/null 2>&1; then live=1; else live=0; fi
+if swift scripts/shima-windows.swift --live-frame-only >/dev/null 2>&1; then live=1; else live=0; fi
 if [[ $mode == idle && $live == 1 ]]; then echo "the island is live (Spotify playing); use --playing"; exit 2; fi
 if [[ $mode == playing && $live == 0 ]]; then echo "the island is not live; start with SHIMA_FAKE_SPOTIFY=playing"; exit 2; fi
 pid="$(pgrep -nx Shima)" || { echo "Shima is not running"; exit 2; }

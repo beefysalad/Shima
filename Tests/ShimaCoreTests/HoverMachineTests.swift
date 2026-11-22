@@ -156,4 +156,85 @@ import Testing
         let (m, e) = run([.pointer(inside: true), .idleGeometryChanged, .pointer(inside: true)])
         #expect(m.phase == .dwelling && e == [])
     }
+
+    @Test func peekFromCollapsed() {
+        let (machine, effects) = run([.peekRequested])
+        #expect(machine.phase == .peeking)
+        #expect(effects == [.growPanelForPeek, .setHotRegion(.peek), .animatePeekIn, .startTimer(.peek)])
+    }
+
+    @Test func peekIgnoredUnlessCollapsed() {
+        let enter: [HoverInput] = [.pointer(inside: true)]
+        let expand = enter + [.dwellElapsed]
+        let leave = expand + [.pointer(inside: false)]
+        for inputs in [enter, expand, leave, leave + [.leaveElapsed]] {
+            let (before, _) = run(inputs)
+            let (after, effects) = run(inputs + [.peekRequested])
+            #expect(after.phase == before.phase && effects.isEmpty)
+        }
+    }
+
+    @Test func secondPeekRestartsTimer() {
+        let (machine, effects) = run([.peekRequested, .peekRequested])
+        #expect(machine.phase == .peeking && effects == [.startTimer(.peek)])
+    }
+
+    @Test func peekElapsedCollapses() {
+        let inputs: [HoverInput] = [.peekRequested, .peekElapsed]
+        let (collapsing, collapse) = run(inputs)
+        #expect(collapsing.phase == .collapsing)
+        #expect(collapse == [.setHotRegion(.idle), .animateCollapse(generation: 1)])
+        let (collapsed, shrink) = run(inputs + [.collapseFinished(generation: 1)])
+        #expect(collapsed.phase == .collapsed && shrink == [.shrinkPanel])
+    }
+
+    @Test func hoverDuringPeekExpandsAndStaleTimerIsIgnored() {
+        let inputs: [HoverInput] = [.peekRequested, .pointer(inside: true)]
+        let (dwelling, dwell) = run(inputs)
+        #expect(dwelling.phase == .dwelling && dwell == [.startTimer(.dwell)])
+        let (expanded, expand) = run(inputs + [.dwellElapsed])
+        #expect(expanded.phase == .expanded)
+        #expect(expand == [.growPanel, .setHotRegion(.expanded), .animateExpand])
+        let (afterTimer, effects) = run(inputs + [.dwellElapsed, .peekElapsed])
+        #expect(afterTimer.phase == .expanded && effects.isEmpty)
+    }
+
+    @Test func peekCollapseCompletionAfterRehover() {
+        let inputs: [HoverInput] = [.peekRequested, .peekElapsed, .pointer(inside: true)]
+        let (dwelling, shrink) = run(inputs + [.collapseFinished(generation: 1)])
+        #expect(dwelling.phase == .dwelling && shrink == [.shrinkPanel])
+        let (_, expand) = run(inputs + [.collapseFinished(generation: 1), .dwellElapsed])
+        #expect(expand == [.growPanel, .setHotRegion(.expanded), .animateExpand])
+        let (afterStale, effects) = run(inputs + [.collapseFinished(generation: 0)])
+        #expect(afterStale.phase == .dwelling && effects.isEmpty)
+    }
+
+    @Test func pointerOutsideAndGeometryChangeKeepPeek() {
+        for input in [HoverInput.pointer(inside: false), .idleGeometryChanged] {
+            let (machine, effects) = run([.peekRequested, input])
+            #expect(machine.phase == .peeking && effects.isEmpty)
+        }
+    }
+
+    @Test func leavingDwellFromPeekStartsCollapse() {
+        let inputs: [HoverInput] = [.peekRequested, .pointer(inside: true), .pointer(inside: false)]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .collapsing)
+        #expect(effects == [.cancelTimer, .setHotRegion(.idle), .animateCollapse(generation: 1)])
+        let (collapsed, shrink) = run(inputs + [.collapseFinished(generation: 1)])
+        #expect(collapsed.phase == .collapsed && shrink == [.shrinkPanel])
+    }
+
+    @Test func completedCollapseDoesNotShrinkLaterPeekDwell() {
+        let inputs: [HoverInput] = [.peekRequested, .peekElapsed, .collapseFinished(generation: 1),
+                                    .peekRequested, .pointer(inside: true), .collapseFinished(generation: 1)]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .dwelling && effects.isEmpty)
+    }
+
+    @Test func resetDuringPeek() {
+        let (machine, effects) = run([.peekRequested, .reset])
+        #expect(machine.phase == .collapsed)
+        #expect(effects == [.cancelTimer, .snapCollapsed, .setHotRegion(.idle), .shrinkPanel])
+    }
 }

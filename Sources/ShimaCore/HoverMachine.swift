@@ -1,30 +1,33 @@
 public enum HoverPhase: Equatable, Sendable {
-    case collapsed, dwelling, expanded, leaving, collapsing
+    case collapsed, peeking, dwelling, expanded, leaving, collapsing
 }
 
 public enum HoverTimer: Equatable, Sendable {
-    case dwell, leave
+    case dwell, leave, peek
 }
 
 public enum HoverInput: Equatable, Sendable {
     case pointer(inside: Bool)
     case dwellElapsed, leaveElapsed
     case collapseFinished(generation: Int)
+    case peekRequested, peekElapsed
     case reset
     case idleGeometryChanged
 }
 
 public enum HoverEffect: Equatable, Sendable {
     case startTimer(HoverTimer), cancelTimer
-    case growPanel, shrinkPanel, setHotRegion(HotRegion)
-    case animateExpand, animateCollapse(generation: Int), snapCollapsed
+    case growPanel, growPanelForPeek, shrinkPanel, setHotRegion(HotRegion)
+    case animateExpand, animatePeekIn, animateCollapse(generation: Int), snapCollapsed
 }
 
 public struct HoverMachine: Sendable {
     public private(set) var phase: HoverPhase = .collapsed
     private var pointerInside = false
     private var panelLarge = false
+    private var panelIsPeekSized = false
     private var generation = 0
+    private var collapseInFlight = false
 
     public init() {}
 
@@ -37,6 +40,7 @@ public struct HoverMachine: Sendable {
         switch (phase, input) {
         case (_, .reset):
             generation += 1
+            collapseInFlight = false
             phase = .collapsed
             pointerInside = false
             var effects: [HoverEffect] = [.cancelTimer, .snapCollapsed, .setHotRegion(.idle)]
@@ -44,14 +48,29 @@ public struct HoverMachine: Sendable {
                 effects.append(.shrinkPanel)
             }
             panelLarge = false
+            panelIsPeekSized = false
             return effects
 
         case (_, .idleGeometryChanged):
             return panelLarge ? [] : [.shrinkPanel]
 
-        case (.collapsed, .pointer(inside: true)), (.collapsing, .pointer(inside: true)):
+        case (.collapsed, .peekRequested):
+            phase = .peeking
+            panelLarge = true
+            panelIsPeekSized = true
+            return [.growPanelForPeek, .setHotRegion(.peek), .animatePeekIn, .startTimer(.peek)]
+
+        case (.peeking, .peekRequested):
+            return [.startTimer(.peek)]
+
+        case (.collapsed, .pointer(inside: true)), (.collapsing, .pointer(inside: true)),
+             (.peeking, .pointer(inside: true)):
             phase = .dwelling
             return [.startTimer(.dwell)]
+
+        case (.dwelling, .pointer(inside: false)) where panelIsPeekSized && !collapseInFlight:
+            // A brief pass over a peek replaced its timer with a dwell that is now cancelled.
+            return [.cancelTimer] + beginCollapse()
 
         case (.dwelling, .pointer(inside: false)):
             phase = panelLarge ? .collapsing : .collapsed
@@ -59,8 +78,10 @@ public struct HoverMachine: Sendable {
 
         case (.dwelling, .dwellElapsed):
             phase = .expanded
-            var effects: [HoverEffect] = panelLarge ? [] : [.growPanel]
+            var effects: [HoverEffect] = !panelLarge || panelIsPeekSized ? [.growPanel] : []
             panelLarge = true
+            panelIsPeekSized = false
+            collapseInFlight = false
             effects += [.setHotRegion(.expanded), .animateExpand]
             return effects
 
@@ -72,22 +93,27 @@ public struct HoverMachine: Sendable {
             phase = .expanded
             return [.cancelTimer]
 
-        case (.leaving, .leaveElapsed):
-            generation += 1
-            phase = .collapsing
-            return [.setHotRegion(.idle), .animateCollapse(generation: generation)]
+        case (.leaving, .leaveElapsed), (.peeking, .peekElapsed):
+            return beginCollapse()
 
-        case (.collapsing, .collapseFinished(let completedGeneration)) where completedGeneration == generation:
-            phase = .collapsed
+        case (.collapsing, .collapseFinished(let completedGeneration)),
+             (.dwelling, .collapseFinished(let completedGeneration)):
+            guard collapseInFlight, completedGeneration == generation else { return [] }
+            if phase == .collapsing { phase = .collapsed }
+            collapseInFlight = false
             panelLarge = false
-            return [.shrinkPanel]
-
-        case (.dwelling, .collapseFinished(let completedGeneration)) where completedGeneration == generation && panelLarge:
-            panelLarge = false
+            panelIsPeekSized = false
             return [.shrinkPanel]
 
         default:
             return []
         }
+    }
+
+    private mutating func beginCollapse() -> [HoverEffect] {
+        generation += 1
+        collapseInFlight = true
+        phase = .collapsing
+        return [.setHotRegion(.idle), .animateCollapse(generation: generation)]
     }
 }

@@ -123,6 +123,8 @@ final class IslandPanelController {
             var t = Transaction()
             t.disablesAnimations = true
             withTransaction(t) { state.mode = .collapsed }
+        case .growPanelForPeek, .animatePeekIn:
+            break // Peek panel integration is handled in Task 5a.
         case .startTimer, .cancelTimer:
             break // consumed by HoverController
         }

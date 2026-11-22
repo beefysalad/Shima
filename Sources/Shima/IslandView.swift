@@ -65,7 +65,7 @@ struct IslandView: View {
         }
         .overlay(alignment: .top) {
             if state.mode == .expanded && state.selectedTab == .calendar, let calendar {
-                CalendarContent(coordinator: calendar, now: { calendar.currentDate })
+                CalendarContent(coordinator: calendar)
             }
         }
         .overlay(alignment: .top) {

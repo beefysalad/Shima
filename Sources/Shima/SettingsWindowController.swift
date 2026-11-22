@@ -18,6 +18,7 @@ final class SettingsWindow: NSWindow {
 /// Showing it is the only place shima activates itself; closing it hands activation back.
 @MainActor
 final class SettingsWindowController: NSObject, NSWindowDelegate {
+    private let updater = AppUpdater()
     private let model: SettingsModel
     private let onToggleLogin: @MainActor () -> Void
     private var window: SettingsWindow?
@@ -110,7 +111,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         w.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         w.delegate = self
         let host = NSHostingView(rootView: SettingsView(
-            model: model, onToggleLogin: onToggleLogin,
+            model: model, updater: updater, onToggleLogin: onToggleLogin,
             onEqualizerMode: { [weak model] in model?.setEqualizerMode($0) },
             onSpotifyRow: { kind in Log.settings.info("settings spotify row=\(kind.rawValue, privacy: .public)") }))
         host.sizingOptions = []

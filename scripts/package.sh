@@ -25,3 +25,6 @@ ln -s /Applications "$STAGE/Applications"
 hdiutil create -volname "Shima" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
 echo "Wrote $ZIP ($(du -h "$ZIP" | cut -f1 | tr -d ' '))"
 echo "Wrote $DMG ($(du -h "$DMG" | cut -f1 | tr -d ' '))"
+
+(cd dist && shasum -a 256 "Shima-$VERSION.dmg" "Shima-$VERSION.zip" > SHA256SUMS)
+echo "Wrote dist/SHA256SUMS"

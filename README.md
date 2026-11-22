@@ -42,10 +42,18 @@ The island lives on the built-in display only. It is invisible when idle: on a n
 
 **Check scripts** (run with the app running; they drive the pointer and keys with synthetic events): `scripts/verify-alignment.sh [--live|--expanded|--menus]` (panel vs notch), `verify-focus.sh [--clicks]` (focus never stolen), `verify-live-hover.sh`, `verify-idle.sh [--playing]` (60 s idle CPU and memory), `verify-settings.sh` (Settings window, entry points, equalizer modes), `verify-view-layout.sh` (offscreen pixel check of the views), and `watch-hover.sh` (live hover and frame log).
 
+## Updates
+
+Open Settings → Updates → **Check for updates**. On a downloaded, ad-hoc-signed copy in `/Applications/Shima.app`, a newer release offers **Update and restart**. Shima fetches the ZIP and `SHA256SUMS` from its GitHub release over HTTPS, verifies the checksum, archive paths, bundle identity, version and code signature, then quits, replaces the app and restarts. A failed replacement or launch restores the previous bundle; successful updates keep `Previous.app` in the hidden `.shima-update-<UUID>` folder beside Shima for recovery.
+
+Checks run only when you click. There is no automatic update polling. Source builds, certificate-signed installs and unwritable Applications folders show a release link instead. Keep using the same signing identity with `scripts/install.sh` for certificate-signed local builds. The public releases remain ad-hoc signed and not notarized; updating inside Shima does not guarantee Spotify permission will persist. Checksums detect corrupted downloads; they do not provide an independent publisher signature.
+
+The first updater-capable release needs a one-time manual install. Later releases must include the ZIP, updater helper and `SHA256SUMS`; `scripts/package.sh` now produces all required files. `scripts/verify-updater.sh` checks the GUI states, archive verification, helper replacement and launch-failure rollback using fixtures under `.build`, without replacing the installed app.
+
 ## Roadmap
 
 - **Spotify Up next:** show the next few tracks beside the player. Spotify's local scripting interface does not expose the queue; this needs an optional Spotify sign-in through the Web API. Keep the current player without a queue until that integration is ready.
-- **Updates in Settings:** check for a new GitHub release, show what's new, and offer download, install and restart, with verification and rollback. Pair this with stable release signing to preserve Spotify Automation permission, and Developer ID signing plus notarization for the normal macOS first-launch experience.
+- **Release signing:** preserve Spotify Automation permission across public updates, and add Developer ID signing plus notarization for the normal macOS first-launch experience.
 - **Claude Code sessions:** show running sessions, requests for attention and completion through `shimactl` hooks.
 - **File shelf:** temporarily park files in the island and drag them elsewhere.
 

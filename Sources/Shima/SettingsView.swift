@@ -5,6 +5,8 @@ import ShimaCore
 /// follows AppState through Observation.
 struct SettingsView: View {
     let model: SettingsModel
+    let updater: AppUpdater
+    @State private var confirmUpdate = false
     let onToggleLogin: @MainActor () -> Void
     let onEqualizerMode: @MainActor (EqualizerMode) -> Void
     let onSpotifyRow: @MainActor (SpotifyStatusKind) -> Void
@@ -30,12 +32,39 @@ struct SettingsView: View {
             header("About", SettingsLayout.aboutHeader)
             Text(model.versionText).font(.system(size: 12)).place(SettingsLayout.version)
             Text(model.signingText).font(.system(size: 12)).foregroundStyle(.secondary).place(SettingsLayout.signing)
+            header("Updates", SettingsLayout.updatesHeader)
+            Text(updater.message)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+                .place(SettingsLayout.updateStatus)
+            HStack(spacing: 12) {
+                Button(updater.busy ? "Working…" : "Check for updates") { updater.check() }
+                    .disabled(updater.busy)
+                if updater.canInstall {
+                    Button("Update and restart…") { confirmUpdate = true }
+                        .disabled(updater.busy)
+                    if let release = updater.release {
+                        Link("What’s new", destination: release.page).font(.system(size: 12))
+                    }
+                } else if let release = updater.release {
+                    Link("View release", destination: release.page)
+                }
+            }
+            .place(SettingsLayout.updateActions)
+
             Button { model.quit() } label: {
                 Text(SettingsText.quitButton).frame(width: SettingsLayout.quitButton.width - 16)
             }
             .place(SettingsLayout.quitButton)
         }
         .frame(width: SettingsLayout.size.width, height: SettingsLayout.size.height, alignment: .topLeading)
+        .confirmationDialog("Install the update and restart Shima?", isPresented: $confirmUpdate) {
+            Button("Update and restart") { updater.install() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Shima will close briefly. Spotify keeps playing. Your previous app is kept for recovery. Ad-hoc releases may require Spotify permission again.")
+        }
         .onChange(of: model.spotifyRow.kind, initial: true) { _, kind in onSpotifyRow(kind) }
     }
 

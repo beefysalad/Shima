@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "ShimaCore", targets: ["ShimaCore"]),
         .executable(name: "Shima", targets: ["Shima"]),
         .executable(name: "shimactl", targets: ["shimactl"]),
+        .executable(name: "ShimaUpdater", targets: ["ShimaUpdater"]),
     ],
     targets: [
         // State, event bus and the Unix-socket server (logic only; testable).
@@ -16,6 +17,7 @@ let package = Package(
         .executableTarget(name: "Shima", dependencies: ["ShimaCore"]),
         // CLI that Claude Code hooks call. Must always exit 0 quickly.
         .executableTarget(name: "shimactl"),
+        .executableTarget(name: "ShimaUpdater", dependencies: ["ShimaCore"]),
         .testTarget(name: "ShimaCoreTests", dependencies: ["ShimaCore"]),
     ]
 )

@@ -11,6 +11,7 @@ APP="dist/Shima.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN/Shima" "$APP/Contents/MacOS/Shima"
+cp "$BIN/ShimaUpdater" "$APP/Contents/MacOS/ShimaUpdater"
 cp "$BIN/shimactl" "$APP/Contents/MacOS/shimactl"
 cp assets/branding/shima.icns "$APP/Contents/Resources/shima.icns"
 
@@ -26,7 +27,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleIconFile</key><string>shima.icns</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleVersion</key><string>1</string>
-    <key>CFBundleShortVersionString</key><string>0.1.3</string>
+    <key>CFBundleShortVersionString</key><string>0.1.4</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
@@ -35,6 +36,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
+codesign --force --timestamp=none -s "$SIGN_ID" "$APP/Contents/MacOS/ShimaUpdater"
 codesign --force --timestamp=none -s "$SIGN_ID" "$APP/Contents/MacOS/shimactl"
 codesign --force --timestamp=none -s "$SIGN_ID" "$APP"
 echo "signed with: $SIGN_ID"

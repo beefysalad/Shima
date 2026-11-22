@@ -102,17 +102,17 @@ import Testing
 @Suite struct SettingsLayoutTests {
     /// scripts/verify-settings.sh copies these numbers; change both together.
     @Test func sizeAndClickPointsArePinned() {
-        #expect(SettingsLayout.size == CGSize(width: 440, height: 380))
+        #expect(SettingsLayout.size == CGSize(width: 440, height: 510))
         #expect(SettingsLayout.launchAtLoginClick == CGPoint(x: 28, y: 50))
         #expect(EqualizerMode.allCases.map { SettingsLayout.center(SettingsLayout.equalizerSegment($0)) }
                 == [CGPoint(x: 185, y: 108), CGPoint(x: 275, y: 108), CGPoint(x: 365, y: 108)])
         #expect(SettingsLayout.center(SettingsLayout.automationButton) == CGPoint(x: 135, y: 240))
-        #expect(SettingsLayout.center(SettingsLayout.quitButton) == CGPoint(x: 370, y: 352))
+        #expect(SettingsLayout.center(SettingsLayout.quitButton) == CGPoint(x: 370, y: 484))
     }
     @Test func controlsFitAndDoNotOverlap() {
         let bounds = CGRect(origin: .zero, size: SettingsLayout.size)
         let rects = SettingsLayout.allRects
-        #expect(rects.count == 14)
+        #expect(rects.count == 17)
         for r in rects { #expect(bounds.contains(r)) }
         for i in rects.indices {
             for j in rects.indices where j > i {

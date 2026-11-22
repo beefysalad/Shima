@@ -11,7 +11,7 @@ When a Bluetooth device connects (AirPods, a keyboard, a mouse), the collapsed i
 - Peek mechanism: the collapsed island can show a banner for a few seconds without any pointer interaction, then collapse. It never steals focus, never blocks hover (hovering during a peek opens the full island), and costs nothing while idle (one one-shot timer exists only while a peek is on screen).
 - Device events: Bluetooth device connections, from system notifications, with the device name, a kind (headphones, earbuds, keyboard, mouse, trackpad, speaker, game controller, other), and battery percent when the system exposes it. **[My call]** Connections only: no disconnect banner (the reference shows none, and merging quick reconnects would need a delay timer).
 - Banner content per the mockup: round badge with the device glyph, bold line "Connected", device name below, battery as "82%" on the right when known. **[My call]** The banner stays 3 s.
-- Quiet by default: **[My call]** no banner for connections within 10 s after the Mac wakes (devices reconnect then); the same device address shows at most one banner per 5 s; a new device event replaces a banner already showing and restarts its timer; events while the island is open, being hovered, or on the Camera tab are dropped, not queued. Devices already connected at launch never fire (the system notification only reports new connections).
+- Quiet by default: **[My call]** no banner for connections within 10 s after the Mac wakes (devices reconnect then); the same device address shows at most one banner per 5 s; a new device event replaces a banner already showing and restarts its timer; events while the island is open, being hovered, or on the Camera tab are dropped, not queued. No banner within 3 s of Shima registering for notifications (the system replays every already-connected device at registration; spike S1).
 - A "Device pop-ups" on/off toggle on the Settings General page (default on).
 
 ## Non-goals
@@ -20,7 +20,7 @@ Disconnect banners; USB or Thunderbolt devices; low battery alerts; charging eve
 
 ## Anti-goals
 
-Polling for devices. A Bluetooth permission prompt at launch if the system notification path does not need one (see spike S1). Showing a banner that flickers during reconnect loops. Any change to the collapsed idle size.
+Polling for devices. (Changed by spike S1: IOBluetooth does need the Bluetooth permission, so the prompt appears on the first launch after the update; it is accepted.) Showing a banner that flickers during reconnect loops. Any change to the collapsed idle size.
 
 ## Constraints from the project
 
@@ -54,7 +54,7 @@ Device detection: **IOBluetooth connect/disconnect notifications (`IOBluetoothDe
 - `DeviceService`: owns the IOBluetooth client (or the S1 fallback), registers once at launch, forwards events through the policy to the `IslandPanelController`, which calls the hover controller's new `peek(duration:)`. Wake and sleep notifications feed the grace window. No timers other than the hover controller's peek timer.
 - `IslandPanelController` handles the new effects (grow to the peek frame, animate the shape to `IslandLayout.peek`, show content). `IslandView` gets a `PeekContent` overlay drawn from `PeekLayout` constants in `ShimaCore`.
 - Fake mode `SHIMA_FAKE_DEVICES=1`: `drive.swift` `fake-device connect "<name>" <kind> [battery]` posts `local.shima.fake-device`; logs `device fake ...` and `peek shown/dismissed` lines.
-- Info.plist: add `NSBluetoothAlwaysUsageDescription` only if S1 shows the chosen path needs it.
+- Info.plist: `NSBluetoothAlwaysUsageDescription` is mandatory (spike S1: without it the process is killed at the first IOBluetooth call).
 - Settings General page gets the toggle (matches an updated Settings mockup).
 
 ### Spike S1 (Claude, before the glue tasks; needs the user to connect and disconnect two devices)

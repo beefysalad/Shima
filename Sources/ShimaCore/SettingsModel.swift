@@ -31,6 +31,7 @@ public struct LoginItemToggle: Equatable, Sendable {
     public private(set) var loginItemStatus: LoginItemStatus
     public private(set) var loginRegistrationFailed = false
     public private(set) var equalizerMode: EqualizerMode
+    public private(set) var devicePopupsEnabled: Bool
     public private(set) var signingText = ""
     public let versionText: String
 
@@ -42,6 +43,7 @@ public struct LoginItemToggle: Equatable, Sendable {
     @ObservationIgnored public var onOpenURL: (@MainActor (URL) -> Void)?
     @ObservationIgnored public var onQuit: (@MainActor () -> Void)?
     @ObservationIgnored public var onEqualizerModeChange: (@MainActor (EqualizerMode) -> Void)?
+    @ObservationIgnored public var onDevicePopupsChange: (@MainActor (Bool) -> Void)?
 
     @ObservationIgnored private let state: AppState
     @ObservationIgnored private let store: SettingsStore
@@ -64,7 +66,10 @@ public struct LoginItemToggle: Equatable, Sendable {
         self.loginItemStatus = loginItems.status
         let mode = store.equalizerMode
         self.equalizerMode = mode
+        let devicePopupsEnabled = store.devicePopups
+        self.devicePopupsEnabled = devicePopupsEnabled
         state.equalizerMode = mode
+        state.devicePopupsEnabled = devicePopupsEnabled
     }
 
     public func refresh() {
@@ -95,6 +100,14 @@ public struct LoginItemToggle: Equatable, Sendable {
         equalizerMode = mode
         state.equalizerMode = mode
         onEqualizerModeChange?(mode)
+    }
+
+    public func setDevicePopupsEnabled(_ enabled: Bool) {
+        store.setDevicePopups(enabled)
+        guard enabled != devicePopupsEnabled else { return }
+        devicePopupsEnabled = enabled
+        state.devicePopupsEnabled = enabled
+        onDevicePopupsChange?(enabled)
     }
 
     public func openAutomationSettings() { onOpenURL?(SettingsLinks.automation) }

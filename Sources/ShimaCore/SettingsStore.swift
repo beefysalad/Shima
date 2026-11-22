@@ -43,6 +43,7 @@ import Foundation
 @MainActor public final class SettingsStore {
     public static let suiteName = "local.shima"
     public static let equalizerModeKey = "equalizerMode"
+    public static let devicePopupsKey = "devicePopups"
 
     private let storage: PreferenceStorage
 
@@ -59,5 +60,15 @@ import Foundation
     public func setEqualizerMode(_ mode: EqualizerMode) {
         guard storage.string(forKey: Self.equalizerModeKey) != mode.rawValue else { return }
         storage.setString(mode.rawValue, forKey: Self.equalizerModeKey)
+    }
+
+    public var devicePopups: Bool {
+        storage.string(forKey: Self.devicePopupsKey) != "off"
+    }
+
+    public func setDevicePopups(_ enabled: Bool) {
+        let value = enabled ? "on" : "off"
+        guard storage.string(forKey: Self.devicePopupsKey) != value else { return }
+        storage.setString(value, forKey: Self.devicePopupsKey)
     }
 }

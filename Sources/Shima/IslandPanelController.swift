@@ -26,11 +26,15 @@ final class IslandPanelController {
 
     init() {
         hostingView = NSHostingView(rootView: IslandView(
-            state: state, notch: .zero, hasNotch: false,
+            state: state, media: media, notch: .zero, hasNotch: false,
             debug: Self.debug, hitOpacity: Self.hitOpacity))
         hostingView.frame = trackingView.bounds
         hostingView.autoresizingMask = [.width, .height]
         trackingView.addSubview(hostingView)
+
+        state.onArtworkChange = { [weak media] trackID, url in
+            media?.artworkCache.show(trackID: trackID, url: url)
+        }
 
         hover = HoverController(scheduler: DispatchScheduler()) { [weak self] effect in
             self?.perform(effect)
@@ -65,7 +69,7 @@ final class IslandPanelController {
         let r = notch
         Log.display.info("display built-in notch=\(display.hasNotch, privacy: .public) rect=\(r.minX, format: .fixed(precision: 1), privacy: .public),\(r.minY, format: .fixed(precision: 1), privacy: .public),\(r.width, format: .fixed(precision: 1), privacy: .public),\(r.height, format: .fixed(precision: 1), privacy: .public)")
         hostingView.rootView = IslandView(
-            state: state, notch: notch, hasNotch: hasNotch,
+            state: state, media: media, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity)
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged

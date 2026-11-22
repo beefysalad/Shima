@@ -6,4 +6,5 @@ import Observation
 final class IslandMedia {
     var artwork: NSImage? = nil
     var equalizerFrozen = false
+    @ObservationIgnored lazy var artworkCache = ArtworkCache(media: self)
 }

@@ -22,6 +22,7 @@ struct IslandShape: Shape {
 
 struct IslandView: View {
     let state: AppState
+    let media: IslandMedia
     let notch: CGRect
     let hasNotch: Bool
     let debug: Bool
@@ -42,15 +43,15 @@ struct IslandView: View {
             }
             IslandShape(metrics: IslandLayout.metrics(for: state.mode, notch: notch, live: state.live))
                 .fill(fill)
-            Text("shima")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .padding(.top, notch.height + 12)
-                .opacity(state.mode == .expanded ? 1 : 0)
+            WingsView(state: state, media: media, notchWidth: notch.width)
             if debug {
                 Rectangle().strokeBorder(Color.red.opacity(0.6), lineWidth: 1)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .overlay(alignment: .top) {
+            NowPlayingView(state: state, media: media)
+                .opacity(state.mode == .expanded ? 1 : 0)
+        }
     }
 }

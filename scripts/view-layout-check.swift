@@ -155,8 +155,8 @@ import ShimaCore
               "calendar icon glyph rows \(calendarGlyph) outside \(calendarIcon)")
         check(calendarPixels.span(in: Int(110.5 + shiftX)..<Int(289.5 + shiftX), ys: 0..<32, matching: notBlack).isEmpty,
               "calendar tab must leave the notch zone empty")
-        check(calendarPixels.span(in: Int(CalendarLayout.gridOrigin.x + shiftX)..<Int(386 + shiftX), ys: 72..<190, matching: isAccent).count > 8,
-              "calendar must draw today's accent circle in the grid")
+        check(calendarPixels.span(in: Int(CalendarLayout.gridOrigin.x + shiftX)..<Int(386 + shiftX), ys: 72..<190, matching: isAccent).count >= 5,
+              "calendar must draw today's number in the accent colour in the grid")
         let leftRows = calendarPixels.span(in: Int(18 + shiftX)..<Int(176 + shiftX), ys: 90..<190, matching: notBlack)
         check(!leftRows.isEmpty && leftRows.first! >= 90 && leftRows.last! < 186, "calendar rows must sit in y 90..186, got \(leftRows)")
         let grid = calendarPixels.span(in: Int(196 + shiftX)..<Int(386 + shiftX), ys: 60..<200, matching: notBlack)
@@ -175,7 +175,7 @@ import ShimaCore
         let deniedCalendar = render(host)
         let notice = deniedCalendar.span(in: Int(18 + shiftX)..<Int(176 + shiftX), ys: 92..<180, matching: notBlack)
         check(!notice.isEmpty && notice.last! < 180, "denied calendar must show the two notices in y 92..180, got \(notice)")
-        print("calendar tab: silhouette, header icon \(calendarIcon), empty notch zone, accent today circle, rows y90..186, six-week grid by y186, denied notices PASS")
+        print("calendar tab: silhouette, header icon \(calendarIcon), empty notch zone, accent today number, rows y90..186, six-week grid by y186, denied notices PASS")
         calendarClient.eventsAccess = .authorized
         calendarClient.remindersAccess = .authorized
         calendarCoordinator.refreshAccess()

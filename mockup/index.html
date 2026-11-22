@@ -370,10 +370,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .cday span { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; }
 .cday:hover span { background: var(--i-fill2); }
 .cday.out { color: var(--i-ink3); font-weight: 500; }
-.cday.today span { background: var(--claude); color: #fff; }
+.cday.today { color: var(--claude); font-weight: 800; }
 .cday.sel:not(.today) span { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
 .cday i { position: absolute; left: 50%; bottom: 1px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--done); }
-.cday.today i { background: #fff; }
+
 
 /* --- Device peek --- */
 .peek-badge.dev { background: var(--i-fill2); color: var(--i-ink); border-radius: 999px; }

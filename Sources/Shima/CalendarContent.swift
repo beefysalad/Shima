@@ -206,16 +206,15 @@ struct CalendarContent: View {
     private func dayCell(_ day: GridDay, rect: CGRect, selected: Bool, hasEvent: Bool) -> some View {
         Button { coordinator.selectDay(day.date) } label: {
             ZStack {
-                if day.isToday {
-                    Circle().fill(accent).frame(width: CalendarLayout.dayCircle, height: CalendarLayout.dayCircle)
-                } else if selected {
+                if selected && !day.isToday {
                     Circle().strokeBorder(Color.white.opacity(0.55), lineWidth: 1.5)
                         .frame(width: CalendarLayout.dayCircle, height: CalendarLayout.dayCircle)
                 }
-                Text("\(day.dayNumber)").font(.system(size: 11, weight: day.inMonth ? .semibold : .regular)).monospacedDigit()
-                    .foregroundStyle(day.inMonth ? Color.white : ink3)
+                Text("\(day.dayNumber)")
+                    .font(.system(size: 11, weight: day.isToday ? .heavy : (day.inMonth ? .semibold : .regular))).monospacedDigit()
+                    .foregroundStyle(day.isToday ? accent : (day.inMonth ? Color.white : ink3))
                 if hasEvent {
-                    Circle().fill(day.isToday ? Color.white : doneBlue).frame(width: CalendarLayout.dotSize, height: CalendarLayout.dotSize)
+                    Circle().fill(doneBlue).frame(width: CalendarLayout.dotSize, height: CalendarLayout.dotSize)
                         .offset(y: rect.height / 2 - CalendarLayout.dotSize / 2 - 0.5)
                 }
             }

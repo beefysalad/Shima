@@ -28,6 +28,7 @@ struct IslandView: View {
     let debug: Bool
     let hitOpacity: Double
     let onCommand: @MainActor (SpotifyCommand) -> Void
+    let onSettings: @MainActor () -> Void
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -54,5 +55,33 @@ struct IslandView: View {
             NowPlayingView(state: state, media: media, onCommand: onCommand)
                 .opacity(state.mode == .expanded ? 1 : 0)
         }
+        .overlay(alignment: .top) {
+            SettingsGear(action: onSettings)
+                .opacity(state.mode == .expanded ? 1 : 0)
+                .allowsHitTesting(state.mode == .expanded)
+        }
+    }
+}
+
+/// The settings gear of the open island: island-sized so it never changes the layout, one button at `settingsButton`.
+struct SettingsGear: View {
+    let action: @MainActor () -> Void
+
+    var body: some View {
+        let r = NowPlayingLayout.settingsButton
+        ZStack(alignment: .topLeading) {
+            Button { action() } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white.opacity(0.7))
+                    .frame(width: r.width, height: r.height)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(SettingsText.windowTitle)
+            .frame(width: r.width, height: r.height)
+            .position(x: r.midX, y: r.midY)
+        }
+        .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
     }
 }

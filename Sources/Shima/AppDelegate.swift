@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         spotify.onLiveChange = { [weak self] in self?.islandController.setLive($0) }
         spotify.onFakeEqualizerMode = { [weak self] in self?.settings.setEqualizerMode($0) }
         islandController.onIslandOpened = { [weak self] in self?.spotify.islandOpened() }
+        islandController.onSettings = { [weak self] in self?.settingsWindow.show(via: .gear) }
         islandController.onCommand = { [weak self] in self?.spotify.perform($0) }
         spotify.start()
         NotificationCenter.default.addObserver(

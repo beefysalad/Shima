@@ -11,3 +11,10 @@
 - Window list: `settings windows: 1` while open (one window, second reopen did not create another), `settings windows: 0` after Cmd-W.
 - `app became active` is logged once per open (the one intended activation); it must stay absent for island interactions.
 - Tasks 10 and 11 append the gear and menu entries' `active=`/`key=` results here.
+
+## Task 10: gear entry (2026-11-22, fake mode, dist build)
+
+- Pointer: hover notch, click gear at `889.5 50`. Log: `hover dwelling -> expanded`, `settings gear clicked active=false key=false`, `app became active` (the one intended activation), `settings opened via gear created=true active=true key=true`.
+- Second gear open after Cmd-W: `settings opened via gear created=false active=true key=true`; `settings windows: 1` while open (window on the external display, x=2210), `settings windows: 0` after `key cmd-w`; `settings closed policy=accessory restored=company.thebrowser.Browser active=false`; frontmost app unchanged.
+- `scripts/verify-view-layout.sh`: live black 0..<32 unchanged, `gear at (340.0, 38.0, 24.0, 24.0): glyph rows 43..<57 PASS`, no gear pixels collapsed.
+- `scripts/verify-focus.sh --clicks` (window closed): `PASS clicks: 3 commands, frontmost unchanged`, no `app became active`.

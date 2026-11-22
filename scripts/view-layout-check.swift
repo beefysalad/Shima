@@ -21,7 +21,7 @@ import ShimaCore
         }
         let notch = CGRect(x: 646, y: 924, width: 179, height: 32)
         let host = NSHostingView(rootView: IslandView(state: state, media: media,
-            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }))
+            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}))
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 245, height: 32),
             styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false
@@ -39,6 +39,7 @@ import ShimaCore
         for bar in equalizer.layer?.sublayers ?? [] { bar.transform = CATransform3DIdentity }
         CATransaction.commit()
         let live = render(host)
+        check(live.rows(in: 0..<245, ys: 0..<32, matching: isGear).isEmpty, "collapsed island must not show the gear")
         let black = live.rows(at: 122.5) { $0.alphaComponent > 0.9 && $0.redComponent < 0.05 && $0.greenComponent < 0.05 && $0.blueComponent < 0.05 }
         let artwork = live.rows(at: 16.5, matching: isMagenta)
         let bars = live.rows(in: 220..<237, matching: isGreen)
@@ -75,6 +76,11 @@ import ShimaCore
                 check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
             }
         }
+        let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (396 - IslandLayout.expanded.width) / 2, dy: 0)
+        let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear)
+        check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
+              "gear glyph rows \(gear) outside \(gearRect)")
+        print("gear at \(gearRect): glyph rows \(gear) PASS")
         print("expanded 396x173: silhouette 0..<165, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 44..<132 PASS")
         state.mode = .collapsed
         state.live = false
@@ -112,6 +118,11 @@ import ShimaCore
 
     private static func isMagenta(_ color: NSColor) -> Bool {
         color.alphaComponent > 0.9 && color.redComponent > 0.7 && color.greenComponent < 0.5 && color.blueComponent > 0.7
+    }
+
+    private static func isGear(_ color: NSColor) -> Bool {
+        color.alphaComponent > 0.9 && color.redComponent > 0.45
+            && abs(color.redComponent - color.greenComponent) < 0.05 && abs(color.greenComponent - color.blueComponent) < 0.05
     }
 
     private static func isGreen(_ color: NSColor) -> Bool {

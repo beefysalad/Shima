@@ -16,6 +16,7 @@ final class IslandPanelController {
     let state = AppState()
     let media = IslandMedia()
     var onCommand: (@MainActor (SpotifyCommand) -> Void)?
+    var onSettings: (@MainActor () -> Void)?
     var onIslandOpened: (@MainActor () -> Void)?
     private var hover: HoverController!
     private var notch: CGRect = .zero
@@ -28,7 +29,7 @@ final class IslandPanelController {
     init() {
         hostingView = ClickHostingView(rootView: IslandView(
             state: state, media: media, notch: .zero, hasNotch: false,
-            debug: Self.debug, hitOpacity: Self.hitOpacity, onCommand: { _ in }))
+            debug: Self.debug, hitOpacity: Self.hitOpacity, onCommand: { _ in }, onSettings: {}))
         hostingView.frame = trackingView.bounds
         hostingView.autoresizingMask = [.width, .height]
         trackingView.addSubview(hostingView)
@@ -72,7 +73,8 @@ final class IslandPanelController {
         hostingView.rootView = IslandView(
             state: state, media: media, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity,
-            onCommand: { [weak self] in self?.handle($0) })
+            onCommand: { [weak self] in self?.handle($0) },
+            onSettings: { [weak self] in self?.openSettings() })
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
@@ -81,6 +83,11 @@ final class IslandPanelController {
     private func handle(_ command: SpotifyCommand) {
         Log.spotify.info("spotify command \(command.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(self.panel?.isKeyWindow ?? false, privacy: .public)")
         onCommand?(command)
+    }
+
+    private func openSettings() {
+        Log.settings.info("settings gear clicked active=\(NSApp.isActive, privacy: .public) key=\(self.panel?.isKeyWindow ?? false, privacy: .public)")
+        onSettings?()
     }
 
     private func ensurePanel() -> NotchPanel {

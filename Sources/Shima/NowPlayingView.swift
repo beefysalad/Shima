@@ -47,8 +47,8 @@ struct NowPlayingView: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .frame(width: NowPlayingLayout.column.width, height: 18, alignment: .leading)
-                .position(x: NowPlayingLayout.column.midX, y: NowPlayingLayout.titleTop + 9)
+                .frame(width: NowPlayingLayout.titleRect.width, height: 18, alignment: .leading)
+                .position(x: NowPlayingLayout.titleRect.midX, y: NowPlayingLayout.titleRect.midY)
 
             Text(nowPlaying.artist)
                 .font(.system(size: NowPlayingLayout.artistSize))

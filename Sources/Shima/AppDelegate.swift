@@ -15,6 +15,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             short: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
             build: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String),
         readSigning: { SigningInfo.read() })
+    private lazy var settingsWindow = SettingsWindowController(
+        model: settings, onToggleLogin: { [weak self] in self?.toggleLoginFromWindow() })
     private let loginItemMenuItem = NSMenuItem(title: "Launch at login", action: #selector(toggleLoginItem), keyEquivalent: "")
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -31,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Log.settings.info("settings quit")
             NSApp.terminate(nil)
         }
+        _ = settingsWindow
         setUpStatusItem()
         showPanel()
         spotify.onLiveChange = { [weak self] in self?.islandController.setLive($0) }
@@ -44,6 +47,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NotificationCenter.default.addObserver(
             self, selector: #selector(screensChanged),
             name: NSApplication.didChangeScreenParametersNotification, object: nil)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        settingsWindow.show(via: .reopen)
+        return false
+    }
+
+    private func toggleLoginFromWindow() {
+        let r = settings.toggleLaunchAtLogin()
+        Log.settings.info("settings loginItem toggle from=\(String(describing: r.from), privacy: .public) action=\(String(describing: r.action), privacy: .public) ok=\(r.succeeded, privacy: .public) after=\(String(describing: r.after), privacy: .public)")
     }
 
     @objc private func appBecameActive() { Log.focus.error("app became active") }

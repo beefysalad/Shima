@@ -36,8 +36,8 @@ document.querySelectorAll('[data-copy]').forEach(button => {
     idle: 'Idle: flush with the notch, nothing drawn.',
     live: 'Spotify is playing: the wings are out.',
     open: 'Hovered: the island opens on Music.',
-    calendar: 'The Calendar tab (next release).',
-    peek: 'AirPods connect: a banner, then it folds away (next release).'
+    calendar: 'The Calendar tab: today, and what\u2019s due.',
+    peek: 'AirPods connect: a banner, then it folds away.'
   };
   const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   function paintTime() {

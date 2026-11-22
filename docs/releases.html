@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+  <title>shima | Release notes</title>
+  <meta name="description" content="shima release notes: features, improvements and fixes for every release.">
+  <link rel="canonical" href="https://beefysalad.github.io/Shima/releases.html">
+  <link rel="icon" href="site-assets/shima-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="site-assets/shima-icon-512.png">
+  <link rel="stylesheet" href="site-assets/lander.css">
+</head>
+<body class="releases-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="./#main" aria-label="shima by Patrick, home"><img src="site-assets/shima-lockup.svg" alt="" width="98" height="30"><span class="brand-by" aria-hidden="true">by Patrick</span></a>
+    <nav class="nav" aria-label="Main navigation"><a href="./#features">Features</a><a href="./#privacy">Privacy</a><a href="releases.html" aria-current="page">What&rsquo;s new</a><a href="./#faq">FAQ</a></nav>
+    <div class="header-cta"><a class="ghost" href="https://github.com/beefysalad/Shima"><svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</a><a class="pill" href="./#install">Download</a></div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="k-sec wrap releases-all" aria-labelledby="releases-title">
+    <header class="k-head">
+      <div><a class="archive-back" href="./#changelog">Back to shima</a><h1 id="releases-title">Release notes.</h1></div>
+      <p>Features, improvements and fixes, release by release. shima checks for updates in Settings, Updates.</p>
+    </header>
+    <ol class="releases">
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.7</span><span class="badge">Latest</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>A camera mirror</h3>
+            <ul>
+            <li><b>Camera tab:</b> a live, mirrored preview with Mirror, Switch camera and Close. The camera runs only while the tab is open, so the green light goes off when the island closes or the screen locks.</li>
+            <li><b>A tidier header:</b> outlined Home, Music and Camera icons sit in the upper left. Home opens Settings and replaces the gear.</li>
+            <li><b>Camera permission:</b> macOS asks the first time you open the Camera tab. Decline, and the tab links you to Privacy settings.</li>
+            <li><b>Player:</b> previous, play and next are centred under the track text again.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.6</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>Settings, closer to the design</h3>
+            <ul>
+            <li><b>Real logos:</b> the Shima mark in the sidebar, the About page and the menu bar, and Spotify&rsquo;s own assets in the player.</li>
+            <li><b>Matched layout:</b> an 880 &times; 620 dark window with a 200-point sidebar and grouped rows. The equalizer selector moved into Music.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.5</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>A redesigned Settings window</h3>
+            <ul>
+            <li><b>Sidebar pages:</b> General (launch at login), Music (Spotify status and the Automation shortcut), Updates and About.</li>
+            <li><b>Quit:</b> at the bottom of the sidebar, in light and dark appearances.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.4</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>Updates from Settings</h3>
+            <ul>
+            <li><b>Check for updates:</b> looks at the latest stable GitHub release when you click. No automatic polling.</li>
+            <li><b>Update and restart:</b> downloads the release ZIP and verifies its SHA-256 checksum, archive paths, bundle identity, version and code signature before replacing the app.</li>
+            <li><b>Safe replacement:</b> a failed replacement or a failed launch restores the previous app, and a recovery copy is kept beside Shima.</li>
+            <li><b>First install:</b> install 0.1.4 manually once; after that, updates can run from Settings.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.3</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>A roomier player</h3>
+            <ul>
+            <li><b>Bigger island:</b> a 400 &times; 200 layout with larger artwork, &ldquo;Playing on Spotify&rdquo; or &ldquo;Paused on Spotify&rdquo;, and artist and album text.</li>
+            <li><b>Controls:</b> aligned beneath the progress bar. The collapsed notch is unchanged.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.2</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>A tab header</h3>
+            <ul>
+            <li><b>Music tab icon:</b> the open island gets a header strip with the Music icon in the upper left, the first piece of a tab header. Nothing else changed.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.1</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>A smoother opening</h3>
+            <ul>
+            <li><b>No sideways sweep:</b> the opening animation settles the panel&rsquo;s new frame before the spring starts, so it no longer slides out from the old narrow strip.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="release">
+          <div class="release-meta"><span class="version">0.1.0</span><time datetime="2026-11-22">Nov 22, 2026</time></div>
+          <div class="release-body">
+            <h3>First release</h3>
+            <ul>
+            <li><b>Spotify now playing:</b> artwork, title, artist, progress, and previous, play/pause and next.</li>
+            <li><b>Settings:</b> a small settings window.</li>
+            </ul>
+          </div>
+        </li>
+    </ol>
+  </section>
+</main>
+
+<footer class="k-foot">
+  <span class="foot-kanji" aria-hidden="true">島</span>
+  <div class="wrap k-foot-row">
+    <a class="brand brand-foot" href="./#main" aria-label="shima, back to top"><img src="site-assets/shima-lockup.svg" alt="" width="82" height="25"></a>
+    <p>Made for the notch. Shima means &ldquo;island&rdquo;.</p>
+    <nav aria-label="Footer"><a href="./#install">Download</a><a href="releases.html">Releases</a><a href="./#faq">FAQ</a><a href="https://github.com/beefysalad/Shima">GitHub</a></nav>
+  </div>
+</footer>
+<div id="copy-status" class="sr-only" role="status" aria-live="polite"></div>
+
+</body>
+</html>

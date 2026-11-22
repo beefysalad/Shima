@@ -26,6 +26,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         settings.onEqualizerModeChange = { mode in
             Log.settings.info("settings eq mode=\(mode.rawValue, privacy: .public) saved")
         }
+        settings.onDevicePopupsChange = { enabled in
+            Log.settings.info("settings devicePopups \(enabled ? "on" : "off", privacy: .public) saved")
+        }
         let dryOpen = environment["SHIMA_SETTINGS_DRY_OPEN"] != nil
         settings.onOpenURL = { url in
             Log.settings.info("settings open url=\(url.absoluteString, privacy: .public) dryRun=\(dryOpen, privacy: .public)")

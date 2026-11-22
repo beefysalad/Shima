@@ -20,6 +20,8 @@ final class IslandPanelController {
     private var notch: CGRect = .zero
     private var hasNotch = false
     private var region: HotRegion = .idle
+    /// Target live flag; `state.live` is the applied one and only changes while the panel is small.
+    private var desiredLive = false
 
 
     init() {
@@ -41,9 +43,13 @@ final class IslandPanelController {
         }
     }
 
-    /// Task 13 stub: Task 14 applies the live frame.
+    /// Desired live flag from Spotify. Never changes the frame directly: the hover
+    /// machine decides when the panel is small and answers with `.shrinkPanel`.
     func setLive(_ live: Bool) {
+        guard live != desiredLive else { return }
+        desiredLive = live
         Log.layout.info("live desired=\(live, privacy: .public)")
+        hover.idleGeometryChanged()
     }
 
     func place(on display: DisplayDescriptor?) {
@@ -62,7 +68,7 @@ final class IslandPanelController {
             state: state, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity)
         hover.reset()
-        setPanelFrame(expanded: false) // always re-applied, even if unchanged
+        applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
     }
 
@@ -77,14 +83,16 @@ final class IslandPanelController {
     private func perform(_ effect: HoverEffect) {
         switch effect {
         case .growPanel:
-            setPanelFrame(expanded: true)
+            setPanelFrame(expanded: true, live: state.live)
         case .shrinkPanel:
-            setPanelFrame(expanded: false)
+            applyIdleGeometry(animated: true)
         case .setHotRegion(let r):
             region = r
             refreshHotRect()
         case .animateExpand:
             withAnimation(Self.spring) { state.mode = .expanded }
+            let content = String(describing: state.content)
+            Log.layout.info("island content=\(content, privacy: .public)")
             onIslandOpened?()
         case .animateCollapse(let generation):
             withAnimation(Self.spring, completionCriteria: .removed) {
@@ -101,14 +109,39 @@ final class IslandPanelController {
         }
     }
 
-    private func setPanelFrame(expanded: Bool) {
-        let frame = IslandLayout.panelFrame(notch: notch, expanded: expanded)
+    /// Spike 3 `growThenAnimate`: turning live on grows the frame first, then animates the
+    /// wings in; turning it off snaps the wings out, then shrinks the frame.
+    private func applyIdleGeometry(animated: Bool) {
+        guard panel != nil else { return } // `place` applies it once the panel exists
+        if desiredLive && !state.live {
+            setPanelFrame(expanded: false, live: true)
+            if animated {
+                withAnimation(Self.spring) { state.live = true }
+            } else {
+                var t = Transaction()
+                t.disablesAnimations = true
+                withTransaction(t) { state.live = true }
+            }
+            refreshHotRect()
+        } else if !desiredLive && state.live {
+            var t = Transaction()
+            t.disablesAnimations = true
+            withTransaction(t) { state.live = false }
+            setPanelFrame(expanded: false, live: false)
+        } else {
+            setPanelFrame(expanded: false, live: state.live)
+        }
+    }
+
+    private func setPanelFrame(expanded: Bool, live: Bool) {
+        let frame = IslandLayout.panelFrame(notch: notch, live: live, expanded: expanded)
         panel?.setFrame(frame, display: true)
-        Log.layout.info("frame \(expanded ? "expanded" : "idle", privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public)")
+        Log.layout.info("frame \(expanded ? "expanded" : "idle", privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public) live=\(live, privacy: .public)")
         refreshHotRect()
     }
 
+    /// The idle hot rect follows the TARGET live flag (Spike 3), so a new wing is hoverable at once.
     private func refreshHotRect() {
-        trackingView.hotRect = IslandLayout.hotRect(region, notch: notch, panelFrame: panel?.frame ?? .zero)
+        trackingView.hotRect = IslandLayout.hotRect(region, notch: notch, live: desiredLive, panelFrame: panel?.frame ?? .zero)
     }
 }

@@ -29,7 +29,7 @@ struct IslandView: View {
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
-        if state.mode == .collapsed && !hasNotch {
+        if state.mode == .collapsed && !hasNotch && !state.live {
             return Color.black.opacity(hitOpacity == 0 ? 0.001 : hitOpacity)
         }
         return Color.black
@@ -40,7 +40,7 @@ struct IslandView: View {
             if state.mode == .expanded && hitOpacity > 0 {
                 Rectangle().fill(Color.black.opacity(hitOpacity))
             }
-            IslandShape(metrics: IslandLayout.metrics(for: state.mode, notch: notch))
+            IslandShape(metrics: IslandLayout.metrics(for: state.mode, notch: notch, live: state.live))
                 .fill(fill)
             Text("shima")
                 .font(.system(size: 13, weight: .semibold))

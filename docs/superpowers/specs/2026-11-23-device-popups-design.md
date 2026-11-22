@@ -4,7 +4,7 @@ Status: drafted 2026-11-23 from the user's request ("airpods, keyboard etc"); th
 
 ## Intent
 
-When a Bluetooth device connects (AirPods, a keyboard, a mouse), the collapsed island briefly drops a small banner, "Connected, <name>", with a device icon and the battery level when it is available, then folds away. It replaces the small system confirmation people miss. It also builds the **peek banner**, the transient, hover-independent presentation that the mockup already shows (460 x 84) and the design doc plans for later triggers (track change, calendar event, Claude "needs you").
+When a Bluetooth device connects (AirPods, a keyboard, a mouse), the collapsed island briefly drops a small banner, "Connected, <name>", with a device icon and the battery level when it is available, then folds away. It replaces the small system confirmation people miss. It also builds the **peek banner**, the transient, hover-independent presentation that the mockup already shows (460 x 84 in mockup units) and the design doc plans for later triggers (track change, calendar event, Claude "needs you").
 
 ## Goals
 
@@ -41,7 +41,7 @@ Device detection: **IOBluetooth connect/disconnect notifications (`IOBluetoothDe
 
 ### Pure layer (`ShimaCore`)
 
-- `IslandMode` gains `.peek`. `IslandLayout.peek = IslandShapeMetrics(width: 460, height: 84, bottomRadius: 24, earRadius: 12)`, `metrics(for:)` and a peek-aware `panelFrame`/`hotRect` (a `HotRegion.peek`). Every existing `switch` over `IslandMode` is updated; `CameraModel` treats `.peek` as not visible.
+- `IslandMode` gains `.peek`. `IslandLayout.peek = IslandShapeMetrics(width: 340, height: 76, bottomRadius: 22, earRadius: 10)` (real points; the mockup draws at its own larger scale), `metrics(for:)` and a peek-aware `panelFrame`/`hotRect` (a `HotRegion.peek`). Every existing `switch` over `IslandMode` is updated; `CameraModel` treats `.peek` as not visible.
 - `HoverPhase` gains `.peeking`. New inputs: `peekRequested`, `peekElapsed`. New timer: `HoverTimer.peek`; its duration is held by `HoverController.peek(duration:)`, not by the reducer. New effects: `.growPanelForPeek`, `.animatePeekIn`. Rules: `peekRequested` is honoured only in `.collapsed`; in `.peeking` it restarts the timer; in any other phase it is ignored (the controller reports "dropped"). `peekElapsed` from `.peeking` goes to `.collapsing` with `animateCollapse(generation:)`, reusing the existing collapse completion. `pointer(inside: true)` while `.peeking` cancels the timer and goes to `.dwelling` (panel already large), then the normal dwell expands. `reset` and `idleGeometryChanged` keep their meaning.
 - `AppState.peek: PeekItem?` with `PeekItem.device(DevicePeek)`; set when a peek starts, cleared when the island is collapsed again.
 - `DeviceKind` with `classify(bluetoothMajor:minor:name:)` (class-of-device major/minor numbers plus a name fallback such as "AirPods"), `DeviceEvent { address, name, kind, batteryPercent? }` (connections only), `DevicePeek` (the display strings: title, subtitle, battery text, glyph, duration).
@@ -63,8 +63,18 @@ Questions: does the IOBluetooth connect notification fire for the Keychron K3 an
 
 ## What is left to the builder
 
-Glyph drawing for each kind (outlined like the header glyphs), spring parameters, exact peek content layout inside the mockup's 460 x 84, test names.
+Glyph drawing for each kind (outlined like the header glyphs), spring parameters, test names, and anything the Layout table below leaves open.
 
 ## Verification
 
 Automated: `swift test` (reducer, policy, classify, settings), `verify-view-layout.sh` extended for the peek frame, fake-mode run with `drive.swift` (connect peek appears and folds after the timer, hover during peek opens the island, event during open island is dropped, repeat within 5 s dropped, toggle off), `verify-focus.sh` (the panel never takes focus during a peek), `verify-idle.sh` (no timer or CPU while idle; peek timer gone after dismissal), logs. Human: real AirPods and keyboard connect, battery shown or absent as per S1, no flicker on real reconnect, behaviour with the external display. Recorded in `docs/superpowers/device-popups-acceptance.md`.
+
+
+## Layout table (Task 0 output, real points)
+
+Mockup: `mockup/index.html` ("Simulate" > "Bluetooth device connects"; Settings > General > "Device pop-ups"). The mockup draws at its own larger scale (peek 460 x 84 there); real values below. Glyph paths (24-unit, stroke 1.5, round caps and joins, white) and the battery glyph are in the mockup's `DEVGLYPH` and `battGlyph`; copy the paths verbatim, scale 17 pt.
+
+- **Peek island:** 340 x 76 pt, bottom radius 22, ear radius 10, centred on the notch, top aligned with the screen; the top 32 pt strip overlays the notch and is unchanged (the collapsed wings stay as they are, as in the mockup). Panel frame while peeking: 376 x 84 (island + ears + 8 pt margin each side and bottom).
+- **Content row (y 32..76):** badge circle 30 x 30 at (22, 38), fill white 13%, glyph 17 pt centred. Title "Connected" rect (62, 39, 190, 16), 13 pt semibold. Device name rect (62, 56, 190, 14), 11.5 pt regular, 62% white, one line, tail truncation (up to 256 wide when there is no battery). Battery group right-aligned to x 318, vertically centred at y 55: text "82%" 11.5 pt semibold tabular 62% white, 8 pt gap, battery glyph 20 x 10 (fill width proportional to percent). At 15% or below, text and fill use `#FF6961`. No battery value: the group is absent.
+- **Timing:** banner 3 s; hover opens the island immediately (existing hover dwell).
+- **Settings:** General page, "Device pop-ups" row with the subtitle "A short banner under the notch when a Bluetooth device connects." and a toggle, in the same group as the display options (default on).

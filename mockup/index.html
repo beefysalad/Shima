@@ -327,6 +327,60 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .hint { margin-left: auto; font-size: 11px; color: var(--i-ink3); }
 .tray-empty { color: var(--i-ink3); font-size: 12.5px; padding: 8px 2px; }
 
+
+/* --- Calendar --- */
+.cal { display: grid; grid-template-columns: 1fr 292px; gap: 26px; height: 100%; }
+.cal-left { display: flex; flex-direction: column; min-width: 0; }
+.cal-dow { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .03em; }
+.cal-dow b { color: var(--claude); font-weight: 700; }
+.cal-dow i { width: 1px; height: 11px; background: var(--i-fill2); align-self: center; }
+.cal-dow span { color: var(--i-ink2); font-weight: 600; }
+.cal-num { font-size: 46px; font-weight: 700; line-height: 1; letter-spacing: -.02em; margin: 2px 0 8px; }
+.cal-rows { display: grid; gap: 4px; min-height: 0; max-width: 270px; }
+.crow { display: grid; grid-template-columns: 3px minmax(0, 1fr) auto; gap: 9px; align-items: center; min-height: 26px; min-width: 0; }
+.crow .bar3 { align-self: stretch; border-radius: 2px; background: var(--c, #C86BE0); }
+.crow > b { font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crow > em { font-style: normal; font-size: 11.5px; color: var(--i-ink2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.crow > em.now { color: var(--c, #C86BE0); font-weight: 650; }
+.crow.rem { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; }
+.rcheck { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--i-ink3); background: transparent; padding: 0; display: grid; place-items: center; color: transparent; transition: background .15s, border-color .15s, color .15s; }
+.rcheck:hover { border-color: var(--i-ink); color: var(--i-ink3); }
+.crow.rem.done { opacity: 0; transform: translateX(6px); transition: opacity .25s ease, transform .25s ease; }
+.crow.rem.done .rcheck { background: var(--done); border-color: var(--done); color: #000; }
+.crow > em.over { color: var(--claude); }
+.cal-more { font-size: 11.5px; color: var(--i-ink3); padding-left: 12px; }
+.cal-none { font-size: 12.5px; color: var(--i-ink3); padding: 6px 0 0; }
+.cal-deny { display: grid; gap: 6px; padding: 8px 10px; border-radius: 10px; background: var(--i-fill); font-size: 12px; color: var(--i-ink2); }
+.cal-deny b { color: var(--i-ink); font-weight: 650; }
+.cal-deny button { justify-self: start; border: 0; background: var(--i-fill2); color: var(--i-ink); border-radius: 7px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; }
+.cal-deny button:hover { background: rgba(255,255,255,.2); }
+.cal-right { display: flex; flex-direction: column; min-width: 0; }
+.cal-mh { display: flex; align-items: center; justify-content: space-between; height: 24px; margin-bottom: 4px; }
+.cal-title { border: 0; background: transparent; color: var(--i-ink); font-size: 14px; font-weight: 700; letter-spacing: .02em; padding: 2px 4px; margin-left: -4px; border-radius: 6px; }
+.cal-title b { color: var(--claude); font-weight: 700; }
+.cal-title:hover { background: var(--i-fill); }
+.cal-nav { display: flex; gap: 2px; }
+.cal-nav button { border: 0; background: transparent; color: var(--i-ink2); width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; }
+.cal-nav button:hover { background: var(--i-fill2); color: var(--i-ink); }
+.cal-nav svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cal-wk, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.cal-wk span { font-size: 11px; font-weight: 600; color: var(--i-ink3); height: 20px; line-height: 20px; }
+.cal-grid { grid-auto-rows: 30px; }
+.cday { position: relative; border: 0; background: transparent; color: var(--i-ink); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; width: 100%; height: 100%; display: grid; place-items: center; }
+.cday span { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; }
+.cday:hover span { background: var(--i-fill2); }
+.cday.out { color: var(--i-ink3); font-weight: 500; }
+.cday.today span { background: var(--claude); color: #fff; }
+.cday.sel:not(.today) span { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
+.cday i { position: absolute; left: 50%; bottom: 1px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--done); }
+.cday.today i { background: #fff; }
+
+/* --- Device peek --- */
+.peek-badge.dev { background: var(--i-fill2); color: var(--i-ink); }
+.peek-badge.dev svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.peek-batt { display: flex; align-items: center; gap: 8px; flex: none; font: 600 12px var(--font); font-variant-numeric: tabular-nums; color: var(--i-ink2); }
+.peek-batt.low { color: var(--danger); }
+
 /* --- Automations --- */
 .rules-wrap { display: grid; grid-template-columns: 1fr 250px; gap: 16px; height: 100%; }
 .rules { display: grid; gap: 6px; align-content: start; min-width: 0; }
@@ -504,6 +558,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                       <button class="tab" role="tab" data-tab="music" id="tab-music" aria-label="Music" title="Music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
                       <button class="tab" role="tab" data-tab="tray" id="tab-tray" aria-label="File tray" title="File tray"><svg viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/></svg></button>
                       <button class="tab" role="tab" data-tab="camera" id="tab-camera" aria-label="Camera" title="Camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+                      <button class="tab" role="tab" data-tab="calendar" id="tab-calendar" aria-label="Calendar" title="Calendar"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button>
                       <button class="tab" role="tab" data-tab="claude" id="tab-claude" aria-label="Claude sessions (developer)" title="Claude sessions (developer)" hidden><svg viewBox="0 0 24 24"><path d="M5 7l5 5-5 5M12 18h7"/></svg></button>
                       <button class="tab" role="tab" data-tab="rules" id="tab-rules" aria-label="Automations" title="Automations"><svg viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></button>
                     </div>
@@ -513,6 +568,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                     <div class="panel" data-panel="music" id="pMusic"></div>
                     <div class="panel" data-panel="claude" id="pClaude" hidden></div>
                     <div class="panel" data-panel="camera" id="pCamera" hidden></div>
+                    <div class="panel" data-panel="calendar" id="pCalendar" hidden></div>
                     <div class="panel" data-panel="tray" id="pTray" hidden></div>
                     <div class="panel" data-panel="rules" id="pRules" hidden></div>
                   </div>
@@ -536,6 +592,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
         <button class="sbtn" data-state="peek">Peek <small>M1</small></button>
         <button class="sbtn" data-state="music">Now Playing <small>M1</small></button>
         <button class="sbtn" data-state="camera">Camera <small>new</small></button>
+        <button class="sbtn" data-state="calendar">Calendar <small>new</small></button>
         <button class="sbtn" data-state="claude" id="stClaude" hidden>Claude <small>dev</small></button>
         <button class="sbtn" data-state="tray">File tray <small>M3</small></button>
         <button class="sbtn" data-state="rules">Automations <small>M4</small></button>
@@ -564,6 +621,24 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
         </div>
       </div>
       <div class="group">
+        <span class="glabel">Bluetooth device connects</span>
+        <div class="btns">
+          <button class="btn" data-sim="device.airpods">AirPods 4 <code>82%</code></button>
+          <button class="btn" data-sim="device.keyboard">Keychron K3 <code>no battery</code></button>
+          <button class="btn" data-sim="device.mouse">MX Master 3S <code>64%</code></button>
+          <button class="btn" data-sim="device.long">Long name <code>5%</code></button>
+        </div>
+        <p class="note">Shown only while the island is collapsed; folds after 3 s; hovering it opens the island; dropped (logged) if the island is already open or Device pop-ups is off in Settings.</p>
+      </div>
+      <div class="group">
+        <span class="glabel">Calendar and Reminders</span>
+        <div class="btns">
+          <button class="btn" data-sim="cal.denied" id="calDenyBtn">Deny access</button>
+          <button class="btn" data-sim="cal.busy">Six-week month, busy day</button>
+          <button class="btn" data-sim="cal.reset">Reset</button>
+        </div>
+      </div>
+      <div class="group">
         <span class="glabel">Config and sound</span>
         <div class="btns">
           <button class="btn" data-sim="config.break" id="cfgBtn">Save a broken config.toml</button>
@@ -576,7 +651,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <h2>Keyboard and pointer</h2>
       <dl class="keys">
         <div><dt><kbd>Esc</kbd></dt><dd>Collapse the island</dd></div>
-        <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Music, Tray, Camera, (Claude), Rules</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Music, Tray, Camera, Calendar, (Claude), Rules</dd></div>
         <div><dt>Hover</dt><dd>Expand; leave to collapse</dd></div>
         <div><dt>Drop</dt><dd>Drag files from Finder onto the notch. Hold <kbd>⌥</kbd> to move instead of copy</dd></div>
         <div><dt>Drag out</dt><dd>Drag a tray chip onto the desktop</dd></div>
@@ -693,12 +768,34 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   };
   const T = {};
 
+  /* ---------- calendar fixtures (the clock above is Fri 20 Nov 2026 9:41) ---------- */
+  const CAL = { today: new Date(2026, 10, 20), dots: [3, 9, 13, 20, 27] };
+  S.cal = { month: new Date(2026, 10, 1), sel: new Date(2026, 10, 20), denied: false, busy: false,
+    rem: [ { id: 'r1', t: 'Reply to landlord', due: 'Overdue', over: true, done: false },
+           { id: 'r2', t: 'Renew passport', due: 'Today', over: false, done: false } ] };
+  S.devPop = true;
+  const DEVICES = {
+    airpods: { name: 'Patrick’s AirPods 4', kind: 'earbuds', battery: 82 },
+    keyboard: { name: 'Keychron K3', kind: 'keyboard', battery: null },
+    mouse: { name: 'MX Master 3S', kind: 'mouse', battery: 64 },
+    long: { name: 'Patrick’s Very Long Named Studio Headphones Pro Max', kind: 'headphones', battery: 5 }
+  };
+  const DEVGLYPH = {
+    earbuds: '<path d="M8.6 4a3.4 3.4 0 0 0-3.4 3.5c0 1.6.9 2.6 1.9 3.2V18a1.5 1.5 0 0 0 3 0v-7.3c1-.6 1.9-1.6 1.9-3.2A3.4 3.4 0 0 0 8.6 4Z"/><path d="M15.4 4a3.4 3.4 0 0 1 3.4 3.5c0 1.6-.9 2.6-1.9 3.2V18a1.5 1.5 0 0 1-3 0" opacity=".55"/>',
+    keyboard: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M7.5 14h9"/>',
+    mouse: '<path d="M12 3a6 6 0 0 0-6 6v6a6 6 0 0 0 12 0V9a6 6 0 0 0-6-6Z"/><path d="M12 3v6"/>',
+    headphones: '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 1 2-2h1v6H6a2 2 0 0 1-2-2Z"/><path d="M20 15a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2Z"/>',
+    other: '<path d="M7 7l10 10-5 4V3l5 4L7 17"/>'
+  };
+  const battGlyph = pct => `<svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x=".6" y=".6" width="20" height="10.8" rx="3" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="${(pct / 100 * 17).toFixed(1)}" height="8" rx="1.6" fill="currentColor"/><rect x="21.8" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".5"/></svg>`;
+
   /* ---------- elements ---------- */
   const wrap = $('#wrap'), island = $('#island'), screen = $('#screen');
 
   /* ---------- mode control ---------- */
   function setMode(mode, o = {}) {
     clearTimeout(T.auto); clearTimeout(T.leave);
+    if (mode === 'expanded' && (S.mode !== 'expanded' || (o.tab === 'calendar' && S.tab !== 'calendar'))) resetCal();
     S.mode = mode;
     if (o.tab) S.tab = o.tab;
     S.pinned = !!o.pinned;
@@ -742,7 +839,12 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   function renderPeek() {
     const p = S.peek || { kind: 'track' };
     const row = $('#peekRow');
-    if (p.kind === 'claude') {
+    if (p.kind === 'device') {
+      const d = p.dev, low = d.battery != null && d.battery <= 15;
+      row.innerHTML = `<div class="peek-badge dev"><svg viewBox="0 0 24 24">${DEVGLYPH[d.kind] || DEVGLYPH.other}</svg></div>
+        <div class="peek-text"><b>Connected</b><span>${esc(d.name)}</span></div>` +
+        (d.battery != null ? `<div class="peek-batt ${low ? 'low' : ''}">${d.battery}%${battGlyph(d.battery)}</div>` : '');
+    } else if (p.kind === 'claude') {
       row.innerHTML = `<div class="peek-badge">${ICON.hand}</div><div class="peek-text"><b>${esc(p.title)}</b><span>${p.sub}</span></div>`;
     } else {
       const t = TRACKS[S.spotify.idx];
@@ -779,6 +881,74 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     }
     el.innerHTML = parts.join('') + gear;
   }
+  /* ---------- Calendar tab ---------- */
+  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const WD = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'], MO = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  function resetCal() { S.cal.month = new Date(2026, 10, 1); S.cal.sel = new Date(CAL.today); }
+  function calEvents(day) {
+    const rank = { running: 0, upcoming: 1, allDay: 2 };
+    if (sameDay(day, CAL.today)) {
+      const ev = [ { t: 'Standup', time: '9:30 – 10:00', c: '#C86BE0', ph: 'running' },
+                   { t: 'Design review', time: '11:00 – 12:00', c: '#4DA3FF', ph: 'upcoming' } ];
+      if (S.cal.busy) ev.push({ t: 'Lunch with Mika', time: '12:30 – 13:30', c: '#34C759', ph: 'upcoming' },
+        { t: 'Mika’s birthday', time: 'All day', c: '#FF9F0A', ph: 'allDay' }, { t: 'Gym', time: '18:00 – 19:00', c: '#34C759', ph: 'upcoming' });
+      return ev.sort((a, b) => rank[a.ph] - rank[b.ph]);
+    }
+    return CAL.dots.includes(day.getDate()) ? [{ t: 'Dentist', time: '15:00 – 15:45', c: '#4DA3FF', ph: 'upcoming' }] : [];
+  }
+  function renderCalendar() {
+    const c = S.cal, sel = c.sel, isToday = sameDay(sel, CAL.today), CAP = 4;
+    let left = '';
+    if (c.denied) {
+      left = `<div class="cal-deny"><b>Calendar access is off</b><button data-cal="open-cal">Open Settings</button></div>
+              <div class="cal-deny"><b>Reminders access is off</b><button data-cal="open-rem">Open Settings</button></div>`;
+    } else {
+      const rows = calEvents(sel).map(e => ({ kind: 'ev', e }));
+      if (isToday) c.rem.filter(r => !r.done).forEach(r => rows.push({ kind: 'rem', r }));
+      const shown = rows.slice(0, CAP), more = rows.length - shown.length;
+      left = shown.map(x => x.kind === 'ev'
+        ? `<div class="crow" style="--c:${x.e.c}"><i class="bar3"></i><b>${esc(x.e.t)}</b><em class="${x.e.ph === 'running' ? 'now' : ''}">${x.e.ph === 'running' ? 'Now · ' : ''}${x.e.time}</em></div>`
+        : `<div class="crow rem" data-rem-row="${x.r.id}"><button class="rcheck" data-cal="rem:${x.r.id}" aria-label="Complete ${esc(x.r.t)}">${ICON.check}</button><b>${esc(x.r.t)}</b><em class="${x.r.over ? 'over' : ''}">${x.r.due}</em></div>`).join('');
+      if (!rows.length) left = '<div class="cal-none">Nothing scheduled</div>';
+      if (more > 0) left += `<div class="cal-more">+${more} more</div>`;
+    }
+    const y = c.month.getFullYear(), m = c.month.getMonth(), first = new Date(y, m, 1), dim = new Date(y, m + 1, 0).getDate();
+    const weeks = Math.ceil((first.getDay() + dim) / 7);
+    let cells = '';
+    for (let i = 0; i < weeks * 7; i++) {
+      const d = new Date(y, m, 1 - first.getDay() + i), out = d.getMonth() !== m;
+      const dot = !c.denied && CAL.dots.includes(d.getDate()) && !out;
+      cells += `<button class="cday ${out ? 'out' : ''} ${sameDay(d, CAL.today) ? 'today' : ''} ${sameDay(d, sel) ? 'sel' : ''}" data-cal="day:${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"><span>${d.getDate()}</span>${dot ? '<i></i>' : ''}</button>`;
+    }
+    $('#pCalendar').innerHTML = `<div class="cal">
+      <div class="cal-left">
+        <div class="cal-dow"><b>${WD[sel.getDay()]}</b><i></i><span>${MO[sel.getMonth()]}</span></div>
+        <div class="cal-num">${sel.getDate()}</div>
+        <div class="cal-rows">${left}</div>
+      </div>
+      <div class="cal-right">
+        <div class="cal-mh"><button class="cal-title" data-cal="today"><b>${MONTHS[m]}</b> ${y}</button>
+          <div class="cal-nav"><button data-cal="prev" aria-label="Previous month"><svg viewBox="0 0 12 12"><path d="M7.5 2 3.5 6l4 4"/></svg></button><button data-cal="next" aria-label="Next month"><svg viewBox="0 0 12 12"><path d="M4.5 2l4 4-4 4"/></svg></button></div></div>
+        <div class="cal-wk">${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => `<span>${x}</span>`).join('')}</div>
+        <div class="cal-grid">${cells}</div>
+      </div></div>`;
+  }
+  $('#pCalendar').addEventListener('click', e => {
+    const b = e.target.closest('[data-cal]'); if (!b) return;
+    const a = b.dataset.cal, c = S.cal;
+    if (a === 'prev' || a === 'next') c.month = new Date(c.month.getFullYear(), c.month.getMonth() + (a === 'next' ? 1 : -1), 1);
+    else if (a === 'today') resetCal();
+    else if (a.startsWith('day:')) { const [yy, mm, dd] = a.slice(4).split('-').map(Number); c.sel = new Date(yy, mm, dd); }
+    else if (a.startsWith('rem:')) {
+      const r = c.rem.find(x => x.id === a.slice(4)); if (!r) return;
+      r.done = true; b.closest('.crow').classList.add('done');
+      log('reminders.completed', `<span class="act">${esc(r.t)}</span>`);
+      setTimeout(renderCalendar, 260); return;
+    } else if (a === 'open-cal' || a === 'open-rem') { toast('Opens System Settings → Privacy'); return; }
+    renderCalendar();
+  });
+
   function renderCamera() {
     $('#pCamera').innerHTML = `<div class="cam">
       <div class="cam-view ${S.mirror ? 'flip' : ''}" role="img" aria-label="Live camera preview"><div class="shelf"></div><div class="torso"></div><div class="head"></div></div>
@@ -930,7 +1100,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     $('#sessPick').innerHTML = S.sessions.map(s => `<label><input type="radio" name="sess" id="pick-${s.id}" value="${s.id}" ${S.target === s.id ? 'checked' : ''}><span>${esc(s.cwd)}</span></label>`).join('');
   }
 
-  function renderAll() { renderIsland(); renderMusic(); renderCamera(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
+  function renderAll() { renderIsland(); renderMusic(); renderCamera(); renderCalendar(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
 
   /* ---------- sound ---------- */
   let ac;
@@ -1014,6 +1184,23 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       $('#quitBtn').textContent = S.spotify.on ? 'Quit Spotify' : 'Open Spotify';
       log(S.spotify.on ? 'spotify.launched' : 'spotify.quit', `<span class="skip">module ${S.spotify.on ? 'shown' : 'hidden'}</span>`);
       renderMusic(); renderIsland();
+    } else if (kind.startsWith('device.')) {
+      const d = DEVICES[kind.slice(7)];
+      if (!S.devPop) { log('device.connected', `<span class="skip">${esc(d.name)}: Device pop-ups is off</span>`); return; }
+      if (S.mode !== 'collapsed') { log('device.connected', `<span class="skip">${esc(d.name)}: island is open, banner dropped</span>`); return; }
+      S.peek = { kind: 'device', dev: d };
+      setMode('peek', { auto: 3000 });
+      log('device.connected', `<span class="act">${esc(d.name)} → peek 3 s</span>`);
+    } else if (kind === 'cal.denied') {
+      S.cal.denied = !S.cal.denied;
+      $('#calDenyBtn').textContent = S.cal.denied ? 'Allow access' : 'Deny access';
+      setMode('expanded', { tab: 'calendar', pinned: true }); renderCalendar();
+    } else if (kind === 'cal.busy') {
+      S.cal.busy = true; setMode('expanded', { tab: 'calendar', pinned: true });
+      S.cal.month = new Date(2026, 4, 1); S.cal.sel = new Date(CAL.today); renderCalendar();
+    } else if (kind === 'cal.reset') {
+      S.cal.busy = false; S.cal.denied = false; S.cal.rem.forEach(r => r.done = false);
+      $('#calDenyBtn').textContent = 'Deny access'; resetCal(); renderCalendar();
     } else if (kind === 'config.break') {
       S.configOk = !S.configOk;
       $('#cfgBtn').textContent = S.configOk ? 'Save a broken config.toml' : 'Fix config.toml';
@@ -1058,7 +1245,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     const cam = e.target.closest('[data-cam]');
     if (cam) { const c = cam.dataset.cam; if (c === 'mirror') { S.mirror = !S.mirror; renderCamera(); } else if (c === 'close') { S.tab = 'music'; renderTabs(); renderStates(); } else toast('Only one camera found'); return; }
     const tab = e.target.closest('[data-tab]');
-    if (tab) { S.tab = tab.dataset.tab; renderTabs(); renderStates(); return; }
+    if (tab) { if (tab.dataset.tab === 'calendar' && S.tab !== 'calendar') { resetCal(); renderCalendar(); } S.tab = tab.dataset.tab; renderTabs(); renderStates(); return; }
     const sp = e.target.closest('[data-sp]');
     if (sp) { const a = sp.dataset.sp; if (a === 'toggle') togglePlay(); else changeTrack(a === 'next' ? 1 : -1); return; }
     const q = e.target.closest('[data-play]');
@@ -1166,7 +1353,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   $('#soundOn').addEventListener('change', e => { S.sound = e.target.checked; });
 
   /* ---------- keyboard ---------- */
-  const tabsNow = () => ['music', 'tray', 'camera'].concat(S.dev ? ['claude'] : [], ['rules']);
+  const tabsNow = () => ['music', 'tray', 'camera', 'calendar'].concat(S.dev ? ['claude'] : [], ['rules']);
   document.addEventListener('keydown', e => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.matches('input[type="text"], textarea')) return;
@@ -1208,6 +1395,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
         { t: 'Show on a display', sel: ['Built-in display'], d: 'External monitors are not supported yet.' },
         { t: 'Hover delay', sl: [0.05, 0.5, 0.01, 0.08, 's'] },
         { t: 'Collapse delay', sl: [0.1, 1, 0.05, 0.3, 's'] },
+        { t: 'Device pop-ups', d: 'A short banner under the notch when a Bluetooth device connects.', k: 'devpop', v: true },
         { t: 'Remember last tab', k: 'rem', v: false },
         { t: 'Haptic feedback', d: 'A light tap on the trackpad when the island opens.', k: 'hap', v: true }
       ]],
@@ -1303,6 +1491,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     const tg = e.target.closest('[data-tg]');
     if (tg && !tg.disabled) {
       tg.classList.toggle('on');
+      if (tg.dataset.tg === 'devpop') S.devPop = tg.classList.contains('on');
       if (tg.dataset.tg === 'dev') { $('#devOn').checked = tg.classList.contains('on'); $('#devOn').dispatchEvent(new Event('change')); }
       return;
     }

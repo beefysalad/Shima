@@ -34,13 +34,9 @@ Failure modes the spec implies that no feature test would otherwise exercise (ea
 
 ---
 
-### Task 0: Mockup and layout table (HUMAN/CLAUDE, not Codex)
+### Task 0: Mockup and layout table (CLAUDE, DONE 2026-11-23; user approval pending)
 
-Claude updates `mockup/index.html` (Calendar tab matching the DynaGlance reference and the spec; Calendar icon added to the header strip; denied state; six-week month) and the user approves it. Output also appended to the spec as a "Layout table": every rect and font size used by Task 4 (`CalendarLayout` values) and the final header icon positions.
-
-**Known constraint Codex must respect:** the notch hides x 110.5..289.5 of the island's header. Today's header icons sit at x 14 (Home), 42 (Music), 70 (Camera), each 24 wide; a fourth at x 98 would overlap the notch. Task 0 decides the fix (planned: 22 pt hit areas on a 24 pt pitch starting at x 12, so the fourth icon spans 84..106). Codex reads the final numbers from the spec's Layout table; if the table is missing, stop and report.
-
-- [ ] Codex: do not start Task 4 until the spec's Layout table exists and the user's approval is recorded in it.
+`mockup/index.html` now has the Calendar tab and the spec ends with the "Layout table" (all rects, font sizes, the four header icon positions at x 12/36/60/84 that clear the notch zone). Codex reads the numbers from that table. If the user has not yet approved the mockup (check with the user before starting Task 4), stop at the end of Task 3.
 
 ### Task 1: Types and the Calendar tab case (PURE)
 

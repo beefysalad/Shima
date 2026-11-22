@@ -18,7 +18,7 @@
 - The island panel never steals focus (a peek must not activate shima or take key status). Hover must keep working during a peek.
 - The collapsed idle size and the expanded 400 x 200 island are unchanged. The panel frame is resized only by the hover machine's effects, never by a view.
 - Nothing may enlarge the island root `ZStack`; the peek content is an overlay with explicit frames.
-- The real UI must match `mockup/index.html` (Task 0 extends it first). Peek island: 460 x 84, bottom radius 24, ear radius 12.
+- The real UI must match `mockup/index.html` (Task 0 extends it first). Peek island (real scale, see the spec's Layout table): 340 x 76, bottom radius 22, ear radius 10. The mockup's 460 x 84 is mockup scale, not points.
 - Commit messages: plain, no attribution trailers. Stage explicit paths, never `git add -A`. No signing identifiers, `.build`, `dist` in commits. Never use real Bluetooth in scripts: fake mode only. Kill the app by pid, never `pkill -x Shima`.
 - The terminal has no Screen Recording permission: verify with logs, window list, CGEvent input and offscreen renders.
 - Info.plist key `NSBluetoothAlwaysUsageDescription` is added only if Task 1 (spike) says the chosen path needs it.
@@ -33,9 +33,9 @@
 
 ---
 
-### Task 0: Mockup (HUMAN/CLAUDE, not Codex)
+### Task 0: Mockup (CLAUDE, DONE 2026-11-23; user approval pending)
 
-Claude extends `mockup/index.html` with the device peek variants (earbuds, keyboard, mouse, generic; with and without battery) inside the existing 460 x 84 peek, and the Settings General row "Device pop-ups". The user approves it. The approved glyph shapes and the peek content rects/sizes are appended to the spec as a "Peek layout table", used by Task 5. If the table is missing when you reach Task 5, stop and report.
+`mockup/index.html` now has the device peek variants and the Settings row, and the spec ends with the "Layout table" (real-scale peek 340 x 76, content rects, glyph source). Codex reads the numbers from that table. If the user has not yet approved the mockup (check before Task 5), stop at the end of Task 4.
 
 ### Task 1: Spike S1, Bluetooth notifications (CLAUDE + HUMAN, not Codex)
 
@@ -51,12 +51,12 @@ Claude, with the user connecting and disconnecting the Keychron K3 and AirPods 4
 - Produces:
   - `IslandMode.peek`
   - `HotRegion.peek`
-  - `IslandLayout.peek = IslandShapeMetrics(width: 460, height: 84, bottomRadius: 24, earRadius: 12)`
+  - `IslandLayout.peek = IslandShapeMetrics(width: 340, height: 76, bottomRadius: 22, earRadius: 10)`
   - `IslandLayout.metrics(for: .peek, notch:, live:)` returns `IslandLayout.peek`
-  - `IslandLayout.peekPanelFrame(notch: CGRect) -> CGRect`: width `460 + 2*12 + 2*hoverMargin` (500), height `84 + hoverMargin` (92), centred on `notch.midX`, top edge at `notch.maxY` (same construction as the expanded `panelFrame`)
+  - `IslandLayout.peekPanelFrame(notch: CGRect) -> CGRect`: width `340 + 2*10 + 2*hoverMargin` (376), height `76 + hoverMargin` (84), centred on `notch.midX`, top edge at `notch.maxY` (same construction as the expanded `panelFrame`)
   - `IslandLayout.hotRect(.peek, notch:, live:, panelFrame:)` is the whole panel in local coordinates, like `.expanded`.
 
-- [ ] **Step 1: Write failing tests** with the same `notch` fixture the existing tests use: `peekPanelFrameIsCentredAndTopAligned` (width 500, height 92, `midX == notch.midX`, `maxY == notch.maxY`); `peekHotRectIsWholePanel`; `peekMetricsAreMockupValues`; `peekDoesNotAnimateEqualizerOrCountAsExpanded` (`EqualizerPolicy`'s visible/animating functions treat `.peek` like `.collapsed`: the wings are hidden during a peek, so `isVisible(island: .peek, live: true, content: .track) == false`, `isAnimating(.animated, island: .peek, ...) == false`). Keep all existing layout tests unchanged.
+- [ ] **Step 1: Write failing tests** with the same `notch` fixture the existing tests use: `peekPanelFrameIsCentredAndTopAligned` (width 376, height 84, `midX == notch.midX`, `maxY == notch.maxY`); `peekHotRectIsWholePanel`; `peekMetricsAreMockupValues`; `peekKeepsWingsLikeCollapsed` (`EqualizerPolicy`'s visible/animating functions treat `.peek` exactly like `.collapsed`: `isVisible(island: .peek, live: true, content: .track) == true` and `isVisible(island: .peek, live: false, ...) == false`; the mockup keeps the collapsed wings visible during a peek, so the real island does too; `isAnimating(.whenOpen, island: .peek, ...) == false`). Keep all existing layout tests unchanged.
 - [ ] **Step 2: Run** `swift test --filter "IslandLayoutTests|EqualizerModeTests"`. Expected: FAIL.
 - [ ] **Step 3: Implement** the above; fix every `switch` over `IslandMode`/`HotRegion` the compiler flags (`swift build` lists them).
 - [ ] **Step 4: Run** `swift build && swift test`. Expected: pass, no warnings.
@@ -117,11 +117,11 @@ Claude, with the user connecting and disconnecting the Keychron K3 and AirPods 4
 
 **Files:**
 - Create: `Sources/ShimaCore/PeekLayout.swift`, `Sources/Shima/PeekContent.swift`
-- Modify: `Sources/Shima/IslandPanelController.swift`, `Sources/Shima/IslandView.swift`, `Sources/Shima/WingsView.swift` (hidden while `state.mode == .peek`), `Sources/Shima/Log.swift` (`Log.peek`, category `peek`)
+- Modify: `Sources/Shima/IslandPanelController.swift`, `Sources/Shima/IslandView.swift`, `Sources/Shima/Log.swift` (`Log.peek`, category `peek`)
 - Test: `Tests/ShimaCoreTests/PeekLayoutTests.swift`
 
 **Interfaces:**
-- Produces: `PeekLayout` constants from the table (badge, title, subtitle, battery rects inside the 460 x 84 island, top-left local coordinates); `IslandPanelController.showPeek(_ item: PeekItem, duration: Duration) -> Bool` (sets `state.peek` first, calls `hover.peek(duration:)`; on `false` restores the previous `state.peek` and returns false); `PeekContent` (SwiftUI overlay, opacity 0 unless `state.mode == .peek`, `allowsHitTesting(false)` so hover and focus are untouched).
+- Produces: `PeekLayout` constants from the table (badge, title, subtitle, battery rects inside the 340 x 76 island, top-left local coordinates); `IslandPanelController.showPeek(_ item: PeekItem, duration: Duration) -> Bool` (sets `state.peek` first, calls `hover.peek(duration:)`; on `false` restores the previous `state.peek` and returns false); `PeekContent` (SwiftUI overlay, opacity 0 unless `state.mode == .peek`, `allowsHitTesting(false)` so hover and focus are untouched).
 
 **Panel effects** (in `perform(_:)`):
 - `.growPanelForPeek` -> `setPanelFrame` with `IslandLayout.peekPanelFrame(notch:)` (same transaction pattern as `setPanelFrame`; extend it with a `kind` parameter instead of duplicating).
@@ -130,7 +130,7 @@ Claude, with the user connecting and disconnecting the Keychron K3 and AirPods 4
 - `.animateExpand` also clears `state.peek`.
 - `IslandView`: shape metrics already come from `IslandLayout.metrics(for: state.mode, ...)`; add the `PeekContent` overlay; the fill rules treat `.peek` like `.expanded` (opaque black).
 
-- [ ] **Step 1: Write failing tests** `PeekLayoutTests`: every rect lies inside 460 x 84; the battery text rect does not overlap the subtitle rect; the badge is 34 x 34 (mockup value).
+- [ ] **Step 1: Write failing tests** `PeekLayoutTests`: every rect lies inside 340 x 76; the battery text rect does not overlap the subtitle rect; the badge is 30 x 30 (Layout table value).
 - [ ] **Step 2: Run** `swift test --filter PeekLayoutTests`. Expected: FAIL; then implement `PeekLayout` and run: PASS.
 - [ ] **Step 3: Implement** the panel and view changes. `swift build` must be warning-free. Check by reading `perform(_:)` that no code path leaves `state.mode == .peek` after a `reset` or `place(on:)` (display change during a peek): `reset` -> `.snapCollapsed` already sets `.collapsed`; add `state.peek = nil` there.
 - [ ] **Step 4: Run** `swift build && swift test`. Expected: pass.
@@ -159,7 +159,7 @@ Claude, with the user connecting and disconnecting the Keychron K3 and AirPods 4
 - Create: `scripts/verify-peek.sh`
 
 **Checks** (`verify-peek.sh`, modelled on `verify-camera.sh`; requires `SHIMA_FAKE_DEVICES=1 SHIMA_FAKE_SPOTIFY=paused scripts/run.sh`; each pointer sequence under 2 minutes and announced):
-1. Pointer away, `fake-device connect|Test AirPods|earbuds|82` -> log has `peek shown earbuds`; the window list (`scripts/shima-windows.swift`) shows the panel frame 500 x 92 centred on the notch.
+1. Pointer away, `fake-device connect|Test AirPods|earbuds|82` -> log has `peek shown earbuds`; the window list (`scripts/shima-windows.swift`) shows the panel frame 376 x 84 centred on the notch.
 2. After about 3 s: `peek dismissed` and the panel frame is back to the idle size; no pending timer (the log line from the hover controller or `verify-idle.sh` shows idle CPU unchanged).
 3. Second device during a peek: one `peek shown` per event, one dismissal, a single 3 s window after the last event.
 4. Pointer enters the banner: island opens once (`island content=` log) and no `peek dismissed` collapse races; moving away collapses normally.
@@ -167,7 +167,7 @@ Claude, with the user connecting and disconnecting the Keychron K3 and AirPods 4
 6. Same address twice within 5 s: second is `drop(repeated)`.
 7. Settings toggle off (`SHIMA_SETTINGS_...` or the Settings window row via the existing `verify-settings.sh` pattern): next event logs `drop(disabled)`.
 8. Focus: `scripts/verify-focus.sh` during a peek shows the panel never became key or active.
-- Offscreen render check: the peek island fits 460 x 84 for each device kind, with and without battery, with a 60-character name (truncated, no overlap with the battery text).
+- Offscreen render check: the peek island fits 340 x 76 for each device kind, with and without battery, with a 60-character name (truncated, no overlap with the battery text).
 - Regression: `swift test`, `scripts/verify-view-layout.sh`, `scripts/verify-alignment.sh [--live|--expanded]`, `scripts/verify-live-hover.sh`, `scripts/verify-idle.sh [--playing]`, `scripts/verify-camera.sh` (with `SHIMA_FAKE_CAMERA=1`), `scripts/verify-settings.sh`.
 
 - [ ] **Step 1:** Add the `fake-device` step and the log line for dropped peeks; `swift build`.

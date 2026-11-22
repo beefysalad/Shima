@@ -75,3 +75,17 @@ Exact pixel layout (it is fixed by the approved mockup), animation, glyph drawin
 
 Automated: `swift test`, offscreen render check of the Calendar panel (extend `verify-view-layout.sh`, six-week month fits, black 0..<165 rule still true outside the panel), fake-mode run with `drive.swift` (open tab, month arrows, denied state, change and day-change refresh, tab clicks via CGEvent), `verify-focus.sh`, `verify-idle.sh` (no CPU or timers added while idle), logs showing no EventKit reads while Music is the tab.
 Human (cannot be done from the terminal): the two real permission prompts, real events and reminders showing, completing a reminder and seeing it in Reminders, Google calendar events appearing if the Google account is added in macOS Calendar. Recorded in `docs/superpowers/calendar-acceptance.md`.
+
+
+## Layout table (Task 0 output, real points in the 400 x 200 island, top-left origin)
+
+Mockup: `mockup/index.html` (Calendar tab, "Jump to state" > Calendar; Simulate > Calendar and Reminders for denied and six-week states). The mockup draws at its own larger scale; these are the real values. Colours: accent `#E07A4F` (today circle, weekday and month name, overdue), done blue `#86AEF7` (event dots), selection ring white at 55%, text white / 62% / 52%.
+
+- **Header icons (replaces today's 14/42/70 positions):** four hit areas 22 x 22 at y 5, x = 12 (Home), 36 (Music), 60 (Camera), 84 (Calendar). The fourth ends at x 106, clear of the notch zone 110.5..289.5. Glyph 14 pt, stroke as the existing header glyphs. Calendar glyph (24-unit): `rect x4 y5 w16 h15 r2.5`, `M4 10h16`, `M9 3v4`, `M15 3v4`.
+- **Left column (x 18..176):** weekday and month line rect (18, 38, 158, 14), 11 pt semibold, weekday in accent, thin divider, month in 62% white; day number rect (18, 50, 158, 36), 30 pt bold; rows start y 92, row height 17, pitch 19, at most 4 (ends y 168); "+N more" rect (18, 170, 158, 12), 10 pt, 52% white.
+- **Event row:** 2 pt wide colour bar full row height at x 18; title from x 26, 11.5 pt semibold, tail truncation; time range right-aligned to x 176, 10 pt tabular digits, 62% white. The running event shows `Now · 9:30 – 10:00` in the event colour, semibold.
+- **Reminder row:** 11 pt outlined circle at x 18 (tap target 18 x 17), title from x 34, right text 10 pt ("Today", or "Overdue" in accent). Completed: circle fills with done blue and a check, row fades out over 0.25 s then is removed.
+- **Denied state:** two boxes (18, 92, 158, 40) and (18, 138, 158, 40), white 7.5% fill, radius 8: bold 11 pt line ("Calendar access is off" / "Reminders access is off") and an "Open Settings" button 18 pt high, radius 6, 10.5 pt.
+- **Right column (x 196..386):** title rect (196, 38, 150, 18), 12 pt bold, month name in accent, year in white (clicking it returns to today); previous/next arrows 18 x 18 hit areas at x 350 and 368, y 38; weekday letters rect (196, 58, 190, 12), 9.5 pt semibold, 52% white; day grid origin (196, 72), cell 27.14 x 19 (190 / 7 wide), up to 6 rows, so it ends at y 186 at most (5-week months end at 167). Day numbers 11 pt semibold tabular; days outside the month 52% white, regular. Today: filled accent circle 17 pt, white text. Selected (not today): 1.5 pt ring. Event dot 3 pt at the cell's bottom centre (white on today).
+- **Empty day:** "Nothing scheduled", 11.5 pt, 52% white, at (18, 92).
+- **Layout rule:** nothing but the header icons occupies y < 34, so the notch zone stays clear.

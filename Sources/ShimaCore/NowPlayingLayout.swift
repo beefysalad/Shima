@@ -22,6 +22,12 @@ public enum NowPlayingLayout {
     /// (the notch occupies x 110.5..289.5 of the 400 pt island). More tabs will follow it to the right.
     public static let tabIcon = CGRect(x: 14, y: 4, width: 28, height: 24)
 
+    public static func tabRect(_ tab: IslandTab) -> CGRect {
+        tabIcon.offsetBy(dx: tab == .camera ? 34 : 0, dy: 0)
+    }
+
+    public static let cameraPreview = CGRect(x: 14, y: 36, width: 332, height: 118)
+
     /// Settings gear: top right of the open island, below the notch strip and the 33 pt menu bar
     /// (status items there are other windows at the island's level).
     public static let settingsButton = CGRect(x: 358, y: 36, width: 24, height: 24)

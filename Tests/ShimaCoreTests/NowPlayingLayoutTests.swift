@@ -47,6 +47,17 @@ import Testing
         #expect(island.contains(g) && g.maxY <= 32 && g.maxX < notchLeft)
         #expect(!g.intersects(NowPlayingLayout.artwork) && !g.intersects(NowPlayingLayout.settingsButton))
     }
+    @Test func cameraControlsStayInsideExistingGeometry() {
+        let camera = NowPlayingLayout.tabRect(.camera)
+        let music = NowPlayingLayout.tabRect(.music)
+        #expect(music == NowPlayingLayout.tabIcon)
+        #expect(camera.minX > music.maxX && camera.maxY <= 32)
+        #expect(camera.maxX < (island.width - 179) / 2)
+        let preview = NowPlayingLayout.cameraPreview
+        #expect(preview.size == CGSize(width: 332, height: 118))
+        #expect(island.contains(preview) && preview.minY >= 32)
+        #expect(!preview.intersects(NowPlayingLayout.settingsButton))
+    }
     @Test func settingsButtonClearsTitleArtworkAndControls() {
         let g = NowPlayingLayout.settingsButton
         #expect(NowPlayingLayout.titleRect == CGRect(x: 140, y: 72, width: 242, height: 20))

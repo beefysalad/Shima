@@ -29,6 +29,7 @@ struct IslandView: View {
     let hitOpacity: Double
     let onCommand: @MainActor (SpotifyCommand) -> Void
     let onSettings: @MainActor () -> Void
+    var camera: CameraService? = nil
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -53,12 +54,18 @@ struct IslandView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .top) {
             NowPlayingView(state: state, media: media, onCommand: onCommand)
-                .opacity(state.mode == .expanded ? 1 : 0)
+                .opacity(state.mode == .expanded && state.selectedTab == .music ? 1 : 0)
+                .allowsHitTesting(state.mode == .expanded && state.selectedTab == .music)
         }
         .overlay(alignment: .top) {
-            HeaderTabIcon()
+            if state.mode == .expanded && state.selectedTab == .camera, let camera {
+                CameraContent(service: camera)
+            }
+        }
+        .overlay(alignment: .top) {
+            HeaderTabIcon(state: state)
                 .opacity(state.mode == .expanded ? 1 : 0)
-                .allowsHitTesting(false)
+                .allowsHitTesting(state.mode == .expanded)
         }
         .overlay(alignment: .top) {
             SettingsGear(action: onSettings)
@@ -91,17 +98,35 @@ struct SettingsGear: View {
     }
 }
 
-/// The selected tab icon in the upper-left header strip (Music is the only tab so far). Island-sized, so it never changes the layout.
+/// Island-sized overlay preserves the root layout and the original header position.
 struct HeaderTabIcon: View {
+    let state: AppState
+
     var body: some View {
-        let r = NowPlayingLayout.tabIcon
         ZStack(alignment: .topLeading) {
-            BrandLogo(name: "SpotifyWhite")
-                .frame(width: 21, height: 21)
-                .frame(width: r.width, height: r.height)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.13)))
+            ForEach([IslandTab.music, .camera], id: \.self) { tab in
+                let r = NowPlayingLayout.tabRect(tab)
+                Button {
+                    state.selectedTab = tab
+                    Log.camera.info("camera tab clicked tab=\(tab.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public)")
+                } label: {
+                    Group {
+                        if tab == .music {
+                            BrandLogo(name: "SpotifyWhite").frame(width: 21, height: 21)
+                        } else {
+                            Image(systemName: "camera.fill").font(.system(size: 15))
+                        }
+                    }
+                    .foregroundStyle(.white.opacity(state.selectedTab == tab ? 1 : 0.65))
+                    .frame(width: r.width, height: r.height)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(state.selectedTab == tab ? 0.13 : 0)))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(tab == .music ? "Music" : "Camera")
+                .accessibilityAddTraits(state.selectedTab == tab ? .isSelected : [])
                 .position(x: r.midX, y: r.midY)
-                .accessibilityLabel("Music")
+            }
         }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
     }

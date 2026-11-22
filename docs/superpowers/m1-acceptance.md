@@ -42,3 +42,14 @@ How evidence was gathered: AUTOMATED rows ran in FAKE mode only (`SHIMA_FAKE_SPO
 - **Criterion 1 not strictly measured:** the 5x timed protocol was not run; see the numbers in row 1 (max 445 ms from the logs). A strict run is still available if wanted.
 - **Not done (HUMAN):** typing in TextEdit with the live island; M0 manual focus mode; M0 Apple menu check; real-mode plain strict idle with Spotify quit; real-Spotify `--playing` CPU run.
 - **Equalizer WindowServer cost** about +6.7 points at 20 fps in this run (accepted).
+
+## M0 re-checks after M1 (self-driven)
+
+Date 2026-11-22. FAKE mode only (`SHIMA_FAKE_SPOTIFY=playing scripts/run.sh`, ad-hoc signed, main checkout build), CGEvent input (`scripts/drive.swift` for the pointer, a scratch Swift helper for keystrokes), no AppleScript, the user's Spotify untouched. These replace the two HUMAN rows skipped above (M0 regressions 6 and 7, M1 row 6 typing).
+
+| Check | Result | Evidence |
+|---|---|---|
+| A. Typing while the island is open (M0 6) | **PASS** | TextEdit frontmost with a new empty document. Pointer to 735,16: log `hover dwelling -> expanded`, island stayed open about 4 s. Typed `shima focus test 12345` by CGEvent, then Cmd-A, Cmd-C with the island still open: `pbpaste` returned `shima focus test 12345` (exact match). Frontmost app TextEdit before and after; no `app became active` in the log. The document was discarded (TextEdit killed) and the previous text clipboard restored |
+| B. Apple menu, island open and idle (M0 7) | **PASS** | Idle: hover then click 36,16 opened a menu window (`CGWindowList` layer 101, owner `Kaze`, x=6 y=34 w=371 h=305, the Apple menu), closed by Esc. Island open (`hover dwelling -> expanded`): move to 36,16, 100 ms, click 36,16 (island went `expanded -> leaving -> collapsing -> collapsed` normally): the same menu window appeared, Esc closed it |
+
+Notes: the menu owner shows as `Kaze` (a menu-bar related process on this Mac), accepted by `shima-windows.swift --menus` as any layer-101 window. The `key esc` step in `scripts/drive.swift` (down and up posted back to back) did not close the Apple menu, while Esc with a 20 ms gap between down and up did; a lingering menu then toggled shut on the next click and gave a false `no menu window` once. Not changed in the script.

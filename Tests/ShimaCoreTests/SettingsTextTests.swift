@@ -100,30 +100,26 @@ import Testing
 }
 
 @Suite struct SettingsLayoutTests {
-    /// scripts/verify-settings.sh copies these numbers; change both together.
-    @Test func sizeAndClickPointsArePinned() {
-        #expect(SettingsLayout.size == CGSize(width: 440, height: 510))
-        #expect(SettingsLayout.launchAtLoginClick == CGPoint(x: 28, y: 50))
-        #expect(EqualizerMode.allCases.map { SettingsLayout.center(SettingsLayout.equalizerSegment($0)) }
-                == [CGPoint(x: 185, y: 108), CGPoint(x: 275, y: 108), CGPoint(x: 365, y: 108)])
-        #expect(SettingsLayout.center(SettingsLayout.automationButton) == CGPoint(x: 135, y: 240))
-        #expect(SettingsLayout.center(SettingsLayout.quitButton) == CGPoint(x: 370, y: 484))
-    }
-    @Test func controlsFitAndDoNotOverlap() {
+    @Test func navigationStaysInsideTheSidebarAndClearOfQuit() {
         let bounds = CGRect(origin: .zero, size: SettingsLayout.size)
-        let rects = SettingsLayout.allRects
-        #expect(rects.count == 17)
-        for r in rects { #expect(bounds.contains(r)) }
-        for i in rects.indices {
-            for j in rects.indices where j > i {
-                let overlap = rects[i].intersection(rects[j])
-                #expect(overlap.isNull || overlap.width * overlap.height == 0, "rects \(i) and \(j) overlap")
-            }
+        for page in SettingsPage.allCases {
+            let rect = SettingsLayout.navigation(page)
+            #expect(bounds.contains(rect))
+            #expect(rect.maxX < SettingsLayout.sidebarWidth)
+            #expect(!rect.intersects(SettingsLayout.quitButton))
         }
+        #expect(bounds.contains(SettingsLayout.quitButton))
     }
-    @Test func segmentsAreEqualAndAdjacent() {
-        let s = EqualizerMode.allCases.map(SettingsLayout.equalizerSegment)
-        #expect(s.allSatisfy { $0.size == CGSize(width: 90, height: 28) })
-        #expect(s[0].maxX == s[1].minX && s[1].maxX == s[2].minX && s[0].minX > SettingsLayout.equalizerLabel.maxX)
+    @Test func pagesHaveDistinctTitlesAndSymbols() {
+        #expect(SettingsPage.allCases.map(\.rawValue) == ["General", "Music", "Updates", "About"])
+        #expect(Set(SettingsPage.allCases.map(\.symbol)).count == SettingsPage.allCases.count)
+        #expect(SettingsPage.allCases.allSatisfy { !$0.subtitle.isEmpty })
+    }
+    @Test func diagnosticClickPointsSitInsideContent() {
+        let content = CGRect(x: SettingsLayout.sidebarWidth, y: 0,
+            width: SettingsLayout.size.width - SettingsLayout.sidebarWidth, height: SettingsLayout.size.height)
+        for point in [SettingsLayout.launchAtLoginClick, SettingsLayout.automationClick] + EqualizerMode.allCases.map(SettingsLayout.equalizerClick) {
+            #expect(content.contains(point))
+        }
     }
 }

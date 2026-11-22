@@ -72,10 +72,12 @@ import CryptoKit
         } catch { precondition(error.localizedDescription.contains("checksum")) }
         print("Archive verification and tampered download rejection PASS")
 
-        let model = SettingsModel(state: AppState(), store: SettingsStore(storage: InMemoryPreferenceStorage()),
+        let appState = AppState()
+        let model = SettingsModel(state: appState, store: SettingsStore(storage: InMemoryPreferenceStorage()),
                                   loginItems: UpdateCheckLogin(), versionText: "Version \(fixtureVersion) (1)", readSigning: { .adHoc })
         model.refresh()
-        for scenario in ["idle", "available", "signed", "current", "offline", "source"] {
+        for scenario in ["idle", "available", "signed", "current", "offline", "source", "denied"] {
+            appState.spotifyAvailability = scenario == "denied" ? .permissionDenied : .notRunning
             let updater = AppUpdater(currentVersion: scenario == "current" ? fixtureVersion : "0.0.0",
                 bundleURL: URL(fileURLWithPath: scenario == "source" ? "/tmp/Shima.app" : "/Applications/Shima.app"),
                 signing: { scenario == "signed" ? .certificate(commonName: "Test", notAfter: nil) : .adHoc },
@@ -92,17 +94,24 @@ import CryptoKit
             case "source": precondition(!updater.canInstall && updater.message.contains("Applications"))
             default: break
             }
-            let host = NSHostingView(rootView: SettingsView(model: model, updater: updater, onToggleLogin: {}, onEqualizerMode: { _ in }, onSpotifyRow: { _ in }).background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, .light))
-            let window = NSWindow(contentRect: CGRect(origin: .zero, size: SettingsLayout.size), styleMask: .borderless, backing: .buffered, defer: false)
-            window.contentView = host
-            window.appearance = NSAppearance(named: .aqua)
-            host.layoutSubtreeIfNeeded()
-            try await Task.sleep(for: .milliseconds(100))
-            host.displayIfNeeded()
-            let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds)!
-            host.cacheDisplay(in: host.bounds, to: bitmap)
-            try bitmap.representation(using: .png, properties: [:])!.write(to: folder.appendingPathComponent("\(scenario).png"))
-            precondition(!window.isVisible)
+            let pages: [SettingsPage] = scenario == "idle" ? SettingsPage.allCases : (scenario == "denied" ? [.music] : [.updates])
+            for selectedPage in pages {
+                for dark in [false, true] {
+                    let host = NSHostingView(rootView: SettingsView(model: model, updater: updater, initialPage: selectedPage, onToggleLogin: {}, onEqualizerMode: { _ in }, onSpotifyRow: { _ in }).background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, dark ? .dark : .light))
+                    let window = NSWindow(contentRect: CGRect(origin: .zero, size: SettingsLayout.size), styleMask: .borderless, backing: .buffered, defer: false)
+                    window.isReleasedWhenClosed = false
+                    window.contentView = host
+                    window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+                    host.layoutSubtreeIfNeeded()
+                    try await Task.sleep(for: .milliseconds(100))
+                    host.displayIfNeeded()
+                    let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds)!
+                    host.cacheDisplay(in: host.bounds, to: bitmap)
+                    try bitmap.representation(using: .png, properties: [:])!.write(to: folder.appendingPathComponent("\(scenario)-\(selectedPage.rawValue)-\(dark ? "dark" : "light").png"))
+                    precondition(!window.isVisible)
+                    window.close()
+                }
+            }
             print("Settings \(scenario): \(updater.message) PASS")
         }
     }

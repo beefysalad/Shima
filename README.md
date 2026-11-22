@@ -14,7 +14,7 @@ A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). 
 **Status**
 - **M0, the island shell:** the idle island is flush with the notch and invisible. Hover it and a 400x200 black island springs out with concave corners; leave and it collapses. Built-in display only.
 - **M1, Spotify:** while music plays, two small wings grow beside the notch (album art on the left, bouncing green bars on the right). Hover to open the island: artwork, title, artist, a progress bar, and previous, play/pause and next. It is event-driven (no polling), never launches Spotify, and needs the macOS Automation permission for Spotify.
-- **Settings window:** a normal window for Launch at login, Quit, Spotify status with a shortcut to the Automation pane, the equalizer mode (animated, only when open, or off), and version and signing info. Open it by launching Shima again (Spotlight or Finder), from the gear on the open island, or from "Settings…" in the status menu. None of these depend on the menu-bar icon having room.
+- **Settings window:** a native sidebar with General, Music, Updates and About pages, grouped controls, and light and dark appearances. Includes Launch at login, Quit, Spotify status with a shortcut to the Automation pane, the equalizer mode (animated, only when open, or off), and version and signing info. Open it by launching Shima again (Spotlight or Finder), from the gear on the open island, or from "Settings…" in the status menu. None of these depend on the menu-bar icon having room.
 - **Next:** M2, Claude Code session state. `shimactl` is still a stub. Still open from M0: external-monitor and clamshell checks.
 
 Website and download: [beefysalad.github.io/Shima](https://beefysalad.github.io/Shima/).

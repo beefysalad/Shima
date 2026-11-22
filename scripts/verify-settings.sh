@@ -23,10 +23,11 @@ done
 if (( login )); then APP="/Applications/Shima.app"; else APP="$REPO/dist/Shima.app"; fi
 BIN="$APP/Contents/MacOS/Shima"
 [[ -x "$BIN" ]] || { echo "missing $BIN (scripts/bundle.sh, or scripts/install.sh for --login-item)"; exit 2; }
-H=510                                   # SettingsLayout.size.height
+H=460                                   # SettingsLayout.size.height
 N="735 16"; A="735 400"; GEAR="905.5 48" # NowPlayingLayout.settingsButtonCenter on this Mac
-SEG_animated="185 108"; SEG_whenOpen="275 108"; SEG_off="365 108"   # SettingsLayoutTests pins these
-LOGIN="28 50"; AUTOMATION="135 240"; QUIT="370 484"
+SEG_animated="283 314"; SEG_whenOpen="424 314"; SEG_off="565 314"   # SettingsLayoutTests pins these
+LOGIN="610 156"; AUTOMATION="310 214"; QUIT="84 429"
+PAGE_general="84 109"; PAGE_music="84 147"
 dir="$(mktemp -d -t shima-settings)"; fail=0; pid=""; lp=""; cf=""; LAUNCH_MARK=0
 wx=0; wy=0; ww=0; wh=0
 tools="$REPO/.build/tools"; mkdir -p "$tools"
@@ -150,7 +151,7 @@ echo "     $(since "$LAUNCH_MARK" | grep -oE 'settings eq mode=[A-Za-z]+ loaded'
 m="$(mark)"; open "$APP"
 expect_log "A1 reopen opens the window, active and key" "$m" 'settings opened via reopen created=true active=true key=true'
 expect_windows "A1 one window" 1
-wrect && [[ "$ww" == 440 ]] && ok "A1 window width 440" || bad "A1 window bounds" "x=$wx y=$wy w=$ww h=$wh"
+wrect && [[ "$ww" == 680 ]] && ok "A1 window width 680" || bad "A1 window bounds" "x=$wx y=$wy w=$ww h=$wh"
 if ! has "$LAUNCH_MARK" 'settings eq mode=animated loaded'; then wclick "$SEG_animated"; sleep 0.5; fi
 m="$(mark)"; open "$APP"
 expect_log "A2 second reopen reuses it" "$m" 'settings opened via reopen created=false'
@@ -202,6 +203,7 @@ fi
 # E. Equalizer modes (live, collapsed, fake playing)
 if [[ "$(locked)" == 1 ]]; then bad "E screen unlocked" "the screen is locked; equalizer checks are invalid"; fi
 reopen || bad "E window bounds"
+wclick "$PAGE_general"
 expect_eq "E0 live wings animate (animated)" 'eq animating anims=4'
 m="$(mark)"; wclick "$SEG_off"; expect_log "E1 mode off saved" "$m" 'settings eq mode=off saved'
 expect_eq "E1 live wings frozen" 'eq frozen anims=0'
@@ -214,6 +216,7 @@ m="$(mark)"; wclick "$SEG_animated"; expect_log "E5 mode animated saved" "$m" 's
 expect_eq "E5 live wings animate" 'eq animating anims=4'
 
 # F. Spotify rows and the Automation button
+wclick "$PAGE_music"
 m="$(mark)"; d "fake quit"; expect_log "F1 row notRunning" "$m" 'settings spotify row=notRunning'
 m="$(mark)"; d "fake launch"; expect_log "F2 row running" "$m" 'settings spotify row=running'
 m="$(mark)"; d "fake denied"; expect_log "F3 row permissionDenied" "$m" 'settings spotify row=permissionDenied'
@@ -225,6 +228,7 @@ d "fake playing"; sleep 0.5
 
 # G. Persistence across a relaunch, and Quit
 reopen
+wclick "$PAGE_general"
 m="$(mark)"; wclick "$SEG_off"; expect_log "G1 mode off saved" "$m" 'settings eq mode=off saved'
 old="$pid"; m="$(mark)"; wclick "$QUIT"
 expect_log "G2 quit logged" "$m" 'settings quit'

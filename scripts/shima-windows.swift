@@ -65,8 +65,11 @@ if mode == "--settings" {
     exit(mine.count == 1 ? 0 : (mine.count == 0 ? 1 : 3))
 }
 
+// SHIMA_WINDOW_PID limits the island measurement to one process (the installed app's island overlaps a test build's).
+let onlyPID = ProcessInfo.processInfo.environment["SHIMA_WINDOW_PID"].flatMap { Int($0) }
 var best: (layer: Int, rect: R)?
 for w in info where (w[kCGWindowOwnerName as String] as? String) == "Shima" {
+    if let onlyPID, (w[kCGWindowOwnerPID as String] as? Int) != onlyPID { continue }
     guard let r = rectOf(w), abs(r.y) < 0.5 else { continue }
     let layer = (w[kCGWindowLayer as String] as? Int) ?? 0
     if best == nil || abs((r.x + r.w / 2) - (notch.x + notch.w / 2))
@@ -83,6 +86,9 @@ switch mode {
 case "--live", "--live-frame-only":
     expected = R(x: notch.x - 33, y: notch.y, w: notch.w + 66, h: notch.h)
     okMessage = "PASS live frame matches notch+wings within 1pt"
+case "--peek":
+    expected = R(x: notch.x + notch.w / 2 - 188, y: notch.y, w: 376, h: 84)
+    okMessage = "PASS peek frame matches layout within 1pt"
 case "--expanded":
     expected = R(x: notch.x + notch.w / 2 - 218, y: notch.y, w: 436, h: 208)
     okMessage = "PASS expanded frame matches layout within 1pt"

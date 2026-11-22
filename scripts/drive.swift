@@ -5,6 +5,7 @@ import CoreGraphics
 // Keys: esc tab space return cmd-w cmd-comma (down, 20 ms, up). An unknown key exits 2.
 // Coordinates are global top-left CG points (as printed by scripts/shima-windows.swift).
 // `fake CMD` posts the distributed notification local.shima.fake-spotify (object CMD), read only by shima in fake mode.
+// `fake-device connect|<name>|<kind>|<battery or ->` posts local.shima.fake-device, read only with SHIMA_FAKE_DEVICES=1.
 let start = Date()
 func stamp(_ s: String) { print(String(format: "t=%6.0fms ", Date().timeIntervalSince(start) * 1000) + s); fflush(stdout) }
 func mouse(_ type: CGEventType, _ p: CGPoint) {
@@ -49,6 +50,11 @@ for raw in CommandLine.arguments.dropFirst().joined(separator: ";").split(separa
     case "fake" where w.count > 1:
         DistributedNotificationCenter.default().postNotificationName(
             .init("local.shima.fake-spotify"), object: w[1], userInfo: nil, deliverImmediately: true)
+        wait(5)
+    case "fake-device" where w.count > 1:
+        // Payload "connect|<name>|<kind>|<battery or ->" may contain spaces; it is everything after the step name.
+        DistributedNotificationCenter.default().postNotificationName(
+            .init("local.shima.fake-device"), object: w.dropFirst().joined(separator: " "), userInfo: nil, deliverImmediately: true)
         wait(5)
     default: stamp("unknown step: \(w.joined(separator: " "))"); exit(2)
     }

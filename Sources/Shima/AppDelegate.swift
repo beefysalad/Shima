@@ -74,12 +74,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false
+        let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettingsFromMenu), keyEquivalent: ",")
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+        menu.addItem(.separator())
         loginItemMenuItem.target = self
         menu.addItem(loginItemMenuItem)
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit shima", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item
+        DispatchQueue.main.async { [weak self] in self?.logStatusItemFrame() }
+    }
+
+    @objc private func openSettingsFromMenu() { settingsWindow.show(via: .menu) }
+
+    private func logStatusItemFrame() {
+        guard let f = statusItem?.button?.window?.frame else { Log.menu.info("menu status item none"); return }
+        let top = NSScreen.screens.first?.frame.maxY ?? f.maxY
+        Log.menu.info("menu status item x=\(f.minX, format: .fixed(precision: 1), privacy: .public) y=\(top - f.maxY, format: .fixed(precision: 1), privacy: .public) w=\(f.width, format: .fixed(precision: 1), privacy: .public) h=\(f.height, format: .fixed(precision: 1), privacy: .public)")
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {

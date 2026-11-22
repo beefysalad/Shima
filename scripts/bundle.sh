@@ -2,6 +2,7 @@
 # Build release binaries and assemble an ad-hoc-signed dist/Shima.app. No Xcode needed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+SIGN_ID="${SHIMA_SIGN_ID:--}"
 
 swift build -c release
 BIN="$(swift build -c release --show-bin-path)"
@@ -27,10 +28,12 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSAppleEventsUsageDescription</key><string>shima shows what Spotify is playing and sends it play, pause, next and previous when you click the island's buttons.</string>
 </dict>
 </plist>
 PLIST
 
-codesign --force -s - "$APP/Contents/MacOS/shimactl"
-codesign --force -s - "$APP"
+codesign --force --timestamp=none -s "$SIGN_ID" "$APP/Contents/MacOS/shimactl"
+codesign --force --timestamp=none -s "$SIGN_ID" "$APP"
+echo "signed with: $SIGN_ID"
 echo "Built $APP"

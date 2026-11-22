@@ -26,29 +26,34 @@ public enum IslandLayout {
     public static let expanded = IslandShapeMetrics(width: 360, height: 165, bottomRadius: 24, earRadius: 10)
     public static let collapsedBottomRadius: CGFloat = 9
     public static let hoverMargin: CGFloat = 8
+    public static let liveWingWidth: CGFloat = 33
 
-    public static func collapsedMetrics(notch: CGRect) -> IslandShapeMetrics {
-        IslandShapeMetrics(width: notch.width, height: notch.height, bottomRadius: collapsedBottomRadius, earRadius: 0)
+    public static func collapsedMetrics(notch: CGRect, live: Bool = false) -> IslandShapeMetrics {
+        IslandShapeMetrics(width: notch.width + (live ? 2 * liveWingWidth : 0), height: notch.height, bottomRadius: collapsedBottomRadius, earRadius: 0)
     }
 
-    public static func metrics(for mode: IslandMode, notch: CGRect) -> IslandShapeMetrics {
+    public static func metrics(for mode: IslandMode, notch: CGRect, live: Bool = false) -> IslandShapeMetrics {
         switch mode {
-        case .collapsed: collapsedMetrics(notch: notch)
+        case .collapsed: collapsedMetrics(notch: notch, live: live)
         case .expanded: expanded
         }
     }
 
-    public static func panelFrame(notch: CGRect, expanded: Bool) -> CGRect {
-        guard expanded else { return notch }
+    public static func idleFrame(notch: CGRect, live: Bool = false) -> CGRect {
+        live ? notch.insetBy(dx: -liveWingWidth, dy: 0) : notch
+    }
+
+    public static func panelFrame(notch: CGRect, live: Bool = false, expanded: Bool) -> CGRect {
+        guard expanded else { return idleFrame(notch: notch, live: live) }
         let width = Self.expanded.width + 2 * Self.expanded.earRadius + 2 * hoverMargin
         let height = Self.expanded.height + hoverMargin
         return CGRect(x: notch.midX - width / 2, y: notch.maxY - height, width: width, height: height)
     }
 
-    public static func hotRect(_ region: HotRegion, notch: CGRect, panelFrame: CGRect) -> CGRect {
+    public static func hotRect(_ region: HotRegion, notch: CGRect, live: Bool = false, panelFrame: CGRect) -> CGRect {
         switch region {
         case .idle:
-            notch.offsetBy(dx: -panelFrame.minX, dy: -panelFrame.minY)
+            idleFrame(notch: notch, live: live).offsetBy(dx: -panelFrame.minX, dy: -panelFrame.minY)
         case .expanded:
             CGRect(origin: .zero, size: panelFrame.size)
         }

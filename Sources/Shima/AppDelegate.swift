@@ -5,6 +5,7 @@ import ShimaCore
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let islandController = IslandPanelController()
     private lazy var spotify = SpotifyService(state: islandController.state, media: islandController.media)
+    private lazy var devices = DeviceService(islandController: islandController)
     private lazy var camera = CameraService(state: islandController.state)
     private var statusItem: NSStatusItem?
     private let environment = ProcessInfo.processInfo.environment
@@ -48,6 +49,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         islandController.onSettings = { [weak self] in self?.settingsWindow.show(via: .gear) }
         islandController.onCommand = { [weak self] in self?.spotify.perform($0) }
         spotify.start()
+        devices.start()
         NotificationCenter.default.addObserver(
             self, selector: #selector(appBecameActive),
             name: NSApplication.didBecomeActiveNotification, object: nil)
@@ -61,6 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard !terminationPending else { return .terminateLater }
         terminationPending = true
+        devices.stop()
         camera.shutdown { sender.reply(toApplicationShouldTerminate: true) }
         return .terminateLater
     }

@@ -36,3 +36,9 @@ enum LoginItem {
         return true
     }
 }
+
+@MainActor
+final class SystemLoginItemService: LoginItemService {
+    var status: LoginItemStatus { LoginItem.status }
+    func perform(_ action: LoginItemAction) -> Bool { LoginItem.perform(action) }
+}

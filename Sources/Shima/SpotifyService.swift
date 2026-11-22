@@ -5,6 +5,7 @@ import ShimaCore
 @MainActor
 final class SpotifyService: NSObject {
     var onLiveChange: (@MainActor (Bool) -> Void)?
+    var onFakeEqualizerMode: (@MainActor (EqualizerMode) -> Void)?
 
     private let state: AppState
     private let media: IslandMedia
@@ -102,6 +103,15 @@ final class SpotifyService: NSObject {
         case "launch": Log.spotify.info("fake launch"); receive(.launched)
         case "eq-frozen": Log.spotify.info("fake eq-frozen"); media.equalizerFrozen = true
         case "eq-animating": Log.spotify.info("fake eq-animating"); media.equalizerFrozen = false
+        case "denied": Log.spotify.info("fake denied"); receive(.permissionDenied)
+        case "allowed": Log.spotify.info("fake allowed"); fake?.refresh()
+        case let c where c.hasPrefix("eq-mode-"):
+            if let mode = EqualizerMode(rawValue: String(c.dropFirst("eq-mode-".count))) {
+                Log.spotify.info("fake \(c, privacy: .public)")
+                onFakeEqualizerMode?(mode)
+            } else {
+                Log.spotify.info("fake unknown \(c, privacy: .public)")
+            }
         default: Log.spotify.info("fake unknown \(cmd, privacy: .public)")
         }
     }

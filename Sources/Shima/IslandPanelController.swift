@@ -16,6 +16,7 @@ final class IslandPanelController {
     let state = AppState()
     let media = IslandMedia()
     var camera: CameraService?
+    var calendar: CalendarService?
     var onCommand: (@MainActor (SpotifyCommand) -> Void)?
     var onSettings: (@MainActor () -> Void)?
     var onIslandOpened: (@MainActor () -> Void)?

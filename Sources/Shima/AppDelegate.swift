@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let islandController = IslandPanelController()
     private lazy var spotify = SpotifyService(state: islandController.state, media: islandController.media)
     private lazy var camera = CameraService(state: islandController.state)
+    private lazy var calendar = CalendarService(state: islandController.state, environment: environment)
     private var statusItem: NSStatusItem?
     private let environment = ProcessInfo.processInfo.environment
     private lazy var settings = SettingsModel(
@@ -38,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         _ = settingsWindow
         setUpStatusItem()
         islandController.camera = camera
+        islandController.calendar = calendar
         showPanel()
         spotify.onLiveChange = { [weak self] in self?.islandController.setLive($0) }
         spotify.onFakeEqualizerMode = { [weak self] in self?.settings.setEqualizerMode($0) }
@@ -58,6 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard !terminationPending else { return .terminateLater }
         terminationPending = true
+        calendar.shutdown()
         camera.shutdown { sender.reply(toApplicationShouldTerminate: true) }
         return .terminateLater
     }

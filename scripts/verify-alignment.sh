@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+# Usage: scripts/verify-alignment.sh [--live | --expanded | --menus]
 cd "$(dirname "$0")/.."
-exec swift scripts/shima-windows.swift
+exec swift scripts/shima-windows.swift "$@"

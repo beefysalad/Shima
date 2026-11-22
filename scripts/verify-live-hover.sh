@@ -43,4 +43,5 @@ dwell=$(( $(ms B 'dwelling -> expanded') - $(ms B 'collapsed -> dwelling') ))
 debounce=$(( $(ms B 'leaving -> collapsing') - $(ms B 'expanded -> leaving') ))
 echo "dwell ${dwell} ms (want 60-150), debounce ${debounce} ms (want 280-420)"
 (( dwell >= 60 && dwell <= 150 && debounce >= 280 && debounce <= 420 )) || { echo "FAIL timing"; fail=1; }
+d "move $A; fake paused"   # leave the island not live so verify-idle.sh does not refuse
 (( fail == 0 )) && echo "PASS live hover" || { echo "FAIL live hover"; exit 1; }

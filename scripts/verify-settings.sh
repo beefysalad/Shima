@@ -3,7 +3,9 @@
 # Announce before running: about 60-90 s of synthetic pointer and key input.
 #   scripts/verify-settings.sh [--replace]
 #       dist/Shima.app: three entries and one window, close and focus, equalizer modes,
-#       persistence across a relaunch, Spotify rows and the Automation URL, Quit
+#       persistence across a relaunch, Spotify rows and the Automation URL, Quit.
+#       The test instance is left running (the M1 checks need it); with --stop it is stopped at the end.
+#       The stored equalizerMode is restored on exit once the instance has stopped.
 #   scripts/verify-settings.sh --login-item [--pause] [--replace]
 #       /Applications/Shima.app (signed): Launch at login on, read back, off (ends OFF)
 # Launches its own Shima and kills only that pid. --replace stops a Shima running from /Applications
@@ -11,10 +13,10 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 REPO="$PWD"
-login=0; pause=0; replace=0
+login=0; pause=0; replace=0; stop=0
 for a in "$@"; do
   case "$a" in
-    --login-item) login=1 ;; --pause) pause=1 ;; --replace) replace=1 ;;
+    --login-item) login=1 ;; --pause) pause=1 ;; --replace) replace=1 ;; --stop) stop=1 ;;
     *) echo "unknown argument: $a"; exit 2 ;;
   esac
 done
@@ -50,9 +52,15 @@ if [[ -n "$others" ]]; then
   fi
 fi
 orig="$(front)"
+orig_eq="$(defaults read local.shima equalizerMode 2>/dev/null || echo none)"
 cleanup() {
   [[ -n "$lp" ]] && { kill "$lp" 2>/dev/null; wait "$lp" 2>/dev/null; }
   [[ -n "$cf" ]] && kill "$cf" 2>/dev/null
+  # Put the user's stored equalizerMode back, but only once no instance of ours can write it again.
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+    if [[ "$orig_eq" == none ]]; then defaults delete local.shima equalizerMode 2>/dev/null || true
+    else defaults write local.shima equalizerMode -string "$orig_eq" 2>/dev/null || true; fi
+  fi
   [[ -n "$orig" && "$orig" != local.shima && "$(front)" != "$orig" ]] && open -b "$orig"
 }
 trap cleanup EXIT
@@ -62,11 +70,11 @@ sleep 1.5
 
 mark() { wc -l < "$dir/all.log" | tr -d ' '; }
 since() { tail -n +"$(( $1 + 1 ))" "$dir/all.log"; }
-has() { since "$1" | grep -qE -- "$2"; }
+has() { grep -qE -- "$2" <(since "$1"); }
 wait_for() { local i; for (( i = 0; i < ${3:-30}; i++ )); do has "$1" "$2" && return 0; sleep 0.1; done; return 1; }
 ok() { echo "ok   $1"; }
 bad() { echo "FAIL $1${2:+ ($2)}"; fail=1; }
-expect_log() { if wait_for "$2" "$3" "${4:-30}"; then ok "$1"; else bad "$1" "no '$3'"; fi; }
+expect_log() { if wait_for "$2" "$3" "${4:-30}"; then ok "$1"; else bad "$1" "no '$3'"; return 1; fi; }
 last_eq() { grep -oE 'eq (animating anims=[0-9]+|frozen anims=0)' "$dir/all.log" | tail -1 || true; }
 expect_eq() { sleep 0.4; if [[ "$(last_eq)" == "$2" ]]; then ok "$1"; else bad "$1" "last '$(last_eq)', want '$2'"; fi; }
 windows() { "$tools/shima-windows" --settings "$pid" | sed -nE 's/^settings windows: ([0-9]+)$/\1/p'; }
@@ -75,8 +83,15 @@ wrect() {
   local line; line="$("$tools/shima-windows" --settings "$pid" | sed -nE 's/^settings window x=(-?[0-9]+) y=(-?[0-9]+) w=([0-9]+) h=([0-9]+)$/\1 \2 \3 \4/p' | head -1)"
   [[ -n "$line" ]] || return 1; read -r wx wy ww wh <<< "$line"
 }
-wclick() { set -- $1; d "click $(( wx + $1 )) $(( wy + wh - H + $2 ))"; }
-reopen() { local m; m="$(mark)"; open "$APP"; wait_for "$m" 'settings opened via reopen' 30; sleep 0.3; wrect; }
+shima_front() { local i; for (( i = 0; i < 30; i++ )); do [[ "$(front)" == local.shima ]] && return 0; sleep 0.1; done; return 1; }
+wclick() { # never click unless Shima is frontmost, so a click cannot land on System Settings
+  if [[ "$(front)" != local.shima ]]; then
+    open "$APP"
+    shima_front || { bad "click guard" "Shima is not frontmost (front $(front)); click skipped"; return 1; }
+    sleep 0.3; wrect || return 1
+  fi
+  set -- $1; d "click $(( wx + $1 )) $(( wy + wh - H + $2 ))"; }
+reopen() { local m; m="$(mark)"; open "$APP"; wait_for "$m" 'settings opened via reopen .*active=true key=true' 40; sleep 0.3; wrect; }
 launch() { # KEY=VALUE...
   local m a=() kv p; m="$(mark)"
   for kv in "$@"; do a+=(--env "$kv"); done
@@ -116,7 +131,8 @@ if (( login )); then
   m="$(mark)"; reopen
   expect_log "L3 status reads back enabled" "$m" 'settings refresh loginItem=enabled'
   m="$(mark)"; wclick "$LOGIN"
-  expect_log "L4 unregister" "$m" 'settings loginItem toggle from=enabled action=unregister ok=true after=notRegistered'
+  expect_log "L4 unregister" "$m" 'settings loginItem toggle from=enabled action=unregister ok=true after=notRegistered' \
+    || echo "!!!! Launch at login is still ON: turn it off in Shima's Settings window (or System Settings > General > Login Items) !!!!"
   m="$(mark)"; reopen
   expect_log "L5 ends OFF" "$m" 'settings refresh loginItem=notRegistered'
   d "key cmd-w"; sleep 0.5
@@ -134,7 +150,7 @@ m="$(mark)"; open "$APP"
 expect_log "A1 reopen opens the window, active and key" "$m" 'settings opened via reopen created=true active=true key=true'
 expect_windows "A1 one window" 1
 wrect && [[ "$ww" == 440 ]] && ok "A1 window width 440" || bad "A1 window bounds" "x=$wx y=$wy w=$ww h=$wh"
-if ! since "$LAUNCH_MARK" | grep -q 'settings eq mode=animated loaded'; then wclick "$SEG_animated"; sleep 0.5; fi
+if ! has "$LAUNCH_MARK" 'settings eq mode=animated loaded'; then wclick "$SEG_animated"; sleep 0.5; fi
 m="$(mark)"; open "$APP"
 expect_log "A2 second reopen reuses it" "$m" 'settings opened via reopen created=false'
 expect_windows "A2 still one window" 1
@@ -223,5 +239,6 @@ if [[ "$stored" == animated ]]; then ok "G7 stored equalizerMode=animated"; else
 m="$(mark)"; d "key cmd-w"; expect_log "G8 closed, policy accessory" "$m" 'settings closed policy=accessory'
 
 [[ "$(front)" == "$orig" ]] || open -b "$orig"
-echo "Shima pid $pid left running (fake playing, Settings closed) for the M1 checks; stop it with: kill $pid"
+if (( stop )); then stop_own; echo "stopped the test instance (pid $pid)"
+else echo "Shima pid $pid left running (fake playing, Settings closed) for the M1 checks; stop it with: kill $pid"; fi
 (( fail == 0 )) && echo "PASS settings" || { echo "FAIL settings ($dir)"; exit 1; }

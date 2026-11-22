@@ -19,6 +19,9 @@ import Observation
     }
     public var spotifyAvailability: SpotifyAvailability = .notRunning
 
+    /// Applied by `SettingsModel` at launch and when changed in the Settings window.
+    public var equalizerMode: EqualizerMode = .animated
+
     public var content: NowPlayingContent {
         NowPlayingContent(availability: spotifyAvailability, nowPlaying: nowPlaying)
     }

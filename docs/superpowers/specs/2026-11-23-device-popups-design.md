@@ -1,6 +1,6 @@
 # Device pop-ups (the "DynaConnect" idea) and the peek banner
 
-Status: drafted 2026-11-23 from the user's request ("airpods, keyboard etc"); the user approved the calendar design and asked for this one to be designed and planned alongside it. Calls marked **[My call]** are open to correction. Reference image: DynaConnect, a short banner under the notch saying "Connected / MX Master 3S". Built after `2026-11-23-calendar-reminders-design.md`.
+Status: mockup approved 2026-11-23; drafted from the user's request ("airpods, keyboard etc"); the user approved the calendar design and asked for this one to be designed and planned alongside it. Calls marked **[My call]** are open to correction. Reference image: DynaConnect, a short banner under the notch saying "Connected / MX Master 3S". Built after `2026-11-23-calendar-reminders-design.md`.
 
 ## Intent
 

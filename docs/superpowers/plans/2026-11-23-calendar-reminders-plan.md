@@ -10,6 +10,24 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-23-calendar-reminders-design.md`. Mirror these existing files when in doubt: `Sources/ShimaCore/{CameraModel,CameraClient,FakeCameraClient,CameraCoordinator}.swift`, `Sources/Shima/{CameraService,CameraContent}.swift`, `Tests/ShimaCoreTests/CameraTests.swift`, `scripts/verify-camera.sh`.
 
+## Ownership (decided 2026-11-23)
+
+Codex does logic, wiring and scripts. **Claude does every view, layout constant, header change and animation, and the visual comparison against the mockup** (the user does not trust Codex to reproduce the mockup). Codex: do only tasks labelled Codex; when you reach a Claude task, stop, report, and wait. Mockup approved by the user 2026-11-23.
+
+| Task | Owner |
+|---|---|
+| 0 Mockup and layout table | Claude (done, approved) |
+| 1 Types and tab case | Codex |
+| 2 Month grid and left-column rules | Codex |
+| 3 Model, client protocol, fake, coordinator | Codex |
+| 4a EventKit client, service, plist, wiring | Codex |
+| 4b Calendar UI: layout numbers, header icons, glyph, view, denied state | **Claude** |
+| 5a Fake mode, drive command, verify-calendar.sh, regression runs | Codex |
+| 5b Offscreen render checks and mockup comparison | **Claude** |
+| 6 Review and acceptance | Claude and the user |
+
+Order: 1, then 2 and 3 in parallel, then 4a; Claude does 4b after 4a; then 5a and 5b; then 6.
+
 ## Global Constraints
 
 - `ShimaCore` must not import AppKit or EventKit. All EventKit code lives in `Sources/Shima/`.
@@ -34,11 +52,11 @@ Failure modes the spec implies that no feature test would otherwise exercise (ea
 
 ---
 
-### Task 0: Mockup and layout table (CLAUDE, DONE 2026-11-23; user approval pending)
+### Task 0: Mockup and layout table (Claude, done, approved by the user 2026-11-23)
 
-`mockup/index.html` now has the Calendar tab and the spec ends with the "Layout table" (all rects, font sizes, the four header icon positions at x 12/36/60/84 that clear the notch zone). Codex reads the numbers from that table. If the user has not yet approved the mockup (check with the user before starting Task 4), stop at the end of Task 3.
+`mockup/index.html` now has the Calendar tab and the spec ends with the "Layout table" (all rects, font sizes, the four header icon positions at x 12/36/60/84 that clear the notch zone). Approved by the user 2026-11-23; the numbers are in the spec's Layout table (used by Claude in Task 4b).
 
-### Task 1: Types and the Calendar tab case (PURE)
+### Task 1: Types and the Calendar tab case (PURE, Codex)
 
 **Files:**
 - Create: `Sources/ShimaCore/CalendarTypes.swift`
@@ -58,7 +76,7 @@ Failure modes the spec implies that no feature test would otherwise exercise (ea
 - [ ] **Step 4: Run** `swift build && swift test`. Expected: all pass.
 - [ ] **Step 5: Commit** `git add Sources/ShimaCore/CalendarTypes.swift Sources/ShimaCore/CameraModel.swift Tests/ShimaCoreTests/CalendarTypesTests.swift && git commit -m "Calendar: event, reminder and access types, calendar tab case"`
 
-### Task 2: Month grid and left-column rules (PURE, parallel-safe with Task 3 after Task 1)
+### Task 2: Month grid and left-column rules (PURE, Codex; parallel-safe with Task 3 after Task 1)
 
 **Files:**
 - Create: `Sources/ShimaCore/MonthGrid.swift`, `Sources/ShimaCore/CalendarContentRules.swift`
@@ -93,7 +111,7 @@ Failure modes the spec implies that no feature test would otherwise exercise (ea
 - [ ] **Step 4: Run** the same filter. Expected: PASS. Then `swift test` for the whole suite.
 - [ ] **Step 5: Commit** explicit paths, message `Calendar: month grid and left-column rules`.
 
-### Task 3: Model, client protocol, fake and coordinator (PURE, parallel-safe with Task 2 after Task 1)
+### Task 3: Model, client protocol, fake and coordinator (PURE, Codex; parallel-safe with Task 2 after Task 1)
 
 **Files:**
 - Create: `Sources/ShimaCore/CalendarModel.swift`, `Sources/ShimaCore/CalendarClient.swift`, `Sources/ShimaCore/FakeCalendarClient.swift`, `Sources/ShimaCore/CalendarCoordinator.swift`
@@ -116,55 +134,59 @@ Failure modes the spec implies that no feature test would otherwise exercise (ea
 - [ ] **Step 4: Run** the filter, then `swift test`. Expected: all pass, and `swift build` has no warnings.
 - [ ] **Step 5: Commit** explicit paths, message `Calendar: model, client protocol, fake and coordinator`.
 
-### Task 4: EventKit client, service and Calendar view (GLUE; needs Task 0's Layout table)
+### Task 4a: EventKit client, service and wiring (GLUE, Codex)
 
 **Files:**
-- Create: `Sources/ShimaCore/CalendarLayout.swift`, `Sources/Shima/EventKitCalendarClient.swift`, `Sources/Shima/CalendarService.swift`, `Sources/Shima/CalendarContent.swift`
-- Modify: `Sources/ShimaCore/NowPlayingLayout.swift` (`tabIcon`, `settingsButton`, `tabRect` generalised by `IslandTab.allCases` index), `Sources/Shima/IslandView.swift` (third header glyph `.calendar` in `HeaderGlyph`/`HeaderGlyphShape`, `HeaderTabIcon` loops over `IslandTab.allCases` with labels, a Calendar overlay like the Camera one), `Sources/Shima/IslandPanelController.swift` (`var calendar: CalendarService?`, passed into `IslandView`), `Sources/Shima/AppDelegate.swift` (create the service, assign, shut down on terminate, refresh access on app activation), `Sources/Shima/Log.swift` (`Log.calendar`, category `calendar`), `scripts/bundle.sh` (two plist keys)
-- Test: update `Tests/ShimaCoreTests/NowPlayingLayoutTests.swift` for the new icon constants; add `Tests/ShimaCoreTests/CalendarLayoutTests.swift` (each rect lies inside 400 x 200, none overlaps the header notch zone x 110.5..289.5, the grid cells for 6 weeks fit above y 200)
+- Create: `Sources/Shima/EventKitCalendarClient.swift`, `Sources/Shima/CalendarService.swift`
+- Modify: `Sources/ShimaCore/AppState.swift` (tab-context observers), `Sources/Shima/CameraService.swift` (use the new observer API), `Sources/Shima/IslandPanelController.swift` (only `var calendar: CalendarService?`; Claude passes it to the view in 4b), `Sources/Shima/AppDelegate.swift`, `Sources/Shima/Log.swift` (`Log.calendar`, category `calendar`), `scripts/bundle.sh` (two plist keys)
+- Test: `Tests/ShimaCoreTests/AppStateTabObserverTests.swift`
 
 **Interfaces:**
-- Consumes: everything from Tasks 1-3 and the spec's Layout table.
-- Produces: `CalendarLayout` constants (rects and font sizes from the table, in the island's top-left local coordinates, same style as `NowPlayingLayout`); `CalendarService` (`@Observable @MainActor`, owns `coordinator: CalendarCoordinator`, `fake: FakeCalendarClient?`, observers for `NSApplication.didBecomeActiveNotification` to `coordinator.refreshAccess()`, and registers `state.onCameraContextChange`-style delivery: reuse the same `AppState` context hook by adding a second observer list, see below); `CalendarContent` (SwiftUI overlay, takes the service and `AppState`).
+- Consumes: everything from Tasks 1-3.
+- Produces: `AppState.addTabContextObserver(_ handler: @escaping @MainActor (IslandMode, IslandTab) -> Void)` (replaces the single `onCameraContextChange`; every handler is called synchronously on each `mode`/`selectedTab` change, and once on registration with the current values; the collapse-resets-to-Music rule stays); `CalendarService` (`@Observable @MainActor`, `let coordinator: CalendarCoordinator`, `init(state: AppState, environment: [String: String])`, `func shutdown()`); `EventKitCalendarClient: CalendarClient`.
 
 **Notes:**
-- `AppState.onCameraContextChange` has a single owner today. Rename it to `onTabContextChange` and make it a list of handlers (`addTabContextObserver(_:)`), keep Camera working and keep its tests passing; Calendar registers its own. This is the only cross-cutting change in this task; do it first and run the camera tests.
-- `EventKitCalendarClient`: one `EKEventStore`; access mapping `.fullAccess` -> authorized, `.notDetermined` -> notDetermined, `.denied`/`.restricted`/`.writeOnly` -> denied (events); `.fullAccess` -> authorized for reminders; requests use `requestFullAccessToEvents`/`requestFullAccessToReminders`, results hopped to the main actor; `events(in:)` via `predicateForEvents`, mapping `calendar.cgColor` to sRGB `[r, g, b]`; `loadReminders` via `predicateForIncompleteReminders(withDueDateStarting: nil, ending: endOfToday, calendars: nil)` (overdue plus due today; undated excluded); `complete(reminderID:)` fetches `calendarItem(withIdentifier:) as? EKReminder`, sets `isCompleted`, saves with `commit: true`, returns success; observers for `.EKEventStoreChanged` and `.NSCalendarDayChanged` call the `on...` handlers.
-- Denied state UI: one line per store ("Calendar access is off" / "Reminders access is off") and a button that opens `x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars` / `Privacy_Reminders` through the same `NSWorkspace.open` path the Settings window uses.
-- The tab never starts work while hidden: `CalendarContent` is only inserted when `state.mode == .expanded && state.selectedTab == .calendar`, like Camera.
+- Do the observer refactor first; all existing camera tests must keep passing unchanged in meaning.
+- `EventKitCalendarClient`: one `EKEventStore`; events access mapping `.fullAccess` -> authorized, `.notDetermined` -> notDetermined, `.denied`/`.restricted`/`.writeOnly` -> denied; reminders `.fullAccess` -> authorized, others as above; requests use `requestFullAccessToEvents` / `requestFullAccessToReminders`, results hopped to the main actor; `events(in:)` via `predicateForEvents`, mapping `calendar.cgColor` to sRGB `[r, g, b]`; `loadReminders` via `predicateForIncompleteReminders(withDueDateStarting: nil, ending: endOfToday, calendars: nil)` (overdue plus due today; undated excluded); `complete(reminderID:)` fetches `calendarItem(withIdentifier:) as? EKReminder`, sets `isCompleted`, saves with `commit: true`, returns success; observers for `.EKEventStoreChanged` and `.NSCalendarDayChanged` call `onStoreChanged` / `onDayChanged`.
+- `CalendarService` registers one tab-context observer that forwards `(mode, tab)` to `coordinator.setContext(mode:tab:screenAvailable:)`, tracks screen sleep/wake and lock like `CameraService` for `screenAvailable`, and calls `coordinator.refreshAccess()` on `NSApplication.didBecomeActiveNotification`.
+- Plist keys in `scripts/bundle.sh`: `NSCalendarsFullAccessUsageDescription`, `NSRemindersFullAccessUsageDescription`.
 
-- [ ] **Step 1:** Do the `onTabContextChange` refactor; run `swift test` (all existing camera tests must pass unchanged in meaning). Commit `Tab context observers can be many`.
-- [ ] **Step 2: Failing tests** for `CalendarLayoutTests` and the updated `NowPlayingLayoutTests` (four icons: Home, Music, Camera, Calendar with the table's x positions; none overlaps x 110.5..289.5). Run, expect FAIL.
-- [ ] **Step 3: Implement** `CalendarLayout`, the generalised `tabRect`, and the header changes. Run the layout tests: PASS.
-- [ ] **Step 4: Implement** the EventKit client, `CalendarService`, `CalendarContent`, the wiring and the plist keys. `swift build` must be warning-free.
-- [ ] **Step 5: Run** `swift build && swift test`. Expected: pass.
-- [ ] **Step 6: Commit** in small explicit-path commits (layout, client and service, view and wiring).
+- [ ] **Step 1: Failing tests** `AppStateTabObserverTests`: two observers both receive each change; an observer registered late gets the current context once; collapse from Calendar resets to Music and delivers a single collapsed-Music context (same expectation the camera already has). Run: FAIL.
+- [ ] **Step 2: Implement** the observer API and migrate `CameraService`; `swift test` passes. Commit `Tab context observers can be many`.
+- [ ] **Step 3: Implement** the EventKit client, the service, the `AppDelegate` wiring (create, assign `islandController.calendar`, shut down in `applicationShouldTerminate`), `Log.calendar` and the plist keys. `swift build` warning-free; `swift test` passes.
+- [ ] **Step 4: Commit** in small explicit-path commits (client, service and wiring, plist).
+- [ ] **Step 5: Report** to the user that 4b (Claude) can start.
 
-### Task 5: Fake mode, drive commands and checks (SCRIPT)
+### Task 4b: Calendar UI (VIEW, **Claude**)
 
-**Files:**
-- Modify: `Sources/Shima/CalendarService.swift` (fake mode), `scripts/drive.swift` (new `fake-calendar` step), `scripts/verify-view-layout.sh` (add `Sources/Shima/CalendarContent.swift`, `CalendarService.swift`, `EventKitCalendarClient.swift` to its `sources` array), `scripts/view-layout-check.swift` (calendar render cases), `scripts/island-input-geometry.sh` (print the calendar header x)
-- Create: `scripts/verify-calendar.sh`
+**Files:** Create `Sources/ShimaCore/CalendarLayout.swift`, `Sources/Shima/CalendarContent.swift`; modify `Sources/ShimaCore/NowPlayingLayout.swift` (header icon positions x 12/36/60/84, `tabRect` by `IslandTab.allCases` index), `Sources/Shima/IslandView.swift` (calendar glyph, header loop, overlay, pass `calendar`), `Sources/Shima/IslandPanelController.swift` (pass `calendar` into `IslandView`); tests `Tests/ShimaCoreTests/CalendarLayoutTests.swift` and the updated `NowPlayingLayoutTests.swift`.
+Everything is taken from the spec's Layout table and `mockup/index.html`; the view is only inserted when `state.mode == .expanded && state.selectedTab == .calendar` (like Camera). Claude verifies each state against headless screenshots of the mockup (Task 5b).
+
+### Task 5a: Fake mode, drive command and checks (SCRIPT, Codex)
+
+**Files:** Modify `Sources/Shima/CalendarService.swift` (fake mode), `scripts/drive.swift` (new `fake-calendar` step); create `scripts/verify-calendar.sh`.
 
 **Behaviour:**
-- `SHIMA_FAKE_CALENDAR=1` makes `CalendarService` use `FakeCalendarClient` with fixtures: today's date with one running event (19:15-20:00), two later events, one all-day, two reminders (one overdue), events on three other days in the month. It never touches EventKit.
-- `swift scripts/drive.swift "fake-calendar <cmd>"` posts the distributed notification `local.shima.fake-calendar` (object = cmd). Commands: `ping` (logs `calendar fake ping`), `allowed`, `denied`, `empty`, `full` (six-week month and more than four rows), `changed` (fires `onStoreChanged`), `daychanged` (fires `onDayChanged`). Every command logs `calendar fake <cmd>`; model effects log `calendar load ...`, `calendar request events|reminders`, `calendar complete <id>` under category `calendar`.
-- `view-layout-check.swift`: render `CalendarContent` offscreen for `allowed`, `denied`, `empty`, `full` and assert: nothing draws outside 400 x 200; the six-week grid's last row is inside the island; text rows do not overlap the notch zone; the existing black-region rule (0..32 live, 0..<165 expanded) still passes for Music and Camera.
-- `verify-calendar.sh` (model it on `verify-camera.sh`: finds the `dist` pid, refuses to click unless the fake log line appears): with `SHIMA_FAKE_CALENDAR=1 scripts/run.sh` running, it hovers open, asserts **no** `calendar request` or `calendar load` log lines while Music is selected, clicks the Calendar header icon, asserts exactly one events request and one load, clicks month arrows (new load each), `fake-calendar denied` (no load, denied state logged), `allowed`, `changed` while open (one load) and while collapsed (none until reopened), `daychanged`, collapse and re-hover (back on Music, no calls). Keep pointer sequences under 2 minutes and announce them.
+- `SHIMA_FAKE_CALENDAR=1` makes `CalendarService` use `FakeCalendarClient` with fixtures: today's date with one running event (9:30-10:00), one upcoming (11:00-12:00), two reminders (one overdue), events on days 3, 9, 13, 27 of the month. It never touches EventKit.
+- `swift scripts/drive.swift "fake-calendar <cmd>"` posts the distributed notification `local.shima.fake-calendar` (object = cmd). Commands: `ping` (logs `calendar fake ping`), `allowed`, `denied`, `empty`, `full` (six-week month and more than four rows), `changed` (fires `onStoreChanged`), `daychanged` (fires `onDayChanged`). Every command logs `calendar fake <cmd>`; effects log `calendar load ...`, `calendar request events|reminders`, `calendar complete <id>` under category `calendar`.
+- `verify-calendar.sh` (model it on `verify-camera.sh`: finds the `dist` pid, refuses to click unless the fake log line appears): with `SHIMA_FAKE_CALENDAR=1 scripts/run.sh` running, it hovers open, asserts **no** `calendar request` or `calendar load` log lines while Music is selected, clicks the Calendar header icon (coordinates from `scripts/island-input-geometry.sh`; extend that script to print the calendar icon x), asserts exactly one events request and one load, clicks month arrows (a new load each), `fake-calendar denied` (no load, denied state logged), `allowed`, `changed` while open (one load) and while collapsed (none until reopened), `daychanged`, collapse and re-hover (back on Music, no calls). Keep pointer sequences under 2 minutes and announce them.
 
 - [ ] **Step 1:** Implement fake mode and the `drive.swift` step; `swift build`.
-- [ ] **Step 2:** Extend `verify-view-layout.sh` and `view-layout-check.swift`; run `scripts/verify-view-layout.sh`. Expected: prints PASS lines for all calendar cases and the existing ones.
-- [ ] **Step 3:** Write `scripts/verify-calendar.sh`; start `SHIMA_FAKE_CALENDAR=1 SHIMA_FAKE_SPOTIFY=paused scripts/run.sh`, run `scripts/verify-calendar.sh`, expect `PASS`.
-- [ ] **Step 4:** Run the regression set with the same fake app: `scripts/verify-alignment.sh --expanded`, `scripts/verify-focus.sh --clicks`, `scripts/verify-idle.sh` (add `--playing` only with fake Spotify playing) and `scripts/verify-camera.sh` (restart with `SHIMA_FAKE_CAMERA=1` for this one). Expected: all pass; idle CPU unchanged. Kill the app by pid when done (never `pkill -x Shima`).
-- [ ] **Step 5: Commit** explicit paths, message `Calendar: fake mode, drive command and verification scripts`.
+- [ ] **Step 2:** Write `scripts/verify-calendar.sh`; start `SHIMA_FAKE_CALENDAR=1 SHIMA_FAKE_SPOTIFY=paused scripts/run.sh`, run it, expect `PASS`. (Needs Task 4b merged for the icon to exist; if it is not, report and wait.)
+- [ ] **Step 3:** Regression set with the same fake app: `scripts/verify-alignment.sh --expanded`, `scripts/verify-focus.sh --clicks`, `scripts/verify-idle.sh`, and `scripts/verify-camera.sh` (restart with `SHIMA_FAKE_CAMERA=1` for this one). Expected: all pass, idle CPU unchanged. Kill the app by pid (never `pkill -x Shima`).
+- [ ] **Step 4: Commit** explicit paths, message `Calendar: fake mode, drive command and verify script`.
 
-### Task 6: Review and acceptance (CLAUDE + HUMAN, not Codex)
+### Task 5b: Offscreen render checks and mockup comparison (VIEW, **Claude**)
 
-- Whole-branch review by a fresh reviewer (not the implementer) against the spec and Global Constraints; fixes go through a short correction wave and a scoped re-review, as for M1.
+Adds `CalendarContent.swift`, `CalendarService.swift`, `EventKitCalendarClient.swift` to the `sources` array in `scripts/verify-view-layout.sh`, calendar cases (`allowed`, `denied`, `empty`, `full`) to `scripts/view-layout-check.swift` (nothing outside 400 x 200, six-week grid inside the island, nothing but header icons in y < 34, existing black-region rule still passes), writes the renders to PNG and compares each against a headless-Chrome screenshot of the matching mockup state (the harness used on 2026-11-23); mismatches are fixed in 4b until they agree.
+
+### Task 6: Review and acceptance (Claude and the user)
+
+- Whole-branch review by a fresh reviewer (not the implementer) against the spec and Global Constraints; fixes through a short correction wave and a scoped re-review, as for M1.
 - Human checks, recorded in `docs/superpowers/calendar-acceptance.md`: first-open Calendar prompt then Reminders prompt; real events and reminders appear (including Google events if that account is in macOS Calendar); completing a reminder shows done in Reminders; denying then allowing in System Settings recovers on return to shima; no Calendar or Reminders access shows while on Music.
 - Update `CLAUDE.md` Status and the memory index after acceptance.
 
 ## Self-review notes
 
 - Spec coverage: tab and header (Tasks 0, 4); left column rules (2); grid, dots, today circle, month nav, title reset (2, 3, 4); reminder completion (3, 4); first-open permissions and denied states (3, 4); 400 x 200 fit with six weeks (2, 4, 5); event-driven refresh (3, 4, 5); fake mode and checks (5); human checks (6). Non-goals have no tasks, intentionally.
-- Names used across tasks match: `CalendarModel`, `CalendarCoordinator`, `CalendarClient`, `FakeCalendarClient`, `CalendarEffect`, `MonthGridModel`, `LeftColumn`, `CalendarLayout`, `CalendarService`, `CalendarContent`, `onTabContextChange`.
+- Names used across tasks match: `CalendarModel`, `CalendarCoordinator`, `CalendarClient`, `FakeCalendarClient`, `CalendarEffect`, `MonthGridModel`, `LeftColumn`, `CalendarLayout`, `CalendarService`, `CalendarContent`, `addTabContextObserver`.

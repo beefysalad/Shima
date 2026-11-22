@@ -15,14 +15,15 @@ public struct IslandShapeMetrics: Equatable, Sendable {
 }
 
 public enum IslandMode: Equatable, Sendable {
-    case collapsed, expanded
+    case collapsed, peek, expanded
 }
 
 public enum HotRegion: Equatable, Sendable {
-    case idle, expanded
+    case idle, peek, expanded
 }
 
 public enum IslandLayout {
+    public static let peek = IslandShapeMetrics(width: 340, height: 76, bottomRadius: 22, earRadius: 10)
     public static let expanded = IslandShapeMetrics(width: 400, height: 200, bottomRadius: 24, earRadius: 10)
     public static let collapsedBottomRadius: CGFloat = 9
     public static let hoverMargin: CGFloat = 8
@@ -35,6 +36,7 @@ public enum IslandLayout {
     public static func metrics(for mode: IslandMode, notch: CGRect, live: Bool = false) -> IslandShapeMetrics {
         switch mode {
         case .collapsed: collapsedMetrics(notch: notch, live: live)
+        case .peek: peek
         case .expanded: expanded
         }
     }
@@ -45,8 +47,16 @@ public enum IslandLayout {
 
     public static func panelFrame(notch: CGRect, live: Bool = false, expanded: Bool) -> CGRect {
         guard expanded else { return idleFrame(notch: notch, live: live) }
-        let width = Self.expanded.width + 2 * Self.expanded.earRadius + 2 * hoverMargin
-        let height = Self.expanded.height + hoverMargin
+        return panelFrame(notch: notch, metrics: Self.expanded)
+    }
+
+    public static func peekPanelFrame(notch: CGRect) -> CGRect {
+        panelFrame(notch: notch, metrics: peek)
+    }
+
+    private static func panelFrame(notch: CGRect, metrics: IslandShapeMetrics) -> CGRect {
+        let width = metrics.width + 2 * metrics.earRadius + 2 * hoverMargin
+        let height = metrics.height + hoverMargin
         return CGRect(x: notch.midX - width / 2, y: notch.maxY - height, width: width, height: height)
     }
 
@@ -58,7 +68,7 @@ public enum IslandLayout {
         switch region {
         case .idle:
             idleFrame(notch: notch, live: live).offsetBy(dx: -panelFrame.minX, dy: -panelFrame.minY)
-        case .expanded:
+        case .peek, .expanded:
             CGRect(origin: .zero, size: panelFrame.size)
         }
     }

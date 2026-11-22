@@ -18,12 +18,12 @@ public enum EqualizerMode: String, CaseIterable, Equatable, Sendable {
     }
 }
 
-/// The equalizer sits right of the notch: in the live wing while collapsed, and at the same spot in the
+/// The equalizer sits right of the notch: in the live wing while collapsed or peeking, and at the same spot in the
 /// open island's top strip while a track is shown. Modes change only whether its bars animate.
 public enum EqualizerPolicy {
     public static func isVisible(island: IslandMode, live: Bool, content: NowPlayingContent) -> Bool {
         switch island {
-        case .collapsed: live
+        case .collapsed, .peek: live
         case .expanded: content == .track
         }
     }

@@ -21,6 +21,12 @@ import Testing
         #expect(P.isVisible(island: .collapsed, live: true, content: .track))
         #expect(!P.isVisible(island: .collapsed, live: false, content: .track))
     }
+    @Test func peekKeepsWingsLikeCollapsed() {
+        #expect(P.isVisible(island: .peek, live: true, content: .track))
+        #expect(!P.isVisible(island: .peek, live: false, content: .track))
+        #expect(P.isAnimating(.animated, island: .peek, live: true, content: .track, playing: true, frozen: false))
+        #expect(!P.isAnimating(.whenOpen, island: .peek, live: true, content: .track, playing: true, frozen: false))
+    }
     @Test func visibleExpandedOnlyWithTrack() {
         #expect(P.isVisible(island: .expanded, live: false, content: .track))
         for content in [NowPlayingContent.notRunning, .permissionDenied, .nothingPlaying] {

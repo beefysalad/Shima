@@ -21,6 +21,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private let model: SettingsModel
     private let onToggleLogin: @MainActor () -> Void
     private var window: SettingsWindow?
+    private var pendingOpen: (entry: SettingsEntry, created: Bool)?
     /// The last other app that lost activation: the one to hand focus back to on close.
     private var lastOtherApp: NSRunningApplication?
 
@@ -40,11 +41,24 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         model.refresh()
         Log.settings.info("settings refresh loginItem=\(String(describing: self.model.loginItemStatus), privacy: .public) spotify=\(self.model.spotifyRow.kind.rawValue, privacy: .public) eq=\(self.model.equalizerMode.rawValue, privacy: .public) loginControl=\(self.model.loginItem.isEnabled ? "enabled" : "disabled", privacy: .public) version=\"\(self.model.versionText, privacy: .public)\" signing=\"\(self.model.signingText, privacy: .public)\"")
         if !window.isVisible { placeOnPointerScreen(window) }
-        NSApp.activate()
-        window.makeKeyAndOrderFront(nil)
-        DispatchQueue.main.async { [weak window] in
-            Log.settings.info("settings opened via \(entry.rawValue, privacy: .public) created=\(created, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(window?.isKeyWindow ?? false, privacy: .public)")
+        pendingOpen = (entry, created)
+        if NSApp.isActive, window.isKeyWindow {
+            logOpened(window)      // already frontmost: no key change will follow
+        } else {
+            NSApp.activate()
+            window.makeKeyAndOrderFront(nil)   // windowDidBecomeKey logs once activation has completed
         }
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
+        logOpened(window)
+    }
+
+    private func logOpened(_ window: NSWindow) {
+        guard let (entry, created) = pendingOpen else { return }
+        pendingOpen = nil
+        Log.settings.info("settings opened via \(entry.rawValue, privacy: .public) created=\(created, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(window.isKeyWindow, privacy: .public)")
     }
 
     /// `center()` uses the window's current screen, so first move it to the screen under the pointer

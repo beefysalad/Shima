@@ -84,6 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         let menuLogo = BrandAssets.image("ShimaMark")
         menuLogo.size = NSSize(width: 18, height: 18)
+        menuLogo.isTemplate = true // alpha-only: black on a light menu bar, white on a dark one
         item.button?.image = menuLogo
         item.button?.setAccessibilityLabel("shima")
         let menu = NSMenu()

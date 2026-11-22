@@ -4,7 +4,6 @@ import Foundation
     public private(set) var model = SpotifyModel()
     public var onLiveChange: (@MainActor (Bool) -> Void)?
     public var onChanges: (@MainActor ([SpotifyChange]) -> Void)?
-    public var onArtwork: (@MainActor (_ trackID: String?, _ url: URL?) -> Void)?
     public static let commandFollowUpDelay: Duration = .milliseconds(250)
     private let client: any SpotifyClient
     private let state: AppState
@@ -37,14 +36,12 @@ import Foundation
             return
         }
         let wasLive = model.isLive
-        let oldArt = (model.nowPlaying?.trackID, model.nowPlaying?.artworkURL)
         let (np, changes) = model.apply(event)
         state.nowPlaying = np
         state.spotifyAvailability = model.availability
 
         if !changes.isEmpty { onChanges?(changes) }
         if model.isLive != wasLive { onLiveChange?(model.isLive) }
-        if (np?.trackID, np?.artworkURL) != oldArt { onArtwork?(np?.trackID, np?.artworkURL) }
 
         if case .terminated = event {
             cancelFollowUp()

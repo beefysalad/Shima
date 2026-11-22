@@ -13,12 +13,9 @@ import Testing
     func invalidate() { invalidations += 1; duringInvalidate?() }
 }
 
-struct ArtworkTap: Equatable { let id: String?; let url: URL? }
-
 @MainActor final class Taps {
     var lives: [Bool] = []
     var changes: [[SpotifyChange]] = []
-    var artworks: [ArtworkTap] = []
 }
 
 @Suite @MainActor struct SpotifyCoordinatorTests {
@@ -30,7 +27,6 @@ struct ArtworkTap: Equatable { let id: String?; let url: URL? }
         let c = SpotifyCoordinator(client: client, state: state, scheduler: scheduler)
         c.onLiveChange = { taps.lives.append($0) }
         c.onChanges = { taps.changes.append($0) }
-        c.onArtwork = { taps.artworks.append(ArtworkTap(id: $0, url: $1)) }
         return (c, client, state, taps)
     }
     func note(_ s: PlaybackState = .playing, _ id: String = "a") -> SpotifyEvent {
@@ -131,11 +127,6 @@ struct ArtworkTap: Equatable { let id: String?; let url: URL? }
         c.handle(.launched); c.handle(note())
         #expect(taps.changes == [[.availabilityChanged(.running)], [.trackChanged(id: "a"), .stateChanged(.playing)]])
     }
-    @Test func artworkCallbackFollowsTrackAndURL() {
-        let (c, _, _, taps) = make()
-        c.handle(.launched); c.handle(note(.playing, "a")); c.handle(script("a", art: art)); c.handle(note(.playing, "a")); c.handle(note(.playing, "b"))
-        #expect(taps.artworks == [ArtworkTap(id: "a", url: nil), ArtworkTap(id: "a", url: art), ArtworkTap(id: "b", url: nil)])
-    }
     @Test func fakeModeValues() {
         #expect(FakeSpotifyMode.initialState(nil) == nil)
         #expect(FakeSpotifyMode.initialState("") == nil)
@@ -221,13 +212,12 @@ extension SpotifyCoordinatorTests {
             order.append("changes")
         }
         c.onLiveChange = { _ in order.append("live") }
-        c.onArtwork = { _, url in order.append(url == nil ? "art:nil" : "art:url") }
         client.duringRefresh = {
             order.append("refresh")
             c.handle(self.script(art: self.art))
         }
         c.handle(note())
-        #expect(order == ["changes", "live", "art:nil", "refresh", "art:url"])
+        #expect(order == ["changes", "live", "refresh"])
         #expect(state.nowPlaying?.artworkURL == art && client.refreshes == 1)
     }
 

@@ -107,6 +107,18 @@ public struct SpotifyModel: Equatable, Sendable {
         return (nowPlaying, changes)
     }
 
+    /// Applies a late follow-up reading: only the position anchor of the same track may change.
+    /// State, identity and metadata are left to the broadcasts, which are more reliable than the script state.
+    public mutating func applyPositionOnly(_ reading: SpotifyReading, at: Date) -> NowPlaying? {
+        guard var current = nowPlaying, current.trackID == reading.trackID, let position = reading.position else {
+            return nowPlaying
+        }
+        current.position = position
+        current.positionDate = at
+        nowPlaying = current
+        return current
+    }
+
     private mutating func clearTrack(changes: inout [SpotifyChange]) {
         if nowPlaying != nil {
             nowPlaying = nil

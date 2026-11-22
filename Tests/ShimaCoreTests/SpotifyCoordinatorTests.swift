@@ -373,9 +373,9 @@ extension SpotifyCoordinatorTests {
 
     @Test func rapidCommandsLeaveOneFollowUp() {
         let s = ManualScheduler(), (c, client, _) = running(s)
-        c.handle(.commandSucceeded(.next))
+        c.handle(.commandSucceeded(.previous))
         s.advance(by: .milliseconds(100))
-        c.handle(.commandSucceeded(.next))
+        c.handle(.commandSucceeded(.previous))
         #expect(s.pendingCount == 1)
         s.advance(by: .milliseconds(249))
         #expect(client.refreshes == 0)
@@ -386,7 +386,7 @@ extension SpotifyCoordinatorTests {
 
     @Test func terminateCancelsPendingFollowUp() {
         let s = ManualScheduler(), (c, client, _) = running(s)
-        c.handle(.commandSucceeded(.playPause))
+        c.handle(.commandSucceeded(.previous))
         c.handle(.terminated)
         #expect(s.pendingCount == 0)
         s.advance(by: .seconds(1))
@@ -395,7 +395,7 @@ extension SpotifyCoordinatorTests {
 
     @Test func stopCancelsPendingFollowUp() {
         let s = ManualScheduler(), (c, client, _) = running(s)
-        c.handle(.commandSucceeded(.playPause))
+        c.handle(.commandSucceeded(.previous))
         c.stop()
         s.advance(by: .seconds(1))
         #expect(s.pendingCount == 0 && client.refreshes == 0)
@@ -403,7 +403,7 @@ extension SpotifyCoordinatorTests {
 
     @Test func commandSucceededWhileNotRunningSchedulesNothing() {
         let s = ManualScheduler(), (c, client, _, _) = make(scheduler: s)
-        c.handle(.commandSucceeded(.next))
+        c.handle(.commandSucceeded(.previous))
         s.advance(by: .seconds(1))
         #expect(s.pendingCount == 0 && client.refreshes == 0)
     }
@@ -435,5 +435,47 @@ extension SpotifyCoordinatorTests {
         #expect(state.nowPlaying?.position == 6)
         s.advance(by: .milliseconds(250))
         #expect(state.nowPlaying?.position == 0.25 && state.nowPlaying?.positionDate == later)
+    }
+
+    @Test func nextAndPlayPauseScheduleNoFollowUp() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.next))
+        c.handle(.commandSucceeded(.playPause))
+        s.advance(by: .seconds(10))
+        #expect(s.pendingCount == 0 && client.refreshes == 0)
+    }
+
+    private func followUpReading(_ s: PlaybackState, _ id: String, _ position: Double?, at: Date) -> SpotifyEvent {
+        .reading(SpotifyReading(state: s, trackID: id, title: "X", artist: "Y", album: "Z", duration: 99,
+                                position: position, artworkURL: nil), source: .script, at: at)
+    }
+
+    @Test func staleFollowUpReadingKeepsPausedState() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        c.handle(note(.paused))
+        let later = t0.addingTimeInterval(5)
+        client.duringRefresh = { c.handle(self.followUpReading(.playing, "a", 3, at: later)) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        #expect(state.nowPlaying?.state == .paused && c.model.nowPlaying?.state == .paused)
+        #expect(state.nowPlaying?.title == "T" && state.nowPlaying?.position == 3)
+    }
+
+    @Test func followUpReadingForDifferentTrackIsIgnored() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        let before = state.nowPlaying
+        client.duringRefresh = { c.handle(self.followUpReading(.playing, "b", 0, at: self.t0.addingTimeInterval(5))) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        #expect(state.nowPlaying == before && state.nowPlaying?.trackID == "a")
+    }
+
+    @Test func laterScriptReadingsApplyNormallyAfterFollowUp() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        client.duringRefresh = { c.handle(self.followUpReading(.playing, "a", 0.5, at: self.t0)) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        c.handle(followUpReading(.paused, "a", 2, at: t0.addingTimeInterval(1)))
+        #expect(state.nowPlaying?.state == .paused)
     }
 }

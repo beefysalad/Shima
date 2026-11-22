@@ -11,6 +11,8 @@ import Foundation
     private let scheduler: any Scheduler
     private var artworkAskedFor: String?
     private var followUp: (any ScheduledTask)?
+    /// Set when the follow-up refresh is issued; the next script reading is applied position-only.
+    private var followUpReadingPending = false
 
     public init(client: any SpotifyClient, state: AppState, scheduler: any Scheduler) {
         self.client = client
@@ -19,8 +21,14 @@ import Foundation
     }
 
     public func handle(_ event: SpotifyEvent) {
-        if case .commandSucceeded = event {
-            scheduleFollowUp()
+        if case let .commandSucceeded(command) = event {
+            // Only Previous restarts the track silently; other commands are covered by Spotify's broadcasts.
+            if command == .previous { scheduleFollowUp() }
+            return
+        }
+        if case let .reading(reading, source: .script, at) = event, followUpReadingPending, model.availability != .notRunning {
+            followUpReadingPending = false
+            state.nowPlaying = model.applyPositionOnly(reading, at: at)
             return
         }
         let wasLive = model.isLive
@@ -35,6 +43,7 @@ import Foundation
 
         if case .terminated = event {
             cancelFollowUp()
+            followUpReadingPending = false
             client.invalidate()
             artworkAskedFor = nil
         }
@@ -60,6 +69,7 @@ import Foundation
             guard let self else { return }
             followUp = nil
             guard model.availability != .notRunning else { return }
+            followUpReadingPending = true
             client.refresh()
         }
     }
@@ -67,6 +77,7 @@ import Foundation
     private func cancelFollowUp() {
         followUp?.cancel()
         followUp = nil
+        followUpReadingPending = false
     }
 
     public func islandOpened() {

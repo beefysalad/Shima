@@ -211,6 +211,26 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .tab:hover { color: var(--i-ink2); }
 .tab[aria-selected="true"] { color: var(--i-ink); background: var(--i-fill2); }
+.tab { display: grid; place-items: center; width: 30px; height: 26px; padding: 0; }
+.tab[hidden] { display: none; }
+.tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.brand { font-size: 12px; font-weight: 600; color: var(--i-ink3); margin-right: 8px; letter-spacing: .01em; }
+.gear { border: 0; background: transparent; color: var(--i-ink3); width: 28px; height: 26px; border-radius: 8px; display: grid; place-items: center; transition: color .15s, background .15s; }
+.gear:hover { color: var(--i-ink); background: var(--i-fill2); }
+.gear svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.cam { display: grid; grid-template-columns: 1fr 150px; gap: 14px; height: 100%; }
+.cam-view { border-radius: 16px; position: relative; overflow: hidden; background: radial-gradient(120% 90% at 30% 20%, #6d5a48, #2c2724 60%, #17191c); }
+.cam-view .shelf { position: absolute; right: 0; bottom: 0; width: 36%; height: 62%; background: linear-gradient(#3a2f28, #2a221d); border-left: 2px solid #4a3d33; }
+.cam-view .head { position: absolute; left: 45%; top: 24%; width: 70px; height: 82px; border-radius: 50%; background: #c79a7a; transform: translateX(-50%); }
+.cam-view .torso { position: absolute; left: 45%; bottom: -40px; width: 200px; height: 120px; border-radius: 90px 90px 0 0; background: #3b4a63; transform: translateX(-50%); }
+.cam-view.flip { transform: scaleX(-1); }
+.cam-live { position: absolute; left: 12px; top: 12px; background: rgba(0,0,0,.55); padding: 3px 10px; border-radius: 99px; font-size: 11px; display: flex; gap: 6px; align-items: center; color: #fff; }
+.cam-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); animation: dot 1.4s ease-in-out infinite; }
+.cam-side { display: flex; flex-direction: column; gap: 8px; }
+.cam-btn { flex: 1; border: 0; background: var(--i-fill); color: var(--i-ink); border-radius: 12px; font-size: 12px; font-weight: 600; display: grid; place-items: center; transition: background .15s; }
+.cam-btn:hover { background: var(--i-fill2); }
+.cam-btn small { display: block; font-weight: 500; color: var(--i-ink3); font-size: 11px; margin-top: 2px; }
+.cam-note { font-size: 11px; color: var(--i-ink3); text-align: center; }
 .tab .badge { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--claude); }
 .tab .badge.err { background: var(--danger); }
 .status-pill { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -360,6 +380,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 9px;
   border: 1px solid var(--line); background: var(--chip); font-size: 13px; text-align: left; transition: border-color .15s, background .15s;
 }
+.sbtn[hidden] { display: none; }
 .sbtn:hover { border-color: var(--ink-2); }
 .sbtn[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
 .sbtn small { font: 600 11px var(--mono); color: var(--ink-2); }
@@ -392,6 +413,45 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   .island-wrap.attn .island { box-shadow: 0 0 0 1.5px rgba(224,122,79,.75); }
   .srow.needs { box-shadow: inset 0 0 0 1.5px rgba(224,122,79,.75); }
 }
+
+/* --- Settings window (NotchBox-style: sidebar + grouped rows) --- */
+.set-scrim { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; place-items: center; z-index: 50; }
+.set-scrim.on { display: grid; }
+.set-win { width: min(880px, 94vw); height: min(620px, 88vh); background: #262628; color: #f2f2f4; border-radius: 14px; display: grid; grid-template-columns: 200px 1fr; overflow: hidden; box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.08); font-family: var(--font); user-select: none; }
+.set-side { background: #1c1c1e; padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; overflow: auto; }
+.lights { display: flex; gap: 8px; padding: 2px 4px 18px; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; cursor: pointer; } .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+.set-app { text-align: center; padding: 0 0 14px; font-size: 12px; color: #aaa; }
+.set-app b { display: block; width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 16px; background: #000; border: 2px solid #fff; position: relative; }
+.set-app b::before { content: ""; position: absolute; left: 50%; top: 0; width: 26px; height: 8px; background: #fff; border-radius: 0 0 6px 6px; transform: translateX(-50%); }
+.set-app b::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 14px; height: 18px; border-radius: 6px; background: linear-gradient(90deg, var(--spotify), var(--claude)); }
+.set-nav { border: 0; background: transparent; color: #d8d8dc; text-align: left; font-size: 13px; padding: 8px 10px; border-radius: 9px; display: flex; gap: 9px; align-items: center; }
+.set-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.set-nav:hover { background: rgba(255,255,255,.06); }
+.set-nav[aria-current="true"] { background: var(--claude); color: #fff; font-weight: 600; }
+.set-nav[hidden] { display: none; }
+.set-main { overflow: auto; padding: 18px 22px 26px; }
+.set-main h4 { margin: 18px 0 8px 4px; font-size: 12px; font-weight: 650; color: #9a9aa0; letter-spacing: .02em; }
+.set-main h4:first-child { margin-top: 2px; }
+.set-group { background: #323234; border-radius: 12px; }
+.set-row { display: flex; align-items: center; gap: 16px; padding: 10px 14px; min-height: 44px; }
+.set-row + .set-row { border-top: 1px solid rgba(255,255,255,.07); }
+.set-row .tx { flex: 1; min-width: 0; font-size: 13.5px; }
+.set-row .tx small { display: block; font-size: 12px; color: #9a9aa0; margin-top: 1px; line-height: 1.35; }
+.set-row .val { font-size: 12px; color: #9a9aa0; width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+.set-row input[type=range] { width: 220px; accent-color: var(--claude); }
+.set-row select { background: #3e3e41; color: #f2f2f4; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; padding: 4px 8px; font-size: 12.5px; }
+.set-row code { font: 11.5px var(--mono); color: #c9c9ce; background: rgba(255,255,255,.07); padding: 2px 6px; border-radius: 5px; }
+.tg { width: 46px; height: 26px; border-radius: 13px; border: 0; background: #5a5a5e; position: relative; flex: none; transition: background .18s; }
+.tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: transform .18s; }
+.tg.on { background: var(--claude); } .tg.on::after { transform: translateX(20px); }
+.seg { display: flex; background: #3e3e41; border-radius: 8px; padding: 2px; gap: 2px; }
+.seg button { border: 0; background: transparent; color: #cfcfd4; font-size: 12px; padding: 4px 10px; border-radius: 6px; }
+.seg button.on { background: #636367; color: #fff; }
+.sbt { border: 0; background: #4a4a4e; color: #fff; font-size: 12.5px; padding: 6px 12px; border-radius: 8px; }
+.sbt:hover { background: #58585c; } .sbt.danger { color: #ff8a82; }
+.swatches { display: flex; gap: 8px; } .swatches i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; } .swatches i.on { border-color: #fff; }
+.ok { color: #6fdc8c; }
 </style>
 
 <div class="page">
@@ -439,16 +499,19 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                 <div class="view v-exp">
                   <div class="topbar">
                     <div class="wing l" role="tablist" aria-label="Island tabs">
-                      <button class="tab" role="tab" data-tab="music" id="tab-music">Music</button>
-                      <button class="tab" role="tab" data-tab="claude" id="tab-claude">Claude</button>
-                      <button class="tab" role="tab" data-tab="tray" id="tab-tray">Tray</button>
-                      <button class="tab" role="tab" data-tab="rules" id="tab-rules">Rules</button>
+                      <span class="brand">shima</span>
+                      <button class="tab" role="tab" data-tab="music" id="tab-music" aria-label="Music" title="Music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
+                      <button class="tab" role="tab" data-tab="tray" id="tab-tray" aria-label="File tray" title="File tray"><svg viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/></svg></button>
+                      <button class="tab" role="tab" data-tab="camera" id="tab-camera" aria-label="Camera" title="Camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+                      <button class="tab" role="tab" data-tab="claude" id="tab-claude" aria-label="Claude sessions (developer)" title="Claude sessions (developer)" hidden><svg viewBox="0 0 24 24"><path d="M5 7l5 5-5 5M12 18h7"/></svg></button>
+                      <button class="tab" role="tab" data-tab="rules" id="tab-rules" aria-label="Automations" title="Automations"><svg viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></button>
                     </div>
                     <div class="wing r" id="wingRight"></div>
                   </div>
                   <div class="body">
                     <div class="panel" data-panel="music" id="pMusic"></div>
                     <div class="panel" data-panel="claude" id="pClaude" hidden></div>
+                    <div class="panel" data-panel="camera" id="pCamera" hidden></div>
                     <div class="panel" data-panel="tray" id="pTray" hidden></div>
                     <div class="panel" data-panel="rules" id="pRules" hidden></div>
                   </div>
@@ -471,10 +534,12 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
         <button class="sbtn" data-state="idle">Idle <small>M0</small></button>
         <button class="sbtn" data-state="peek">Peek <small>M1</small></button>
         <button class="sbtn" data-state="music">Now Playing <small>M1</small></button>
-        <button class="sbtn" data-state="claude">Claude <small>M2</small></button>
+        <button class="sbtn" data-state="camera">Camera <small>new</small></button>
+        <button class="sbtn" data-state="claude" id="stClaude" hidden>Claude <small>dev</small></button>
         <button class="sbtn" data-state="tray">File tray <small>M3</small></button>
         <button class="sbtn" data-state="rules">Automations <small>M4</small></button>
       </div>
+      <label class="note" style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="devOn"> Developer mode: show Claude sessions (Settings toggle)</label>
       <p class="note">States opened from here stay open until you press Esc or click the desktop. Opened by hover, the island collapses 300 ms after the pointer leaves.</p>
     </div>
 
@@ -510,7 +575,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <h2>Keyboard and pointer</h2>
       <dl class="keys">
         <div><dt><kbd>Esc</kbd></dt><dd>Collapse the island</dd></div>
-        <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Music, Claude, Tray, Rules</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Music, Tray, Camera, (Claude), Rules</dd></div>
         <div><dt>Hover</dt><dd>Expand; leave to collapse</dd></div>
         <div><dt>Drop</dt><dd>Drag files from Finder onto the notch. Hold <kbd>⌥</kbd> to move instead of copy</dd></div>
         <div><dt>Drag out</dt><dd>Drag a tray chip onto the desktop</dd></div>
@@ -519,6 +584,11 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   </section>
 </div>
 
+
+<div class="set-scrim" id="setScrim"><div class="set-win" role="dialog" aria-label="shima Settings">
+  <aside class="set-side" id="setSide"></aside>
+  <main class="set-main" id="setMain"></main>
+</div></div>
 <script>
 (() => {
   'use strict';
@@ -607,7 +677,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   ];
 
   const S = {
-    mode: 'collapsed', tab: 'music', pinned: false, hover: false, pulse: true,
+    mode: 'collapsed', dev: false, mirror: true, tab: 'music', pinned: false, hover: false, pulse: true,
     spotify: { on: true, playing: true, idx: 0, pos: 71 },
     sessions: SESSIONS, target: 'kaze', focused: null,
     shelf: [
@@ -640,7 +710,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   function islandSize() {
     if (S.mode === 'expanded') return [720, 330, 36, 14];
     if (S.mode === 'peek') return [460, 84, 24, 12];
-    const busy = S.spotify.on || S.sessions.length;
+    const busy = S.spotify.on || (S.dev && S.sessions.length);
     return [busy ? 312 : 196, 34, 12, 9];
   }
 
@@ -652,7 +722,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     wrap.style.setProperty('--r', r + 'px');
     wrap.style.setProperty('--ear', ear + 'px');
     wrap.dataset.mode = S.mode;
-    const attention = S.pulse && S.sessions.some(s => s.state === 'needs');
+    const attention = S.dev && S.pulse && S.sessions.some(s => s.state === 'needs');
     wrap.classList.toggle('attn', attention && S.mode !== 'expanded');
     renderCollapsed(); renderPeek(); renderTabs(); renderWing();
   }
@@ -665,7 +735,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     const wave = $('#colWave');
     wave.style.setProperty('--tint', tint(t));
     wave.classList.toggle('on', S.spotify.on && S.spotify.playing);
-    $('#colRight').innerHTML = S.sessions.map(s => `<span class="sdot ${s.state}" title="${esc(s.cwd)}: ${s.state}"></span>`).join('');
+    $('#colRight').innerHTML = !S.dev ? '' : S.sessions.map(s => `<span class="sdot ${s.state}" title="${esc(s.cwd)}: ${s.state}"></span>`).join('');
   }
 
   function renderPeek() {
@@ -686,6 +756,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       const on = b.dataset.tab === S.tab;
       b.setAttribute('aria-selected', on);
       b.tabIndex = S.mode === 'expanded' ? 0 : -1;
+      if (b.dataset.tab === 'claude') b.hidden = !S.dev;
       b.querySelector('.badge')?.remove();
       if (b.dataset.tab === 'claude' && S.sessions.some(s => s.state === 'needs')) b.insertAdjacentHTML('beforeend', '<i class="badge"></i>');
       if (b.dataset.tab === 'rules' && !S.configOk) b.insertAdjacentHTML('beforeend', '<i class="badge err"></i>');
@@ -693,16 +764,30 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     $$('.panel').forEach(p => { p.hidden = p.dataset.panel !== S.tab; });
   }
 
+  const GEAR = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
   function renderWing() {
     const el = $('#wingRight');
-    if (S.toast) { el.innerHTML = `<span class="status-pill toast">${esc(S.toast)}</span>`; return; }
-    const needs = S.sessions.filter(s => s.state === 'needs').length;
-    const running = S.sessions.filter(s => s.state === 'running').length;
+    const gear = `<button class="gear" data-act="settings" aria-label="Settings" title="Settings">${GEAR}</button>`;
+    if (S.toast) { el.innerHTML = `<span class="status-pill toast">${esc(S.toast)}</span>${gear}`; return; }
     const parts = [];
-    if (needs) parts.push(`<span class="status-pill"><span class="sdot needs"></span>${needs} needs you</span>`);
-    if (running) parts.push(`<span class="status-pill"><span class="sdot running"></span>${running} running</span>`);
-    if (!parts.length) parts.push(`<span class="status-pill">All quiet</span>`);
-    el.innerHTML = parts.join('');
+    if (S.dev) {
+      const needs = S.sessions.filter(s => s.state === 'needs').length;
+      const running = S.sessions.filter(s => s.state === 'running').length;
+      if (needs) parts.push(`<span class="status-pill"><span class="sdot needs"></span>${needs} needs you</span>`);
+      if (running) parts.push(`<span class="status-pill"><span class="sdot running"></span>${running} running</span>`);
+    }
+    el.innerHTML = parts.join('') + gear;
+  }
+  function renderCamera() {
+    $('#pCamera').innerHTML = `<div class="cam">
+      <div class="cam-view ${S.mirror ? 'flip' : ''}" role="img" aria-label="Live camera preview"><div class="shelf"></div><div class="torso"></div><div class="head"></div></div>
+      <div class="cam-side">
+        <div class="cam-live" style="position:static;align-self:flex-start"><i></i>Live</div>
+        <button class="cam-btn" data-cam="mirror">Mirror<small>${S.mirror ? 'On' : 'Off'}</small></button>
+        <button class="cam-btn" data-cam="switch">Switch camera<small>FaceTime HD</small></button>
+        <button class="cam-btn" data-cam="close">Close</button>
+        <div class="cam-note">Camera is off when this closes</div>
+      </div></div>`;
   }
   function toast(msg, ms = 2600) {
     S.toast = msg; renderWing();
@@ -844,7 +929,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     $('#sessPick').innerHTML = S.sessions.map(s => `<label><input type="radio" name="sess" id="pick-${s.id}" value="${s.id}" ${S.target === s.id ? 'checked' : ''}><span>${esc(s.cwd)}</span></label>`).join('');
   }
 
-  function renderAll() { renderIsland(); renderMusic(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
+  function renderAll() { renderIsland(); renderMusic(); renderCamera(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
 
   /* ---------- sound ---------- */
   let ac;
@@ -967,6 +1052,10 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   });
   island.addEventListener('click', e => {
     if (S.mode !== 'expanded') { clearTimeout(T.enter); setMode('expanded', { pinned: S.pinned }); return; }
+    const act = e.target.closest('[data-act]');
+    if (act && act.dataset.act === 'settings') { openSettings(); return; }
+    const cam = e.target.closest('[data-cam]');
+    if (cam) { const c = cam.dataset.cam; if (c === 'mirror') { S.mirror = !S.mirror; renderCamera(); } else if (c === 'close') { S.tab = 'music'; renderTabs(); renderStates(); } else toast('Only one camera found'); return; }
     const tab = e.target.closest('[data-tab]');
     if (tab) { S.tab = tab.dataset.tab; renderTabs(); renderStates(); return; }
     const sp = e.target.closest('[data-sp]');
@@ -1062,6 +1151,13 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     else if (st === 'peek') { S.peek = { kind: 'track' }; setMode('peek', { pinned: true }); }
     else setMode('expanded', { tab: st, pinned: true });
   });
+  $('#devOn').addEventListener('change', e => {
+    S.dev = e.target.checked;
+    $('#stClaude').hidden = !S.dev;
+    if (!S.dev && S.tab === 'claude') S.tab = 'music';
+    renderIsland(); renderStates();
+    if ($('#setScrim').classList.contains('on')) renderSettings();
+  });
   document.querySelector('.controls').addEventListener('click', e => {
     const b = e.target.closest('[data-sim]'); if (b) simulate(b.dataset.sim);
   });
@@ -1069,13 +1165,13 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   $('#soundOn').addEventListener('change', e => { S.sound = e.target.checked; });
 
   /* ---------- keyboard ---------- */
-  const TABS = ['music', 'claude', 'tray', 'rules'];
+  const tabsNow = () => ['music', 'tray', 'camera'].concat(S.dev ? ['claude'] : [], ['rules']);
   document.addEventListener('keydown', e => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.matches('input[type="text"], textarea')) return;
-    if (e.key === 'Escape') { if (S.sheet) { S.sheet = false; renderSheet(); } else collapse(); return; }
+    if (e.key === 'Escape') { if ($('#setScrim').classList.contains('on')) { closeSettings(); return; } if (S.sheet) { S.sheet = false; renderSheet(); } else collapse(); return; }
     const n = +e.key;
-    if (n >= 1 && n <= 4) { setMode('expanded', { tab: TABS[n - 1], pinned: true }); }
+    const tl = tabsNow(); if (n >= 1 && n <= tl.length) { setMode('expanded', { tab: tl[n - 1], pinned: true }); }
   });
 
   /* ---------- clock + ticking (a real build only ticks while expanded) ---------- */
@@ -1089,6 +1185,131 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     }
     tickClaude();
   }
+
+  /* ---------- Settings window ---------- */
+  const SI = {
+    general: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+    music: '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+    camera: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    tray: '<path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/>',
+    look: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor"/>',
+    rules: '<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
+    dev: '<path d="M5 7l5 5-5 5M12 18h7"/>',
+    about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'
+  };
+  const SET = {
+    general: ['General', [
+      ['Launch', [
+        { t: 'Launch at login', d: 'Starts shima when you log in. Works from /Applications.', k: 'login', v: true },
+        { t: 'Show in the menu bar', d: 'A small shima icon for quick access (macOS hides it when the bar is full).', k: 'mbar', v: true }
+      ]],
+      ['Show', [
+        { t: 'Show on a display', sel: ['Built-in display'], d: 'External monitors are not supported yet.' },
+        { t: 'Hover delay', sl: [0.05, 0.5, 0.01, 0.08, 's'] },
+        { t: 'Collapse delay', sl: [0.1, 1, 0.05, 0.3, 's'] },
+        { t: 'Remember last tab', k: 'rem', v: false },
+        { t: 'Haptic feedback', d: 'A light tap on the trackpad when the island opens.', k: 'hap', v: true }
+      ]],
+      ['Notch size', [
+        { t: 'Notch fine-tuning', d: 'Adjust if the detected notch is slightly off.', sl: [-6, 6, 1, 0, 'pt'], sl2: [-6, 6, 1, 0, 'pt'] },
+        { t: 'Hide in fullscreen', k: 'hfs', v: false },
+        { t: 'Hide while screen sharing', k: 'hsh', v: false }
+      ]],
+      ['Displays without a notch', [
+        { t: 'Show a hover zone', d: 'An invisible 200 x 32 pt zone at the top centre.', k: 'nonotch', v: true }
+      ]]
+    ]],
+    music: ['Music', [
+      ['Spotify', [
+        { t: 'Automation permission', d: 'shima asks Spotify for the track by process id. It never launches Spotify.', tx: '<span class="ok">Allowed</span>', btn: 'Re-check' },
+        { t: 'Show live indicator while playing', d: 'Artwork on the left of the notch, equalizer on the right.', k: 'live', v: true }
+      ]],
+      ['Equalizer', [
+        { t: 'Animation', seg: ['Animated', 'Only when open', 'Off'], v: 0, d: 'Animated uses a little CPU while a track plays.' }
+      ]]
+    ]],
+    camera: ['Camera', [
+      ['Preview', [
+        { t: 'Default camera', sel: ['FaceTime HD Camera', 'Studio Display Camera'] },
+        { t: 'Mirror the preview', d: 'Like looking in a mirror. Does not affect what others see.', k: 'mir', v: true },
+        { t: 'Blur preview background', d: 'Not available: shima only shows the raw camera.', k: 'blur', v: false, off: true }
+      ]],
+      ['Privacy', [
+        { t: 'Camera runs only while the Camera tab is open', d: 'Closing the tab or collapsing the island stops it and turns the green light off.', tx: '<span class="ok">Always</span>' },
+        { t: 'Camera permission', tx: '<span class="ok">Allowed</span>', btn: 'Open Privacy settings' }
+      ]]
+    ]],
+    tray: ['File tray', [
+      ['Dropping files', [
+        { t: 'Files are', seg: ['Copied', 'Moved'], v: 0, d: 'Hold Option while dropping to do the other one.' },
+        { t: 'Show the AirDrop tile', k: 'ad', v: true },
+        { t: 'Clear the tray on quit', k: 'clr', v: false }
+      ]]
+    ]],
+    look: ['Appearance', [
+      ['Island', [
+        { t: 'Accent colour', sw: ['#E07A4F', '#1ED760', '#86AEF7', '#F5C542', '#C686F2'], v: 0 },
+        { t: 'Show the "shima" label in the header', k: 'lbl', v: true },
+        { t: 'Expanded size', seg: ['Compact', 'Regular', 'Large'], v: 1 }
+      ]]
+    ]],
+    rules: ['Automations', [
+      ['Config file', [
+        { t: 'Location', tx: '<code>~/.config/shima/config.json</code>', btn: 'Reveal in Finder' },
+        { t: 'Status', d: 'Reloads within a second of saving. A broken file keeps the last good one.', tx: '<span class="ok">Valid · 2 rules</span>', btn: 'Reload' }
+      ]]
+    ]],
+    dev: ['Developer', [
+      ['Claude Code', [
+        { t: 'Show Claude sessions', d: 'Adds the Claude tab, session dots in the notch and the attention pulse. Off by default.', k: 'dev', v: false, dev: true },
+        { t: 'Hook helper', d: 'Claude Code calls shimactl; it always exits 0 within a second, even when shima is not running.', tx: '<span class="ok">shimactl found</span>', btn: 'Copy hook snippet' },
+        { t: 'Pulse when a session needs you', k: 'pul', v: true }
+      ]]
+    ]],
+    about: ['About', [
+      ['shima', [
+        { t: 'Version', tx: '0.1.1' },
+        { t: 'Signing', tx: 'Apple Development', d: 'A stable identity keeps the Spotify and camera permissions across rebuilds.' },
+        { t: 'Quit shima', btn: 'Quit', danger: true }
+      ]]
+    ]]
+  };
+  const SETSTATE = { page: 'general' };
+  function renderSettings() {
+    const order = ['general', 'music', 'camera', 'tray', 'look', 'rules', 'dev', 'about'];
+    $('#setSide').innerHTML = `<div class="lights"><i data-set-close></i><i></i><i></i></div>
+      <div class="set-app"><b></b>shima</div>` +
+      order.map(k => `<button class="set-nav" data-set-page="${k}" aria-current="${SETSTATE.page === k}" ${k === 'dev' ? '' : ''}><svg viewBox="0 0 24 24">${SI[k]}</svg>${SET[k][0]}</button>`).join('');
+    const [title, groups] = SET[SETSTATE.page];
+    $('#setMain').innerHTML = groups.map(([g, rows]) => `<h4>${g}</h4><div class="set-group">` + rows.map((r, i) => {
+      let ctl = '';
+      if (r.k) ctl = `<button class="tg ${r.k === 'dev' ? (S.dev ? 'on' : '') : (r.v ? 'on' : '')}" role="switch" data-tg="${r.k}" ${r.off ? 'disabled style="opacity:.4"' : ''}></button>`;
+      else if (r.sl) ctl = `<input type="range" min="${r.sl[0]}" max="${r.sl[1]}" step="${r.sl[2]}" value="${r.sl[3]}" data-unit="${r.sl[4]}"><span class="val">${r.sl[3]}${r.sl[4]}</span>`;
+      else if (r.sel) ctl = `<select ${r.sel.length < 2 ? 'disabled' : ''}>${r.sel.map(o => `<option>${o}</option>`).join('')}</select>`;
+      else if (r.seg) ctl = `<div class="seg">${r.seg.map((o, j) => `<button class="${j === r.v ? 'on' : ''}">${o}</button>`).join('')}</div>`;
+      else if (r.sw) ctl = `<div class="swatches">${r.sw.map((c, j) => `<i style="background:${c}" class="${j === r.v ? 'on' : ''}"></i>`).join('')}</div>`;
+      else if (r.tx) ctl = `<span style="font-size:12.5px;color:#c9c9ce">${r.tx}</span>`;
+      const btn = r.btn ? `<button class="sbt ${r.danger ? 'danger' : ''}" data-sbt="${r.btn}">${r.btn}</button>` : '';
+      const sl2 = r.sl2 ? `<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font-size:12px;color:#9a9aa0;width:48px">Height</span><input type="range" min="${r.sl2[0]}" max="${r.sl2[1]}" step="${r.sl2[2]}" value="${r.sl2[3]}" data-unit="${r.sl2[4]}" style="width:220px;accent-color:var(--claude)"><span class="val">${r.sl2[3]}${r.sl2[4]}</span></div>` : '';
+      return `<div class="set-row"><div class="tx">${r.t}${r.d ? `<small>${r.d}</small>` : ''}</div>${r.sl2 ? `<div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:#9a9aa0;width:48px">Width</span>${ctl}</div>${sl2}</div>` : ctl}${btn}</div>`;
+    }).join('') + '</div>').join('');
+  }
+  function openSettings(page) { if (page) SETSTATE.page = page; renderSettings(); $('#setScrim').classList.add('on'); }
+  function closeSettings() { $('#setScrim').classList.remove('on'); }
+  $('#setScrim').addEventListener('click', e => {
+    if (e.target.id === 'setScrim' || e.target.closest('[data-set-close]')) { closeSettings(); return; }
+    const nav = e.target.closest('[data-set-page]'); if (nav) { SETSTATE.page = nav.dataset.setPage; renderSettings(); return; }
+    const tg = e.target.closest('[data-tg]');
+    if (tg && !tg.disabled) {
+      tg.classList.toggle('on');
+      if (tg.dataset.tg === 'dev') { $('#devOn').checked = tg.classList.contains('on'); $('#devOn').dispatchEvent(new Event('change')); }
+      return;
+    }
+    const seg = e.target.closest('.seg button'); if (seg) { seg.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg)); return; }
+    const sw = e.target.closest('.swatches i'); if (sw) { sw.parentElement.querySelectorAll('i').forEach(b => b.classList.toggle('on', b === sw)); return; }
+  });
+  $('#setScrim').addEventListener('input', e => { if (e.target.type === 'range') e.target.nextElementSibling.textContent = e.target.value + e.target.dataset.unit; });
+
   setInterval(tick, 1000);
   // running sessions narrate their work now and then
   setInterval(() => {

@@ -44,15 +44,17 @@ struct IslandView: View {
             IslandShape(metrics: IslandLayout.metrics(for: state.mode, notch: notch, live: state.live))
                 .fill(fill)
             WingsView(state: state, media: media, notchWidth: notch.width)
-            Text("shima")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .padding(.top, notch.height + 12)
-                .opacity(state.mode == .expanded ? 1 : 0)
             if debug {
                 Rectangle().strokeBorder(Color.red.opacity(0.6), lineWidth: 1)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .overlay(alignment: .top) {
+            Text("shima")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.top, notch.height + 12)
+                .opacity(state.mode == .expanded ? 1 : 0)
+        }
     }
 }

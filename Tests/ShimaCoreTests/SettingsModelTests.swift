@@ -41,9 +41,9 @@ import Testing
         let r = make(stored: ["devicePopups": "off"])
         #expect(!r.model.devicePopupsEnabled && !r.state.devicePopupsEnabled)
         var changes: [Bool] = []
-        r.model.onDevicePopupsChange = { enabled in
-            #expect(enabled && r.model.devicePopupsEnabled && r.state.devicePopupsEnabled)
-            #expect(r.storage.values["devicePopups"] == "on")
+        r.model.onDevicePopupsChange = { [weak model = r.model, state = r.state, storage = r.storage] enabled in
+            #expect(enabled && model?.devicePopupsEnabled == true && state.devicePopupsEnabled)
+            #expect(storage.values["devicePopups"] == "on")
             changes.append(enabled)
         }
         r.model.setDevicePopupsEnabled(true)

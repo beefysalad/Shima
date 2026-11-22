@@ -1,0 +1,84 @@
+import AppKit
+import ShimaCore
+
+/// Owns the Spotify client and coordinator. This task: fake mode only (SHIMA_FAKE_SPOTIFY).
+@MainActor
+final class SpotifyService: NSObject {
+    var onLiveChange: (@MainActor (Bool) -> Void)?
+
+    private let state: AppState
+    private let media: IslandMedia
+    private let environment: [String: String]
+    private var fake: FakeSpotifyClient?
+    private var coordinator: SpotifyCoordinator?
+
+    init(state: AppState, media: IslandMedia,
+         environment: [String: String] = ProcessInfo.processInfo.environment) {
+        self.state = state
+        self.media = media
+        self.environment = environment
+        super.init()
+    }
+
+    func start() {
+        guard let initial = FakeSpotifyMode.initialState(environment["SHIMA_FAKE_SPOTIFY"]) else {
+            Log.spotify.info("spotify mode real running=false (not wired)")
+            return
+        }
+        let client = FakeSpotifyClient(state: initial)
+        client.onEvent = { [weak self] in self?.receive($0) }
+        let coordinator = SpotifyCoordinator(client: client, state: state)
+        coordinator.onLiveChange = { [weak self] live in
+            Log.spotify.info("spotify live \(live, privacy: .public)")
+            self?.onLiveChange?(live)
+        }
+        coordinator.onChanges = { changes in
+            Log.spotify.info("spotify changes \(String(describing: changes), privacy: .public)")
+        }
+        fake = client
+        self.coordinator = coordinator
+        Log.spotify.info("spotify mode fake state=\(String(describing: initial), privacy: .public)")
+        DistributedNotificationCenter.default().addObserver(
+            self, selector: #selector(fakeControl(_:)), name: .init("local.shima.fake-spotify"),
+            object: nil, suspensionBehavior: .deliverImmediately)
+        receive(.launched)
+        client.refresh()
+    }
+
+    func islandOpened() { coordinator?.islandOpened() }
+
+    func perform(_ command: SpotifyCommand) { coordinator?.perform(command) }
+
+    /// The single funnel for client and observer events: log (never title or artist), then apply.
+    func receive(_ event: SpotifyEvent) {
+        switch event {
+        case .launched: Log.spotify.info("spotify event launched")
+        case .terminated: Log.spotify.info("spotify event terminated")
+        case .permissionDenied: Log.spotify.info("spotify event permissionDenied")
+        case let .reading(reading, source, _):
+            let src = source == .notification ? "notification" : "script"
+            Log.spotify.info("spotify event reading src=\(src, privacy: .public) state=\(String(describing: reading.state), privacy: .public) track=\(reading.trackID ?? "none", privacy: .public)")
+        }
+        coordinator?.handle(event)
+    }
+
+    @objc nonisolated private func fakeControl(_ note: Notification) {
+        let cmd = (note.object as? String) ?? ""
+        MainActor.assumeIsolated { handleFake(cmd) }
+    }
+
+    private func handleFake(_ cmd: String) {
+        switch cmd {
+        case "ping": Log.spotify.info("fake ping")
+        case "playing": Log.spotify.info("fake playing"); fake?.setState(.playing)
+        case "paused": Log.spotify.info("fake paused"); fake?.setState(.paused)
+        case "next": Log.spotify.info("fake next"); fake?.send(.next)
+        case "previous": Log.spotify.info("fake previous"); fake?.send(.previous)
+        case "quit": Log.spotify.info("fake quit"); receive(.terminated)
+        case "launch": Log.spotify.info("fake launch"); receive(.launched)
+        case "eq-frozen": Log.spotify.info("fake eq-frozen"); media.equalizerFrozen = true
+        case "eq-animating": Log.spotify.info("fake eq-animating"); media.equalizerFrozen = false
+        default: Log.spotify.info("fake unknown \(cmd, privacy: .public)")
+        }
+    }
+}

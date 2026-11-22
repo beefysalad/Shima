@@ -13,7 +13,9 @@ final class IslandPanelController {
     private var panel: NotchPanel?
     private let trackingView = HoverTrackingView()
     private let hostingView: NSHostingView<IslandView>
-    private let state = AppState()
+    let state = AppState()
+    let media = IslandMedia()
+    var onIslandOpened: (@MainActor () -> Void)?
     private var hover: HoverController!
     private var notch: CGRect = .zero
     private var hasNotch = false
@@ -37,6 +39,11 @@ final class IslandPanelController {
         trackingView.onPointer = { [weak self] inside in
             self?.hover.pointer(inside: inside)
         }
+    }
+
+    /// Task 13 stub: Task 14 applies the live frame.
+    func setLive(_ live: Bool) {
+        Log.layout.info("live desired=\(live, privacy: .public)")
     }
 
     func place(on display: DisplayDescriptor?) {
@@ -78,6 +85,7 @@ final class IslandPanelController {
             refreshHotRect()
         case .animateExpand:
             withAnimation(Self.spring) { state.mode = .expanded }
+            onIslandOpened?()
         case .animateCollapse(let generation):
             withAnimation(Self.spring, completionCriteria: .removed) {
                 state.mode = .collapsed

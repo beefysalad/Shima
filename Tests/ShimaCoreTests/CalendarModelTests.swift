@@ -43,6 +43,26 @@ struct CalendarModelTests {
         #expect(model.displayedMonth == november)
     }
 
+    @Test func monthArrowMovesSelectionWhenItLeavesTheGrid() {
+        var model = authorizedModel()
+        _ = open(&model)
+        #expect(model.selectedDay == now)
+        _ = model.showMonth(offset: 1)
+        #expect(model.selectedDay == calendarTestDate(2026, 11, 1))
+        _ = model.showMonth(offset: -1)
+        #expect(model.selectedDay == now)
+    }
+
+    @Test func monthArrowKeepsSelectionThatIsStillInTheGrid() {
+        var model = authorizedModel()
+        _ = open(&model)
+        let first = calendarTestDate(2026, 10, 1)
+        model.selectDay(first)
+        _ = model.showMonth(offset: -1)
+        #expect(model.displayedMonth == calendarTestDate(2026, 9, 1))
+        #expect(model.selectedDay == first)
+    }
+
     @Test func reopenResetsSelection() {
         var model = authorizedModel()
         _ = open(&model)

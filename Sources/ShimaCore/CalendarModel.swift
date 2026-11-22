@@ -105,6 +105,11 @@ public struct CalendarModel: Equatable, Sendable {
         guard isVisible, offset != 0,
               let month = calendar.date(byAdding: .month, value: offset, to: displayedMonth) else { return [] }
         displayedMonth = monthStart(for: month)
+        // The left column shows the selected day, so its events must stay inside the loaded grid range.
+        let grid = MonthGrid.make(month: displayedMonth, today: today, calendar: calendar).visibleRange
+        if !(selectedDay >= grid.start && selectedDay < grid.end) {
+            selectedDay = monthStart(for: today) == displayedMonth ? today : displayedMonth
+        }
         return reconcile()
     }
 

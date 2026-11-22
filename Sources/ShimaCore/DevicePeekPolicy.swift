@@ -1,7 +1,7 @@
 import Foundation
 
 public enum PeekDrop: Equatable, Sendable {
-    case disabled, wakeGrace, repeated
+    case disabled, launchGrace, wakeGrace, repeated
 }
 
 public enum PeekDecision: Equatable, Sendable {
@@ -10,10 +10,14 @@ public enum PeekDecision: Equatable, Sendable {
 }
 
 public struct DevicePeekPolicy: Sendable {
+    private let startedAt: Date
     private var lastWake: Date?
     private var lastShownByAddress: [String: Date] = [:]
 
-    public init() {}
+    /// `startedAt` is when Shima registers for notifications: the system replays every already-connected device then.
+    public init(startedAt: Date) {
+        self.startedAt = startedAt
+    }
 
     public mutating func didWake(at date: Date) {
         lastWake = date
@@ -21,6 +25,7 @@ public struct DevicePeekPolicy: Sendable {
 
     public mutating func decide(_ event: DeviceEvent, now: Date, enabled: Bool) -> PeekDecision {
         guard enabled else { return .drop(.disabled) }
+        if (0..<3).contains(now.timeIntervalSince(startedAt)) { return .drop(.launchGrace) }
         if let lastWake, (0..<10).contains(now.timeIntervalSince(lastWake)) {
             return .drop(.wakeGrace)
         }

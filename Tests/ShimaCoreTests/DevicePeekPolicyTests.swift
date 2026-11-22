@@ -5,6 +5,9 @@ import ShimaCore
 @Suite struct DevicePeekPolicyTests {
     private let now = Date(timeIntervalSince1970: 1_000)
 
+    /// Started long before `now`, so the launch grace does not apply unless a test asks for it.
+    private func makePolicy() -> DevicePeekPolicy { DevicePeekPolicy(startedAt: now.addingTimeInterval(-60)) }
+
     private func event(_ address: String = "a", name: String = "Mouse", battery: Int? = 82) -> DeviceEvent {
         DeviceEvent(address: address, name: name, kind: .mouse, batteryPercent: battery)
     }
@@ -15,7 +18,7 @@ import ShimaCore
     }
 
     @Test func displayNameFallbackAndTruncation() {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         #expect(policy.decide(event("a", name: ""), now: now, enabled: true) == peek(subtitle: "Bluetooth device"))
         #expect(policy.decide(event("b", name: " \t\n"), now: now, enabled: true) == peek(subtitle: "Bluetooth device"))
         #expect(policy.decide(event("c", name: " Mouse "), now: now, enabled: true) == peek())
@@ -25,12 +28,12 @@ import ShimaCore
 
     @Test(arguments: [(nil, nil), (-1, nil), (101, nil), (0, "0%"), (100, "100%")] as [(Int?, String?)])
     func batteryOutOfRangeIsHidden(battery: Int?, text: String?) {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         #expect(policy.decide(event(battery: battery), now: now, enabled: true) == peek(batteryText: text))
     }
 
     @Test func disabledDrops() {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         policy.didWake(at: now)
         #expect(policy.decide(event(), now: now, enabled: false) == .drop(.disabled))
         let later = now.addingTimeInterval(10)
@@ -38,15 +41,26 @@ import ShimaCore
         #expect(policy.decide(event(), now: later, enabled: true) == peek())
     }
 
+    @Test func launchGraceDropsReplayedDevices() {
+        var policy = DevicePeekPolicy(startedAt: now)
+        #expect(policy.decide(event(), now: now.addingTimeInterval(2.9), enabled: true) == .drop(.launchGrace))
+        #expect(policy.decide(event("b"), now: now.addingTimeInterval(3.1), enabled: true) == peek())
+    }
+
+    @Test func disabledBeatsLaunchGrace() {
+        var policy = DevicePeekPolicy(startedAt: now)
+        #expect(policy.decide(event(), now: now.addingTimeInterval(1), enabled: false) == .drop(.disabled))
+    }
+
     @Test func wakeGraceDropsWithinTenSeconds() {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         policy.didWake(at: now)
         #expect(policy.decide(event(), now: now.addingTimeInterval(9.9), enabled: true) == .drop(.wakeGrace))
         #expect(policy.decide(event(), now: now.addingTimeInterval(10.1), enabled: true) == peek())
     }
 
     @Test func sameAddressWithinFiveSecondsDrops() {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         #expect(policy.decide(event(), now: now, enabled: true) == peek())
         #expect(policy.decide(event("b"), now: now.addingTimeInterval(4), enabled: true) == peek())
         #expect(policy.decide(event(), now: now.addingTimeInterval(4.9), enabled: true) == .drop(.repeated))
@@ -54,7 +68,7 @@ import ShimaCore
     }
 
     @Test func wakeGraceTakesPrecedenceOverRepeat() {
-        var policy = DevicePeekPolicy()
+        var policy = makePolicy()
         #expect(policy.decide(event(), now: now, enabled: true) == peek())
         policy.didWake(at: now.addingTimeInterval(1))
         #expect(policy.decide(event(), now: now.addingTimeInterval(2), enabled: true) == .drop(.wakeGrace))

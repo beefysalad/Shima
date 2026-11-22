@@ -30,6 +30,7 @@ struct IslandView: View {
     let onCommand: @MainActor (SpotifyCommand) -> Void
     let onSettings: @MainActor () -> Void
     var camera: CameraService? = nil
+    var calendar: CalendarCoordinator? = nil
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -63,6 +64,11 @@ struct IslandView: View {
             }
         }
         .overlay(alignment: .top) {
+            if state.mode == .expanded && state.selectedTab == .calendar, let calendar {
+                CalendarContent(coordinator: calendar)
+            }
+        }
+        .overlay(alignment: .top) {
             HeaderTabIcon(state: state, onSettings: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)
@@ -71,7 +77,7 @@ struct IslandView: View {
 }
 
 /// Outlined 24-unit glyphs copied from mockup/index.html (stroke 1.7, round caps and joins).
-enum HeaderGlyph { case home, music, camera }
+enum HeaderGlyph { case home, music, camera, calendar }
 
 struct HeaderGlyphShape: Shape {
     let glyph: HeaderGlyph
@@ -93,6 +99,12 @@ struct HeaderGlyphShape: Shape {
             path.move(to: p(4, 8)); path.addLine(to: p(7, 8)); path.addLine(to: p(8.5, 6)); path.addLine(to: p(15.5, 6))
             path.addLine(to: p(17, 8)); path.addLine(to: p(20, 8)); path.addLine(to: p(20, 19)); path.addLine(to: p(4, 19)); path.closeSubpath()
             path.addEllipse(in: circle(12, 13, 3.5))
+        case .calendar:
+            path.addRoundedRect(in: CGRect(x: rect.minX + 4 * k, y: rect.minY + 5 * k, width: 16 * k, height: 15 * k),
+                                cornerSize: CGSize(width: 2.5 * k, height: 2.5 * k))
+            path.move(to: p(4, 10)); path.addLine(to: p(20, 10))
+            path.move(to: p(9, 3)); path.addLine(to: p(9, 7))
+            path.move(to: p(15, 3)); path.addLine(to: p(15, 7))
         }
         return path
     }
@@ -107,15 +119,31 @@ struct HeaderTabIcon: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             headerButton(.home, rect: NowPlayingLayout.settingsButton, selected: false, label: SettingsText.windowTitle) { onSettings() }
-            ForEach([IslandTab.music, .camera], id: \.self) { tab in
-                headerButton(tab == .music ? .music : .camera, rect: NowPlayingLayout.tabRect(tab),
-                             selected: state.selectedTab == tab, label: tab == .music ? "Music" : "Camera") {
+            ForEach(IslandTab.allCases, id: \.self) { tab in
+                headerButton(Self.glyph(for: tab), rect: NowPlayingLayout.tabRect(tab),
+                             selected: state.selectedTab == tab, label: Self.label(for: tab)) {
                     state.selectedTab = tab
                     Log.camera.info("camera tab clicked tab=\(tab.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public)")
                 }
             }
         }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
+    }
+
+    private static func glyph(for tab: IslandTab) -> HeaderGlyph {
+        switch tab {
+        case .music: .music
+        case .camera: .camera
+        case .calendar: .calendar
+        }
+    }
+
+    private static func label(for tab: IslandTab) -> String {
+        switch tab {
+        case .music: "Music"
+        case .camera: "Camera"
+        case .calendar: "Calendar"
+        }
     }
 
     private func headerButton(_ glyph: HeaderGlyph, rect r: CGRect, selected: Bool, label: String, action: @escaping @MainActor () -> Void) -> some View {

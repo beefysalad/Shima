@@ -76,7 +76,7 @@ final class IslandPanelController {
             state: state, media: media, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity,
             onCommand: { [weak self] in self?.handle($0) },
-            onSettings: { [weak self] in self?.openSettings() }, camera: camera)
+            onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator)
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()

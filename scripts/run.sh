@@ -2,8 +2,8 @@
 # Build the app bundle and launch it. Stops any running instance first.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [[ -z "${SHIMA_FAKE_SPOTIFY:-}" && -z "${SHIMA_SIGN_ID:-}" ]] && pgrep -x Spotify >/dev/null; then
-  echo "Spotify is running: a real-mode build needs SHIMA_SIGN_ID (stable Automation grant) or SHIMA_FAKE_SPOTIFY." >&2
+if [[ -z "${SHIMA_FAKE_SPOTIFY:-}" && -z "${SHIMA_SIGN_ID:-}" ]]; then
+  echo "Real mode needs SHIMA_SIGN_ID (a stable signature keeps the Automation grant); for fake mode set SHIMA_FAKE_SPOTIFY. Refusing to build." >&2
   exit 1
 fi
 ./scripts/bundle.sh

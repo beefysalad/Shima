@@ -5,6 +5,7 @@ import ShimaCore
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let islandController = IslandPanelController()
     private lazy var spotify = SpotifyService(state: islandController.state, media: islandController.media)
+    private lazy var devices = DeviceService(islandController: islandController)
     private lazy var camera = CameraService(state: islandController.state)
     private lazy var calendar = CalendarService(state: islandController.state, environment: environment)
     private var statusItem: NSStatusItem?
@@ -27,6 +28,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         settings.onEqualizerModeChange = { mode in
             Log.settings.info("settings eq mode=\(mode.rawValue, privacy: .public) saved")
         }
+        settings.onDevicePopupsChange = { enabled in
+            Log.settings.info("settings devicePopups \(enabled ? "on" : "off", privacy: .public) saved")
+        }
         let dryOpen = environment["SHIMA_SETTINGS_DRY_OPEN"] != nil
         settings.onOpenURL = { url in
             Log.settings.info("settings open url=\(url.absoluteString, privacy: .public) dryRun=\(dryOpen, privacy: .public)")
@@ -47,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         islandController.onSettings = { [weak self] in self?.settingsWindow.show(via: .gear) }
         islandController.onCommand = { [weak self] in self?.spotify.perform($0) }
         spotify.start()
+        devices.start()
         NotificationCenter.default.addObserver(
             self, selector: #selector(appBecameActive),
             name: NSApplication.didBecomeActiveNotification, object: nil)
@@ -61,6 +66,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard !terminationPending else { return .terminateLater }
         terminationPending = true
         calendar.shutdown()
+        devices.stop()
         camera.shutdown { sender.reply(toApplicationShouldTerminate: true) }
         return .terminateLater
     }

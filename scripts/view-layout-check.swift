@@ -207,7 +207,62 @@ import ShimaCore
         check(idle.rows(in: 0..<179, matching: isMagenta).isEmpty, "not-live artwork must be hidden")
         check(idle.rows(in: 0..<179, matching: isGreen).isEmpty, "not-live equalizer must be hidden")
         print("not-live 179x32: black 0..<32, no wings content PASS")
-        check(!window.isVisible, "diagnostic window must remain offscreen")
+        // Device banner (peek): the real island silhouette at 340 x 76 inside the 376 x 84 peek panel.
+        let peekState = AppState()
+        peekState.mode = .peek
+        let peekHost = NSHostingView(rootView: IslandView(state: peekState, media: media,
+            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}))
+        let peekWindow = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 376, height: 84),
+            styleMask: .borderless, backing: .buffered, defer: false)
+        peekWindow.isOpaque = false
+        peekWindow.backgroundColor = .clear
+        peekWindow.contentView = peekHost
+        let peekDX: CGFloat = (376 - IslandLayout.peek.width) / 2
+        func peekPixels(_ kind: DeviceKind, _ name: String, _ battery: String?) -> Pixels {
+            peekState.peek = .device(DevicePeek(title: "Connected", subtitle: name, batteryText: battery, kind: kind, duration: .seconds(3)))
+            peekHost.layoutSubtreeIfNeeded()
+            return render(peekHost)
+        }
+        func xs(_ r: CGRect) -> Range<Int> { Int(r.minX + peekDX)..<Int(r.maxX + peekDX) }
+        func ys(_ r: CGRect) -> Range<Int> { Int(r.minY)..<Int(r.maxY) }
+        func isWhite(_ c: NSColor) -> Bool { c.alphaComponent > 0.9 && c.redComponent > 0.85 && c.greenComponent > 0.85 && c.blueComponent > 0.85 }
+        func isLight(_ c: NSColor) -> Bool { c.alphaComponent > 0.9 && c.redComponent > 0.4 && c.greenComponent > 0.4 && c.blueComponent > 0.4 }
+        func isRed(_ c: NSColor) -> Bool { c.alphaComponent > 0.9 && c.redComponent > 0.8 && c.greenComponent < 0.55 && c.blueComponent < 0.5 }
+        let blackCheck: (NSColor) -> Bool = { $0.alphaComponent > 0.9 }
+        for kind in DeviceKind.allCases {
+            let p = peekPixels(kind, "Test device", "82%")
+            check(p.rows(at: 188, matching: blackCheck) == 0..<76, "\(kind) peek silhouette must be 76 rows high")
+            check(!p.span(in: xs(PeekLayout.badge), ys: ys(PeekLayout.badge), matching: isWhite).isEmpty, "\(kind) badge glyph must be drawn")
+            check(!p.span(in: xs(PeekLayout.title), ys: ys(PeekLayout.title), matching: isWhite).isEmpty, "\(kind) title must be drawn")
+            check(!p.span(in: xs(PeekLayout.subtitle), ys: ys(PeekLayout.subtitle), matching: isLight).isEmpty, "\(kind) device name must be drawn")
+            check(!p.span(in: xs(PeekLayout.batteryGroup), ys: ys(PeekLayout.batteryGroup), matching: isLight).isEmpty, "\(kind) battery must be drawn")
+            check(p.span(in: Int(110.5 + peekDX)..<Int(289.5 + peekDX), ys: 0..<32, matching: { c in
+                c.alphaComponent > 0.9 && (c.redComponent > 0.12 || c.greenComponent > 0.12 || c.blueComponent > 0.12) }).isEmpty,
+                  "\(kind) peek must leave the notch strip empty")
+            if CommandLine.arguments.contains("--snapshot") {
+                try! p.bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: ".build/view-layout-regression/peek-\(kind.rawValue).png"))
+            }
+        }
+        let noBattery = peekPixels(.keyboard, "Keychron K3", nil)
+        check(noBattery.span(in: xs(PeekLayout.batteryGroup), ys: 40..<70, matching: { c in
+            c.alphaComponent > 0.9 && (c.redComponent > 0.2 || c.greenComponent > 0.2 || c.blueComponent > 0.2) }).isEmpty,
+              "no battery value must leave the battery area empty")
+        let longName = peekPixels(.headphones, String(repeating: "Very Long Studio Headphones ", count: 3), "64%")
+        check(longName.span(in: Int(252 + peekDX)..<Int(318 + peekDX), ys: 44..<64, matching: isLight).count >= 4,
+              "battery text must stay readable beside a long name")
+        check(longName.span(in: Int(318 + peekDX + 3)..<Int(IslandLayout.peek.width + peekDX), ys: 38..<72, matching: isLight).isEmpty,
+              "a long name must not run past the battery group")
+        let lowBattery = peekPixels(.earbuds, "AirPods", "5%")
+        check(!lowBattery.span(in: xs(PeekLayout.batteryGroup), ys: ys(PeekLayout.batteryGroup), matching: isRed).isEmpty,
+              "a battery at 15% or below must draw red")
+        var noAnimation = Transaction()
+        noAnimation.disablesAnimations = true // the real banner fades out; offscreen renders cannot advance an animation
+        withTransaction(noAnimation) { peekState.mode = .collapsed }
+        peekHost.layoutSubtreeIfNeeded()
+        let peekGone = render(peekHost)
+        check(peekGone.span(in: 0..<376, ys: 33..<84, matching: isLight).isEmpty, "the banner must be hidden outside a peek")
+        print("peek banner 340x76 in 376x84: silhouette, SF Symbol badge for all \(DeviceKind.allCases.count) kinds, title, name, battery, empty notch strip, no-battery, long name, low battery red, hidden outside peek PASS")
+        check(!window.isVisible && !peekWindow.isVisible, "diagnostic window must remain offscreen")
         print("cacheDisplay pixel checks PASS; no window shown")
     }
 

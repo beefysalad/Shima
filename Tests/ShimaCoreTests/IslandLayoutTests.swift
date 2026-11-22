@@ -21,6 +21,22 @@ import Testing
         #expect(f == big)
         #expect(f.maxY == 956 && f.midX == notch.midX)
     }
+    @Test func peekPanelFrameIsCentredAndTopAligned() {
+        let frame = IslandLayout.peekPanelFrame(notch: notch)
+        #expect(frame.width == 376)
+        #expect(frame.height == 84)
+        #expect(frame.midX == notch.midX)
+        #expect(frame.maxY == notch.maxY)
+    }
+    @Test func peekHotRectIsWholePanel() {
+        let frame = IslandLayout.peekPanelFrame(notch: notch)
+        #expect(IslandLayout.hotRect(.peek, notch: notch, panelFrame: frame) == CGRect(x: 0, y: 0, width: 376, height: 84))
+    }
+    @Test func peekMetricsAreMockupValues() {
+        #expect(IslandLayout.peek == IslandShapeMetrics(width: 340, height: 76, bottomRadius: 22, earRadius: 10))
+        #expect(IslandLayout.metrics(for: .peek, notch: notch) == IslandLayout.peek)
+        #expect(IslandLayout.metrics(for: .peek, notch: notch, live: true) == IslandLayout.peek)
+    }
     @Test func idleHotRectInsideBigPanelIsTheNotch() {
         #expect(IslandLayout.hotRect(.idle, notch: notch, live: false, panelFrame: big) == CGRect(x: 128.5, y: 176, width: 179, height: 32))
     }

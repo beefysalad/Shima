@@ -18,7 +18,7 @@ fi
 sources=(Sources/Shima/ArtworkCache.swift Sources/Shima/IslandMedia.swift Sources/Shima/Log.swift
     Sources/Shima/CameraCaptureClient.swift Sources/Shima/CameraService.swift Sources/Shima/CameraContent.swift
     Sources/Shima/EqualizerView.swift Sources/Shima/WingsView.swift Sources/Shima/IslandView.swift Sources/Shima/BrandAssets.swift
-    Sources/Shima/CalendarContent.swift)
+    Sources/Shima/CalendarContent.swift Sources/Shima/PeekContent.swift)
 [[ ! -f Sources/Shima/NowPlayingView.swift ]] || sources+=(Sources/Shima/NowPlayingView.swift)
 swiftc -swift-version 6 -parse-as-library -I "$bin" "${sources[@]}" \
     scripts/view-layout-check.swift "${objects[@]}" -o "$out/check"

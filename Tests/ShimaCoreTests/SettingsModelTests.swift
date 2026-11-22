@@ -33,6 +33,24 @@ import Testing
         return Rig(model: model, state: state, storage: storage, login: login, taps: taps)
     }
 
+    @Test func devicePopupsFollowTheStoredValueAndChanges() {
+        let defaults = make()
+        #expect(defaults.model.devicePopupsEnabled && defaults.state.devicePopupsEnabled)
+        #expect(defaults.state.peek == nil)
+
+        let r = make(stored: ["devicePopups": "off"])
+        #expect(!r.model.devicePopupsEnabled && !r.state.devicePopupsEnabled)
+        var changes: [Bool] = []
+        r.model.onDevicePopupsChange = { [weak model = r.model, state = r.state, storage = r.storage] enabled in
+            #expect(enabled && model?.devicePopupsEnabled == true && state.devicePopupsEnabled)
+            #expect(storage.values["devicePopups"] == "on")
+            changes.append(enabled)
+        }
+        r.model.setDevicePopupsEnabled(true)
+        r.model.setDevicePopupsEnabled(true)
+        #expect(changes == [true] && r.storage.writes == 1)
+    }
+
     @Test func initLoadsStoredModeIntoState() {
         let r = make(stored: ["equalizerMode": "off"])
         #expect(r.model.equalizerMode == .off && r.state.equalizerMode == .off && r.storage.writes == 0)

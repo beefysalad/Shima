@@ -2,6 +2,25 @@ import Testing
 @testable import ShimaCore
 
 @Suite @MainActor struct SettingsStoreTests {
+    @Test func devicePopupsDefaultOnForMissingAndUnknownValues() {
+        #expect(SettingsStore(storage: InMemoryPreferenceStorage()).devicePopups)
+        let storage = InMemoryPreferenceStorage(["devicePopups": "unknown"])
+        #expect(SettingsStore(storage: storage).devicePopups)
+        #expect(storage.writes == 0)
+    }
+
+    @Test func devicePopupsRoundTripThroughStorage() {
+        let storage = InMemoryPreferenceStorage()
+        let store = SettingsStore(storage: storage)
+        store.setDevicePopups(false)
+        store.setDevicePopups(false)
+        #expect(storage.values == ["devicePopups": "off"] && storage.writes == 1)
+        #expect(!SettingsStore(storage: storage).devicePopups)
+        store.setDevicePopups(true)
+        #expect(storage.values == ["devicePopups": "on"] && storage.writes == 2)
+        #expect(SettingsStore(storage: storage).devicePopups)
+    }
+
     @Test func defaultsToAnimatedWhenEmpty() {
         #expect(SettingsStore(storage: InMemoryPreferenceStorage()).equalizerMode == .animated)
     }

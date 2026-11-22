@@ -123,14 +123,25 @@ struct SettingsView: View {
                 .disabled(!model.loginItem.isEnabled)
             }
             section("Show") {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Show on a display").font(.system(size: 13))
-                        Text("External monitors are not supported yet.")
-                            .font(.system(size: 12)).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Show on a display").font(.system(size: 13))
+                            Text("External monitors are not supported yet.")
+                                .font(.system(size: 12)).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Text("Built-in display").font(.system(size: 12)).foregroundStyle(.secondary)
                     }
-                    Spacer()
-                    Text("Built-in display").font(.system(size: 12)).foregroundStyle(.secondary)
+                    Divider()
+                    Toggle(isOn: Binding(get: { model.devicePopupsEnabled }, set: { model.setDevicePopupsEnabled($0) })) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Device pop-ups").font(.system(size: 13, weight: .medium))
+                            Text(SettingsText.devicePopupsDetail).font(.system(size: 12)).foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .toggleStyle(.switch)
                 }
             }
             section("Displays without a notch") {

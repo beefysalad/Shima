@@ -21,7 +21,7 @@ struct WingsView: View {
         HStack(spacing: 0) {
             miniArtwork
                 .frame(width: IslandLayout.liveWingWidth, height: 32)
-                .opacity(state.live && state.mode == .collapsed ? 1 : 0)
+                .opacity(state.live && (state.mode == .collapsed || state.mode == .peek) ? 1 : 0)
             Color.clear
                 .frame(width: notchWidth, height: 32)
             EqualizerView(animating: animating)

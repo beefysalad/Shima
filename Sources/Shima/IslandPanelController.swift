@@ -9,6 +9,10 @@ final class IslandPanelController {
     private static let hitOpacity: Double = 0
     private static let spring = Animation.spring(response: 0.35, dampingFraction: 0.8)
 
+    private enum FrameKind: String {
+        case idle, peek, expanded
+    }
+
     /// Created lazily on the first non-nil `place`, then kept (only ordered out/in).
     private var panel: NotchPanel?
     private let trackingView = HoverTrackingView()
@@ -60,6 +64,20 @@ final class IslandPanelController {
         hover.idleGeometryChanged()
     }
 
+    func showPeek(_ item: PeekItem, duration: Duration) -> Bool {
+        let previous = state.peek
+        let replacesVisiblePeek = state.mode == .peek
+        state.peek = item
+        guard hover.peek(duration: duration) else {
+            state.peek = previous
+            Log.peek.info("peek dropped")
+            return false
+        }
+        // Replacing visible content restarts the timer without another entrance animation.
+        if replacesVisiblePeek { logPeekShown(item) }
+        return true
+    }
+
     func place(on display: DisplayDescriptor?) {
         guard let display else {
             hover.reset()
@@ -103,19 +121,28 @@ final class IslandPanelController {
     private func perform(_ effect: HoverEffect) {
         switch effect {
         case .growPanel:
-            setPanelFrame(expanded: true, live: state.live)
+            setPanelFrame(.expanded, live: state.live)
+        case .growPanelForPeek:
+            setPanelFrame(.peek, live: state.live)
         case .shrinkPanel:
             applyIdleGeometry(animated: true)
         case .setHotRegion(let r):
             region = r
             refreshHotRect()
+        case .animatePeekIn:
+            withAnimation(Self.spring) { state.mode = .peek }
+            if let item = state.peek { logPeekShown(item) }
         case .animateExpand:
-            withAnimation(Self.spring) { state.mode = .expanded }
+            withAnimation(Self.spring) {
+                dismissPeek()
+                state.mode = .expanded
+            }
             let content = String(describing: state.content)
             Log.layout.info("island content=\(content, privacy: .public)")
             onIslandOpened?()
         case .animateCollapse(let generation):
             withAnimation(Self.spring, completionCriteria: .removed) {
+                dismissPeek()
                 state.mode = .collapsed
             } completion: { [weak self] in
                 self?.hover.collapseFinished(generation: generation)
@@ -123,10 +150,26 @@ final class IslandPanelController {
         case .snapCollapsed:
             var t = Transaction()
             t.disablesAnimations = true
-            withTransaction(t) { state.mode = .collapsed }
+            withTransaction(t) {
+                dismissPeek()
+                state.mode = .collapsed
+            }
         case .startTimer, .cancelTimer:
             break // consumed by HoverController
         }
+    }
+
+    private func logPeekShown(_ item: PeekItem) {
+        switch item {
+        case .device(let device):
+            Log.peek.info("peek shown \(device.kind.rawValue, privacy: .public)")
+        }
+    }
+
+    private func dismissPeek() {
+        guard state.peek != nil else { return }
+        state.peek = nil
+        Log.peek.info("peek dismissed")
     }
 
     /// Spike 3 `growThenAnimate`: turning live on grows the frame first, then animates the
@@ -134,7 +177,7 @@ final class IslandPanelController {
     private func applyIdleGeometry(animated: Bool) {
         guard panel != nil else { return } // `place` applies it once the panel exists
         if desiredLive && !state.live {
-            setPanelFrame(expanded: false, live: true)
+            setPanelFrame(.idle, live: true)
             if animated {
                 withAnimation(Self.spring) { state.live = true }
             } else {
@@ -147,14 +190,19 @@ final class IslandPanelController {
             var t = Transaction()
             t.disablesAnimations = true
             withTransaction(t) { state.live = false }
-            setPanelFrame(expanded: false, live: false)
+            setPanelFrame(.idle, live: false)
         } else {
-            setPanelFrame(expanded: false, live: state.live)
+            setPanelFrame(.idle, live: state.live)
         }
     }
 
-    private func setPanelFrame(expanded: Bool, live: Bool) {
-        let frame = IslandLayout.panelFrame(notch: notch, live: live, expanded: expanded)
+    private func setPanelFrame(_ kind: FrameKind, live: Bool) {
+        let frame = switch kind {
+        case .idle, .expanded:
+            IslandLayout.panelFrame(notch: notch, live: live, expanded: kind == .expanded)
+        case .peek:
+            IslandLayout.peekPanelFrame(notch: notch)
+        }
         // Settle the new container before starting the shape's spring. Otherwise
         // SwiftUI can animate the pending resize/recentering along with the shape,
         // making an opening look like it sweeps sideways from the old narrow frame.
@@ -165,7 +213,7 @@ final class IslandPanelController {
             trackingView.layoutSubtreeIfNeeded()
             hostingView.layoutSubtreeIfNeeded()
         }
-        Log.layout.info("frame \(expanded ? "expanded" : "idle", privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public) live=\(live, privacy: .public)")
+        Log.layout.info("frame \(kind.rawValue, privacy: .public) x=\(frame.minX, format: .fixed(precision: 1), privacy: .public) y=\(frame.minY, format: .fixed(precision: 1), privacy: .public) w=\(frame.width, format: .fixed(precision: 1), privacy: .public) h=\(frame.height, format: .fixed(precision: 1), privacy: .public) live=\(live, privacy: .public)")
         refreshHotRect()
     }
 

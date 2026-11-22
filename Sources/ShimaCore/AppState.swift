@@ -56,6 +56,8 @@ import Observation
 
     /// Applied by `SettingsModel` at launch and when changed in the Settings window.
     public var equalizerMode: EqualizerMode = .animated
+    public var devicePopupsEnabled = true
+    public var peek: PeekItem?
 
     public var content: NowPlayingContent {
         NowPlayingContent(availability: spotifyAvailability, nowPlaying: nowPlaying)

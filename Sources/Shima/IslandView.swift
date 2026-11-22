@@ -69,6 +69,9 @@ struct IslandView: View {
             }
         }
         .overlay(alignment: .top) {
+            PeekContent(state: state)
+        }
+        .overlay(alignment: .top) {
             HeaderTabIcon(state: state, onSettings: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)

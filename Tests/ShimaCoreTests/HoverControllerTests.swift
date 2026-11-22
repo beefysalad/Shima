@@ -152,4 +152,87 @@ import ShimaCore
         clock.advance(by: .milliseconds(40))
         #expect(controller.phase == .expanded && recorder.count(.growPanel) == 1)
     }
+
+    @Test func peekReturnsTrueAndSchedulesDuration() {
+        let (controller, recorder) = make()
+        #expect(controller.peek(duration: .seconds(3)))
+        #expect(controller.phase == .peeking && clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(2999))
+        #expect(controller.phase == .peeking)
+        clock.advance(by: .milliseconds(1))
+        #expect(controller.phase == .collapsing)
+        #expect(recorder.effects == [.growPanelForPeek, .setHotRegion(.peek), .animatePeekIn,
+                                     .setHotRegion(.idle), .animateCollapse(generation: 1)])
+    }
+
+    @Test func peekReturnsFalseWhenHovering() {
+        let (controller, _) = make()
+        expand(controller)
+        #expect(!controller.peek(duration: .seconds(3)))
+        #expect(controller.phase == .expanded && clock.pendingCount == 0)
+    }
+
+    @Test func hoverCancelsPeekTimer() {
+        let (controller, recorder) = make()
+        controller.peek(duration: .seconds(3))
+        controller.pointer(inside: true)
+        #expect(controller.phase == .dwelling && clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(79))
+        #expect(controller.phase == .dwelling)
+        clock.advance(by: .milliseconds(1))
+        #expect(controller.phase == .expanded && clock.pendingCount == 0)
+        clock.advance(by: .seconds(3))
+        #expect(controller.phase == .expanded && recorder.effects.last == .animateExpand)
+    }
+
+    @Test func peekTimerGoneAfterCollapse() {
+        let (controller, _) = make()
+        controller.peek(duration: .seconds(3))
+        clock.advance(by: .seconds(3))
+        controller.collapseFinished(generation: 1)
+        #expect(controller.phase == .collapsed)
+        #expect(!controller.hasPendingTimer && clock.pendingCount == 0)
+    }
+
+    @Test func replacementPeekUsesLatestDuration() {
+        let (controller, recorder) = make()
+        controller.peek(duration: .seconds(3))
+        clock.advance(by: .seconds(2))
+        #expect(controller.peek(duration: .seconds(4)))
+        #expect(controller.phase == .peeking && clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(3999))
+        #expect(controller.phase == .peeking)
+        #expect(recorder.count(.growPanelForPeek) == 1 && recorder.count(.animatePeekIn) == 1)
+        clock.advance(by: .milliseconds(1))
+        #expect(controller.phase == .collapsing && clock.pendingCount == 0)
+    }
+
+    @Test func resetCancelsPeekTimer() {
+        let (controller, recorder) = make()
+        controller.peek(duration: .seconds(3))
+        controller.reset()
+        clock.advance(by: .seconds(3))
+        #expect(controller.phase == .collapsed && !controller.hasPendingTimer)
+        #expect(recorder.effects.last == .shrinkPanel && clock.pendingCount == 0)
+    }
+
+    @Test func pointerReportedSynchronouslyByPeekHotRegionStartsDwell() {
+        let recorder = Recorder()
+        var changes: [HoverPhase] = []
+        weak var activeController: HoverController?
+        let controller = HoverController(scheduler: clock) { effect in
+            recorder.effects.append(effect)
+            if effect == .setHotRegion(.peek) {
+                activeController?.pointer(inside: true)
+            }
+        }
+        activeController = controller
+        controller.onPhaseChange = { _, to in changes.append(to) }
+        #expect(controller.peek(duration: .seconds(3)))
+        #expect(controller.phase == .dwelling && clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(80))
+        #expect(controller.phase == .expanded && clock.pendingCount == 0)
+        #expect(changes == [.peeking, .dwelling, .expanded])
+        #expect(recorder.effects.last == .animateExpand)
+    }
 }

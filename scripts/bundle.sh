@@ -32,6 +32,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSBluetoothAlwaysUsageDescription</key><string>shima shows a brief banner when a Bluetooth device connects.</string>
     <key>NSCameraUsageDescription</key><string>shima shows a live camera preview while the Camera tab is open.</string>
     <key>NSCalendarsFullAccessUsageDescription</key><string>shima shows your calendar events while the Calendar tab is open.</string>
     <key>NSRemindersFullAccessUsageDescription</key><string>shima shows due reminders and lets you complete them from the Calendar tab.</string>

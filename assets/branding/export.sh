@@ -2,7 +2,8 @@
 # Run from any directory. Requires ImageMagick and macOS iconutil.
 set -eu
 branding_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-iconset_dir=$(mktemp -d "${TMPDIR:-/tmp}/shima-branding.XXXXXX")
+mkdir -p "$branding_dir/../../.build"
+iconset_dir=$(mktemp -d "$branding_dir/../../.build/shima-branding.XXXXXX")
 trap 'rm -rf "$iconset_dir"' EXIT HUP INT TERM
 mkdir "$iconset_dir/shima.iconset"
 magick -background none -density 384 "$branding_dir/shima-icon.svg" -resize 512x512 "$branding_dir/shima-icon-512.png"

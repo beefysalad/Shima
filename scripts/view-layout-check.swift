@@ -6,7 +6,6 @@ import ShimaCore
 @main struct ViewLayoutCheck {
     @MainActor static func main() {
         NSApplication.shared.setActivationPolicy(.prohibited)
-        let expectsNowPlaying = true // --now-playing is the default since the Settings milestone; the flag is still accepted
         let state = AppState()
         state.live = true
         state.spotifyAvailability = .running
@@ -39,7 +38,6 @@ import ShimaCore
         for bar in equalizer.layer?.sublayers ?? [] { bar.transform = CATransform3DIdentity }
         CATransaction.commit()
         let live = render(host)
-        check(live.rows(in: 0..<245, ys: 0..<32, matching: isGear).isEmpty, "collapsed island must not show the gear")
         let black = live.rows(at: 122.5) { $0.alphaComponent > 0.9 && $0.redComponent < 0.05 && $0.greenComponent < 0.05 && $0.blueComponent < 0.05 }
         let artwork = live.rows(at: 16.5, matching: isMagenta)
         let bars = live.rows(in: 220..<237, matching: isGreen)
@@ -68,19 +66,25 @@ import ShimaCore
         check(notRunning.rows(in: 290..<320, ys: 0..<32, matching: isGreen).isEmpty, "expanded equalizer must be hidden without a track")
         state.spotifyAvailability = .running
         host.layoutSubtreeIfNeeded()
-        if expectsNowPlaying {
-            check(expanded.rows(at: 76.5, matching: isMagenta) == 44..<132, "expanded artwork must occupy y44..<132")
-            for command in SpotifyCommand.allCases {
-                let r = NowPlayingLayout.controlRect(command)
-                let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 100..<160) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
-                check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
-            }
+        check(expanded.rows(at: 76.5, matching: isMagenta) == 44..<132, "expanded artwork must occupy y44..<132")
+        for command in SpotifyCommand.allCases {
+            let r = NowPlayingLayout.controlRect(command)
+            let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 100..<160) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
+            check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
         }
         let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (396 - IslandLayout.expanded.width) / 2, dy: 0)
         let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear)
         check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
               "gear glyph rows \(gear) outside \(gearRect)")
         print("gear at \(gearRect): glyph rows \(gear) PASS")
+        // The gear is an expanded-only control: the same frame rendered collapsed must show no gear pixel.
+        state.mode = .collapsed
+        host.layoutSubtreeIfNeeded()
+        let collapsedSameFrame = render(host)
+        check(collapsedSameFrame.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear).isEmpty,
+              "collapsed island must not show the gear (396x173 frame, gear area)")
+        state.mode = .expanded
+        host.layoutSubtreeIfNeeded()
         print("expanded 396x173: silhouette 0..<165, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 44..<132 PASS")
         state.mode = .collapsed
         state.live = false

@@ -16,6 +16,7 @@ else
     [[ ${#objects[@]} -gt 0 ]] || { echo "Cannot find built ShimaCore objects" >&2; exit 1; }
 fi
 sources=(Sources/Shima/ArtworkCache.swift Sources/Shima/IslandMedia.swift Sources/Shima/Log.swift
+    Sources/Shima/CameraCaptureClient.swift Sources/Shima/CameraService.swift Sources/Shima/CameraContent.swift
     Sources/Shima/EqualizerView.swift Sources/Shima/WingsView.swift Sources/Shima/IslandView.swift Sources/Shima/BrandAssets.swift)
 [[ ! -f Sources/Shima/NowPlayingView.swift ]] || sources+=(Sources/Shima/NowPlayingView.swift)
 swiftc -swift-version 6 -parse-as-library -I "$bin" "${sources[@]}" \

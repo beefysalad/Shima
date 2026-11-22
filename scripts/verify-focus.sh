@@ -10,7 +10,7 @@ if [[ "${1:-}" == "--clicks" ]]; then
   scripts/with-log.sh "$dir/ping.log" -- swift scripts/drive.swift "fake ping" >/dev/null
   grep -q 'fake ping' "$dir/ping.log" || { echo "not in fake mode (SHIMA_FAKE_SPOTIFY=playing scripts/run.sh)"; exit 2; }
   before="$(front)"
-  scripts/with-log.sh "$dir/clicks.log" -- swift scripts/drive.swift "fake ping; fake playing; move 735 400; sleep 500; move 735 16; sleep 700; click 689.5 171; sleep 400; click 733.5 171; sleep 400; click 777.5 171; sleep 400; click 600 60; sleep 300; move 735 400; sleep 1500" >/dev/null
+  scripts/with-log.sh "$dir/clicks.log" -- swift scripts/drive.swift "fake ping; fake playing; move 735 400; sleep 500; move 735 16; sleep 700; click 563.5 16; sleep 200; click 689.5 171; sleep 400; click 733.5 171; sleep 400; click 777.5 171; sleep 400; click 600 60; sleep 300; move 735 400; sleep 1500" >/dev/null
   after="$(front)"
   n="$(grep -c 'spotify command [A-Za-z]* active=false key=false' "$dir/clicks.log" || true)"
   fail=""

@@ -33,6 +33,10 @@ for raw in CommandLine.arguments.dropFirst().joined(separator: ";").split(separa
             e?.post(tap: .cghidEventTap)
             if down { wait(20) }
         }
+    case "camera" where w.count > 1:
+        DistributedNotificationCenter.default().postNotificationName(
+            .init("local.shima.fake-camera"), object: w[1], userInfo: nil, deliverImmediately: true)
+        wait(5)
     case "fake" where w.count > 1:
         DistributedNotificationCenter.default().postNotificationName(
             .init("local.shima.fake-spotify"), object: w[1], userInfo: nil, deliverImmediately: true)

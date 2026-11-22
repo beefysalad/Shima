@@ -11,6 +11,8 @@ import ShimaCore
         state.spotifyAvailability = .running
         state.nowPlaying = NowPlaying(trackID: "layout-check", title: "Layout check", artist: "Fixture",
             album: "", artworkURL: nil, duration: 180, position: 30, positionDate: .now, state: .paused)
+        let camera = CameraService(state: state, environment: ["SHIMA_FAKE_CAMERA": "1"])
+        defer { camera.shutdown() }
         let media = IslandMedia()
         media.equalizerFrozen = true
         media.artwork = NSImage(size: NSSize(width: 176, height: 176), flipped: false) { rect in
@@ -20,7 +22,7 @@ import ShimaCore
         }
         let notch = CGRect(x: 646, y: 924, width: 179, height: 32)
         let host = NSHostingView(rootView: IslandView(state: state, media: media,
-            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}))
+            notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}, camera: camera))
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 245, height: 32),
             styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false
@@ -87,6 +89,33 @@ import ShimaCore
         check(!tabGlyph.isEmpty && tabGlyph.lowerBound >= Int(tabRect.minY) && tabGlyph.upperBound <= Int(tabRect.maxY),
               "tab icon glyph rows \(tabGlyph) outside \(tabRect)")
         print("tab icon at \(tabRect): glyph rows \(tabGlyph) PASS")
+        // Camera stays inside the same root and leaves the existing gear untouched.
+        state.selectedTab = .camera
+        host.layoutSubtreeIfNeeded()
+        let cameraPixels = render(host)
+        let previewRect = NowPlayingLayout.cameraPreview.offsetBy(dx: 18, dy: 0)
+        check(cameraPixels.rows(at: previewRect.midX, ys: 32..<200) { color in
+            color.alphaComponent > 0.9 && color.blueComponent > 0.2 && color.greenComponent > 0.15
+        } == Int(previewRect.minY)..<Int(previewRect.maxY), "camera gradient must fill preview height")
+        check(cameraPixels.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200,
+              "camera must preserve expanded silhouette")
+        check(cameraPixels.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 30..<70, matching: isGear) == gear,
+              "camera must leave gear unchanged")
+        camera.fake?.permission = .denied
+        camera.coordinator.refreshPermission()
+        host.layoutSubtreeIfNeeded()
+        let denied = render(host)
+        check(!denied.rows(in: 50..<300, ys: 60..<100, matching: isGear).isEmpty,
+              "denied camera must show inline recovery text")
+        print("camera preview 332x118, unchanged silhouette/gear, denied text PASS")
+        state.mode = .collapsed
+        host.layoutSubtreeIfNeeded()
+        let hiddenCamera = render(host)
+        check(hiddenCamera.rows(at: previewRect.midX, ys: 36..<154) { $0.greenComponent > 0.15 && $0.blueComponent > 0.2 }.isEmpty,
+              "collapsed camera must be hidden")
+        state.selectedTab = .music
+        state.mode = .expanded
+        host.layoutSubtreeIfNeeded()
         // The gear is an expanded-only control: the same frame rendered collapsed must show no gear pixel.
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
@@ -147,8 +176,8 @@ import ShimaCore
         let bitmap: NSBitmapImageRep
         let size: CGSize
 
-        func rows(at x: CGFloat, matching predicate: (NSColor) -> Bool) -> Range<Int> {
-            rows(in: Int(x)..<(Int(x) + 1), matching: predicate)
+        func rows(at x: CGFloat, ys: Range<Int>? = nil, matching predicate: (NSColor) -> Bool) -> Range<Int> {
+            rows(in: Int(x)..<(Int(x) + 1), ys: ys, matching: predicate)
         }
 
         func rows(in xs: Range<Int>, ys: Range<Int>? = nil, matching predicate: (NSColor) -> Bool) -> Range<Int> {

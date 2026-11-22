@@ -2,6 +2,10 @@
 # Build the app bundle and launch it. Stops this checkout's running dist instance first (by pid).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Camera fixtures must never command the real Spotify app.
+if [[ "${SHIMA_FAKE_CAMERA:-}" == 1 && -z "${SHIMA_FAKE_SPOTIFY:-}" ]]; then
+  export SHIMA_FAKE_SPOTIFY=paused
+fi
 if [[ -z "${SHIMA_FAKE_SPOTIFY:-}" && -z "${SHIMA_SIGN_ID:-}" ]]; then
   echo "Real mode needs SHIMA_SIGN_ID (a stable signature keeps the Automation grant); for fake mode set SHIMA_FAKE_SPOTIFY. Refusing to build." >&2
   exit 1

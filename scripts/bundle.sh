@@ -32,6 +32,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSCameraUsageDescription</key><string>shima shows a live camera preview while the Camera tab is open.</string>
     <key>NSAppleEventsUsageDescription</key><string>shima shows what Spotify is playing and sends it play, pause, next and previous when you click the island's buttons.</string>
 </dict>
 </plist>

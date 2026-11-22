@@ -42,7 +42,8 @@ if mode == "--menus" {
     for w in info {
         let owner = (w[kCGWindowOwnerName as String] as? String) ?? "?"
         let layer = (w[kCGWindowLayer as String] as? Int) ?? 0
-        guard owner != "Shima", layer >= 101, let r = rectOf(w) else { continue }
+        // Any owner: Shima's own status menu (layer 101) counts. The island itself is a layer-25 window and is skipped.
+        guard layer >= 101, let r = rectOf(w) else { continue }
         print("menu window owner=\(owner) \(fmt(r))")
         found += 1
     }

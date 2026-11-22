@@ -15,7 +15,7 @@ A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). 
 
 ## Requirements
 - macOS 14+, Apple Silicon
-- Swift (the scaffold was built with 6.1) and either the Command Line Tools or Xcode. **Xcode is not required** and there is no `.xcodeproj`.
+- Swift (built with 6.4.2) and either the Command Line Tools or Xcode. **Xcode is not required** and there is no `.xcodeproj`.
 
 ## Build and run
 ```sh

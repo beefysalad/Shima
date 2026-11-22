@@ -3,7 +3,7 @@
 Personal macOS notch app (free Dynamic Island clone). Design: `docs/2026-11-20-notch-design.md`. Mockup (reference only, do not modify): `mockup/index.html`.
 
 ## Stack
-Native Swift 6.1, SwiftPM, macOS 14+. SwiftUI views in a borderless non-activating `NSPanel`. Logic lives in `ShimaCore` (testable); `Shima` is the thin app; `shimactl` is the hook CLI.
+Native Swift (6.4.2 toolchain, Xcode 27.2), SwiftPM, macOS 14+. SwiftUI views in a borderless non-activating `NSPanel`. Logic lives in `ShimaCore` (testable); `Shima` is the thin app; `shimactl` is the hook CLI.
 
 ## Commands
 - `swift build` / `swift test`

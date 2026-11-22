@@ -169,7 +169,7 @@ No timers while collapsed. SwiftUI animations run only while animating. Elapsed-
 | 2 | Which display | Built-in only. No panel on external monitors, and none when there is no built-in display |
 | 3 | Fullscreen | Always show |
 | 4 | Expand trigger | Hover only |
-| 5 | Signing | Self-signed certificate, set up in M1 |
+| 5 | Signing | Existing Apple Development identity via `SHIMA_SIGN_ID` (see 8.1 #9), set up in M1 |
 | 6 | Config format | JSON; trimmed automations |
 | 7 | Shelf | Copy by default |
 | 8 | Permission approvals | Deferred, not wanted |

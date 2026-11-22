@@ -17,6 +17,8 @@ A personal, free "Dynamic Island" for the MacBook notch (macOS, Apple Silicon). 
 - **Settings window:** a normal window for Launch at login, Quit, Spotify status with a shortcut to the Automation pane, the equalizer mode (animated, only when open, or off), and version and signing info. Open it by launching Shima again (Spotlight or Finder), from the gear on the open island, or from "Settings…" in the status menu. None of these depend on the menu-bar icon having room.
 - **Next:** M2, Claude Code session state. `shimactl` is still a stub. Still open from M0: external-monitor and clamshell checks.
 
+Website and download: [beefysalad.github.io/Shima](https://beefysalad.github.io/Shima/).
+
 Scope and architecture: [docs/2026-11-20-notch-design.md](docs/2026-11-20-notch-design.md). UI target: [mockup/index.html](mockup/index.html). Acceptance records: [M0](docs/superpowers/m0-acceptance.md), [M1](docs/superpowers/m1-acceptance.md), [Settings](docs/superpowers/settings-acceptance.md).
 
 ## Requirements

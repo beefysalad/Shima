@@ -67,7 +67,10 @@ final class SpotifyAppleEventClient: SpotifyClient {
             status = "error=\(Self.code(error))"
             if outcome.apply, error == .permissionDenied { onEvent?(.permissionDenied) }
         }
+        let succeeded: Bool
+        if case .success = result { succeeded = true } else { succeeded = false }
         Log.spotify.info("spotify command result \(command.rawValue, privacy: .public) seq=\(ticket.seq, privacy: .public) \(status, privacy: .public)")
+        if succeeded, outcome.apply { onEvent?(.commandSucceeded(command)) }
     }
 
     private static func code(_ error: SpotifyScriptError) -> Int {

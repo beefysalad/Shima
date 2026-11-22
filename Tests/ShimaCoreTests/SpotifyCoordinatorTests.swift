@@ -25,9 +25,9 @@ struct ArtworkTap: Equatable { let id: String?; let url: URL? }
     let t0 = Date(timeIntervalSinceReferenceDate: 1_000)
     let art = URL(string: "https://i.scdn.co/image/a")!
 
-    func make() -> (SpotifyCoordinator, TestClient, AppState, Taps) {
+    func make(scheduler: ManualScheduler = ManualScheduler()) -> (SpotifyCoordinator, TestClient, AppState, Taps) {
         let client = TestClient(), state = AppState(), taps = Taps()
-        let c = SpotifyCoordinator(client: client, state: state)
+        let c = SpotifyCoordinator(client: client, state: state, scheduler: scheduler)
         c.onLiveChange = { taps.lives.append($0) }
         c.onChanges = { taps.changes.append($0) }
         c.onArtwork = { taps.artworks.append(ArtworkTap(id: $0, url: $1)) }
@@ -186,7 +186,7 @@ extension SpotifyCoordinatorTests {
     @Test func initializerPreservesOwnerEventHandler() {
         let client = TestClient(), box = EventBox()
         client.onEvent = { box.events.append($0) }
-        let coordinator = SpotifyCoordinator(client: client, state: AppState())
+        let coordinator = SpotifyCoordinator(client: client, state: AppState(), scheduler: ManualScheduler())
         client.onEvent?(.launched)
         #expect(box.events == [.launched])
         #expect(coordinator.model.availability == .notRunning)
@@ -273,8 +273,8 @@ extension SpotifyCoordinatorTests {
 
     @Test func fakeSynchronousRefreshWorksWithOwnerWiring() {
         let fake = FakeSpotifyClient(state: .playing, now: { self.t0 })
-        let state = AppState(), c = SpotifyCoordinator(client: fake, state: AppState())
-        let wired = SpotifyCoordinator(client: fake, state: state)
+        let state = AppState(), c = SpotifyCoordinator(client: fake, state: AppState(), scheduler: ManualScheduler())
+        let wired = SpotifyCoordinator(client: fake, state: state, scheduler: ManualScheduler())
         fake.onEvent = { wired.handle($0) }
         wired.handle(.launched); fake.setState(.playing)
         #expect(fake.refreshCount == 1 && state.nowPlaying?.title == "Fake Track One")
@@ -341,5 +341,99 @@ extension FakeSpotifyClientTests {
             fake.setState(.playing); clock.advance(3); fake.refresh()
             #expect(reading(box.events.last)?.0.position == 3)
         }
+    }
+}
+
+extension SpotifyCoordinatorTests {
+    func running(_ scheduler: ManualScheduler) -> (SpotifyCoordinator, TestClient, AppState) {
+        let (c, client, state, _) = make(scheduler: scheduler)
+        c.handle(.launched); c.handle(script(art: art))
+        client.refreshes = 0
+        return (c, client, state)
+    }
+
+    @Test func followUpDelayIsTwoFiftyMilliseconds() {
+        #expect(SpotifyCoordinator.commandFollowUpDelay == .milliseconds(250))
+    }
+
+    @Test func followUpDoesNotRunBeforeDelay() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(249))
+        #expect(client.refreshes == 0)
+    }
+
+    @Test func followUpRefreshesExactlyOnceAtDelay() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        s.advance(by: .seconds(10))
+        #expect(client.refreshes == 1 && s.pendingCount == 0)
+    }
+
+    @Test func rapidCommandsLeaveOneFollowUp() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.next))
+        s.advance(by: .milliseconds(100))
+        c.handle(.commandSucceeded(.next))
+        #expect(s.pendingCount == 1)
+        s.advance(by: .milliseconds(249))
+        #expect(client.refreshes == 0)
+        s.advance(by: .milliseconds(1))
+        s.advance(by: .seconds(10))
+        #expect(client.refreshes == 1)
+    }
+
+    @Test func terminateCancelsPendingFollowUp() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.playPause))
+        c.handle(.terminated)
+        #expect(s.pendingCount == 0)
+        s.advance(by: .seconds(1))
+        #expect(client.refreshes == 0)
+    }
+
+    @Test func stopCancelsPendingFollowUp() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.handle(.commandSucceeded(.playPause))
+        c.stop()
+        s.advance(by: .seconds(1))
+        #expect(s.pendingCount == 0 && client.refreshes == 0)
+    }
+
+    @Test func commandSucceededWhileNotRunningSchedulesNothing() {
+        let s = ManualScheduler(), (c, client, _, _) = make(scheduler: s)
+        c.handle(.commandSucceeded(.next))
+        s.advance(by: .seconds(1))
+        #expect(s.pendingCount == 0 && client.refreshes == 0)
+    }
+
+    @Test func failedCommandSchedulesNoFollowUp() {
+        let s = ManualScheduler(), (c, client, _) = running(s)
+        c.perform(.previous)  // the client reports failure by sending no commandSucceeded
+        s.advance(by: .seconds(1))
+        #expect(client.sent == [.previous] && client.refreshes == 0 && s.pendingCount == 0)
+    }
+
+    @Test func idleSchedulesNothing() {
+        let s = ManualScheduler(), (_, client, _) = running(s)
+        s.advance(by: .seconds(60))
+        #expect(s.pendingCount == 0 && client.refreshes == 0)
+    }
+
+    @Test func restartedPositionUpdatesAnchorAfterFollowUp() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        let later = t0.addingTimeInterval(7)
+        c.handle(.reading(SpotifyReading(state: .playing, trackID: "a", title: "T", artist: "A", position: 6),
+                          source: .notification, at: t0.addingTimeInterval(1)))
+        // Spotify restarts the same track silently; only the follow-up read sees position 0.
+        client.duringRefresh = {
+            c.handle(.reading(SpotifyReading(state: .playing, trackID: "a", title: "T", artist: "A", duration: 200,
+                                             position: 0.25, artworkURL: self.art), source: .script, at: later))
+        }
+        c.handle(.commandSucceeded(.previous))
+        #expect(state.nowPlaying?.position == 6)
+        s.advance(by: .milliseconds(250))
+        #expect(state.nowPlaying?.position == 0.25 && state.nowPlaying?.positionDate == later)
     }
 }

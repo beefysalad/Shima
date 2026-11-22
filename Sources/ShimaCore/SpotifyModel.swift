@@ -6,6 +6,8 @@ public enum SpotifyAvailability: Equatable, Sendable {
 
 public enum SpotifyEvent: Equatable, Sendable {
     case launched, terminated, permissionDenied
+    /// A user command was accepted by Spotify. Carries no playback data; it only owes a late refresh.
+    case commandSucceeded(SpotifyCommand)
     case reading(SpotifyReading, source: ReadingSource, at: Date)
 }
 
@@ -55,6 +57,7 @@ public struct SpotifyModel: Equatable, Sendable {
             }
             availability = .notRunning
             clearTrack(changes: &changes)
+        case .commandSucceeded: break
         case .permissionDenied:
             if availability == .running {
                 availability = .permissionDenied

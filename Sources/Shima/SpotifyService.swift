@@ -56,7 +56,7 @@ final class SpotifyService: NSObject {
     }
 
     private func attach(_ client: any SpotifyClient) {
-        let coordinator = SpotifyCoordinator(client: client, state: state)
+        let coordinator = SpotifyCoordinator(client: client, state: state, scheduler: DispatchScheduler())
         coordinator.onLiveChange = { [weak self] live in
             Log.spotify.info("spotify live \(live, privacy: .public)")
             self?.onLiveChange?(live)
@@ -77,6 +77,7 @@ final class SpotifyService: NSObject {
         case .launched: Log.spotify.info("spotify event launched")
         case .terminated: Log.spotify.info("spotify event terminated")
         case .permissionDenied: Log.spotify.info("spotify event permissionDenied")
+        case let .commandSucceeded(command): Log.spotify.info("spotify event commandSucceeded \(command.rawValue, privacy: .public)")
         case let .reading(reading, source, _):
             let src = source == .notification ? "notification" : "script"
             Log.spotify.info("spotify event reading src=\(src, privacy: .public) state=\(String(describing: reading.state), privacy: .public) track=\(reading.trackID ?? "none", privacy: .public)")

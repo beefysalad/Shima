@@ -9,9 +9,10 @@ BIN="$(swift build -c release --show-bin-path)"
 
 APP="dist/Shima.app"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN/Shima" "$APP/Contents/MacOS/Shima"
 cp "$BIN/shimactl" "$APP/Contents/MacOS/shimactl"
+cp assets/branding/shima.icns "$APP/Contents/Resources/shima.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -22,6 +23,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleDisplayName</key><string>Shima</string>
     <key>CFBundleIdentifier</key><string>local.shima</string>
     <key>CFBundleExecutable</key><string>Shima</string>
+    <key>CFBundleIconFile</key><string>shima.icns</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleVersion</key><string>1</string>
     <key>CFBundleShortVersionString</key><string>0.0.1</string>

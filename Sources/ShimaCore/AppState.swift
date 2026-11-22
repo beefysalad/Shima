@@ -2,7 +2,17 @@ import Foundation
 import Observation
 
 @Observable @MainActor public final class AppState {
-    public var mode: IslandMode = .collapsed
+    public var mode: IslandMode = .collapsed {
+        didSet { onCameraContextChange?(mode, selectedTab) }
+    }
+    public var selectedTab: IslandTab = .music {
+        didSet { onCameraContextChange?(mode, selectedTab) }
+    }
+
+    /// Deliver lifecycle changes synchronously; view updates may coalesce collapse/reopen.
+    @ObservationIgnored public var onCameraContextChange: (@MainActor (IslandMode, IslandTab) -> Void)? {
+        didSet { onCameraContextChange?(mode, selectedTab) }
+    }
 
     public var live: Bool = false
     public var nowPlaying: NowPlaying? = nil {

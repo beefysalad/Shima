@@ -10,6 +10,7 @@ final class SpotifyService: NSObject {
     private let media: IslandMedia
     private let environment: [String: String]
     private var fake: FakeSpotifyClient?
+    private var observers: SpotifyObservers?
     private var coordinator: SpotifyCoordinator?
 
     init(state: AppState, media: IslandMedia,
@@ -22,11 +23,39 @@ final class SpotifyService: NSObject {
 
     func start() {
         guard let initial = FakeSpotifyMode.initialState(environment["SHIMA_FAKE_SPOTIFY"]) else {
-            Log.spotify.info("spotify mode real running=false (not wired)")
+            startReal()
             return
         }
         let client = FakeSpotifyClient(state: initial)
         client.onEvent = { [weak self] in self?.receive($0) }
+        attach(client)
+        fake = client
+        Log.spotify.info("spotify mode fake state=\(String(describing: initial), privacy: .public)")
+        DistributedNotificationCenter.default().addObserver(
+            self, selector: #selector(fakeControl(_:)), name: .init("local.shima.fake-spotify"),
+            object: nil, suspensionBehavior: .deliverImmediately)
+        receive(.launched)
+        client.refresh()
+    }
+
+    /// Real mode. Observers first, so a launch between here and the running check is not missed.
+    /// No Apple Event is sent unless Spotify is already running.
+    private func startReal() {
+        let client = SpotifyAppleEventClient()
+        client.onEvent = { [weak self] in self?.receive($0) }  // before the first refresh()
+        attach(client)
+        let observers = SpotifyObservers(onEvent: { [weak self] in self?.receive($0) })
+        observers.start()
+        self.observers = observers
+        let running = SpotifyAppleEventClient.spotifyPID() != nil
+        Log.spotify.info("spotify mode real running=\(running, privacy: .public)")
+        if running {
+            receive(.launched)
+            client.refresh()
+        }
+    }
+
+    private func attach(_ client: any SpotifyClient) {
         let coordinator = SpotifyCoordinator(client: client, state: state)
         coordinator.onLiveChange = { [weak self] live in
             Log.spotify.info("spotify live \(live, privacy: .public)")
@@ -35,14 +64,7 @@ final class SpotifyService: NSObject {
         coordinator.onChanges = { changes in
             Log.spotify.info("spotify changes \(String(describing: changes), privacy: .public)")
         }
-        fake = client
         self.coordinator = coordinator
-        Log.spotify.info("spotify mode fake state=\(String(describing: initial), privacy: .public)")
-        DistributedNotificationCenter.default().addObserver(
-            self, selector: #selector(fakeControl(_:)), name: .init("local.shima.fake-spotify"),
-            object: nil, suspensionBehavior: .deliverImmediately)
-        receive(.launched)
-        client.refresh()
     }
 
     func islandOpened() { coordinator?.islandOpened() }

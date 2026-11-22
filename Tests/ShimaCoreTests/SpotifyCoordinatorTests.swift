@@ -63,6 +63,20 @@ struct ArtworkTap: Equatable { let id: String?; let url: URL? }
         #expect(taps.lives == [true, false] && state.nowPlaying == nil)
         #expect(state.spotifyAvailability == .notRunning && client.invalidations == 1)
     }
+    @Test func launchBroadcastOrderStoppedThenFullPausedStaysIdle() {
+        let (c, client, state, taps) = make()
+        c.handle(.launched)
+        c.handle(.reading(SpotifyReading(state: .stopped), source: .notification, at: t0))
+        c.handle(note(.paused))
+        #expect(state.content == .track && state.nowPlaying?.trackID == "a")
+        #expect(taps.lives == [] && client.sent.isEmpty && client.refreshes == 2)  // sparse Stopped, then missing artwork; never on launch itself
+    }
+    @Test func relaunchAfterQuitIsLiveAgain() {
+        let (c, _, state, taps) = make()
+        c.handle(.launched); c.handle(note()); c.handle(.terminated)
+        c.handle(.launched); c.handle(note(.playing, "b"))
+        #expect(taps.lives == [true, false, true] && state.nowPlaying?.trackID == "b")
+    }
     @Test func readingAfterTerminateIsIgnored() {
         let (c, client, state, taps) = make()
         c.handle(.launched); c.handle(.terminated); c.handle(note())

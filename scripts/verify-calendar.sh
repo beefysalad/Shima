@@ -29,15 +29,15 @@ read -r previous_month next_month month_y <<< "$controls"
 scripts/with-log.sh .build/calendar-verification.log -- swift scripts/drive.swift \
   "move $music $away; sleep 1500; move $mid $away; sleep 1500" \
   "fake-calendar begin-hover; sleep 100; move $mid $hover; sleep 700" \
-  "fake-calendar begin-calendar; sleep 100; click $calendar_x $header; sleep 400" \
-  "fake-calendar begin-previous; sleep 100; click $previous_month $month_y; sleep 400" \
-  "fake-calendar begin-next; sleep 100; click $next_month $month_y; sleep 400" \
+  "fake-calendar begin-calendar; sleep 100; click-owned $pid $calendar_x $header; sleep 400" \
+  "fake-calendar begin-previous; sleep 100; click-owned $pid $previous_month $month_y; sleep 400" \
+  "fake-calendar begin-next; sleep 100; click-owned $pid $next_month $month_y; sleep 400" \
   "fake-calendar denied; sleep 400; fake-calendar allowed; sleep 400" \
   "fake-calendar changed; sleep 400; fake-calendar daychanged; sleep 400" \
   "fake-calendar begin-collapse; sleep 100; move $mid $away; sleep 1500" \
   "fake-calendar changed; sleep 400" \
   "fake-calendar begin-rehover; sleep 100; move $mid $hover; sleep 700" \
-  "fake-calendar begin-reopen; sleep 100; click $calendar_x $header; sleep 400" \
+  "fake-calendar begin-reopen; sleep 100; click-owned $pid $calendar_x $header; sleep 400" \
   "fake-calendar begin-finish; sleep 100; move $mid $away; sleep 1500"
 
 python3 - "$pid" <<'PY'

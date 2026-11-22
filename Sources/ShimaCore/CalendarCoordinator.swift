@@ -17,6 +17,8 @@ import Observation
         client.onDayChanged = { [weak self] in self?.dayChanged() }
     }
 
+    public var currentDate: Date { now() }
+
     public func setContext(mode: IslandMode, tab: IslandTab, screenAvailable: Bool) {
         guard !terminated else { return }
         updateAccess()

@@ -4,6 +4,7 @@ import CoreGraphics
 //   swift scripts/drive.swift "move 735 16; sleep 500; click 733.5 171; fake playing; key esc"
 // Keys: esc tab space return cmd-w cmd-comma (down, 20 ms, up). An unknown key exits 2.
 // Coordinates are global top-left CG points (as printed by scripts/shima-windows.swift).
+// `fake-calendar CMD` posts local.shima.fake-calendar (object CMD) for the fake Calendar service.
 // `fake CMD` posts the distributed notification local.shima.fake-spotify (object CMD), read only by shima in fake mode.
 let start = Date()
 func stamp(_ s: String) { print(String(format: "t=%6.0fms ", Date().timeIntervalSince(start) * 1000) + s); fflush(stdout) }
@@ -45,6 +46,10 @@ for raw in CommandLine.arguments.dropFirst().joined(separator: ";").split(separa
         } else { command = w[1] }
         DistributedNotificationCenter.default().postNotificationName(
             .init("local.shima.fake-camera"), object: command, userInfo: nil, deliverImmediately: true)
+        wait(5)
+    case "fake-calendar" where w.count > 1:
+        DistributedNotificationCenter.default().postNotificationName(
+            .init("local.shima.fake-calendar"), object: w[1], userInfo: nil, deliverImmediately: true)
         wait(5)
     case "fake" where w.count > 1:
         DistributedNotificationCenter.default().postNotificationName(

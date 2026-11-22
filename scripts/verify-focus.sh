@@ -6,10 +6,11 @@ front() { lsappinfo info -only name "$(lsappinfo front)" | sed 's/.*="\(.*\)"/\1
 if [[ "${1:-}" == "--clicks" ]]; then
   # Hands-off, fake mode only: real clicks on the island buttons must not change the frontmost app.
   cd "$(dirname "$0")/.."
-  dir="$(mktemp -d -t shima-focus)"
+  mkdir -p .build
+  dir="$(mktemp -d .build/shima-focus.XXXXXX)"
   scripts/with-log.sh "$dir/ping.log" -- swift scripts/drive.swift "fake ping" >/dev/null
   grep -q 'fake ping' "$dir/ping.log" || { echo "not in fake mode (SHIMA_FAKE_SPOTIFY=playing scripts/run.sh)"; exit 2; }
-  read -r music camera header mid hover away mirrorX mirrorY previousX previousY playX playY nextX nextY blankX blankY < <(scripts/island-input-geometry.sh)
+  read -r music camera header mid hover away mirrorX mirrorY previousX previousY playX playY nextX nextY blankX blankY calendar < <(scripts/island-input-geometry.sh)
   before="$(front)"
   scripts/with-log.sh "$dir/clicks.log" -- swift scripts/drive.swift "fake ping; fake playing; move $mid $away; sleep 500; move $mid $hover; sleep 700; click $music $header; sleep 200; click $previousX $previousY; sleep 400; click $playX $playY; sleep 400; click $nextX $nextY; sleep 400; click $blankX $blankY; sleep 300; move $mid $away; sleep 1500" >/dev/null
   after="$(front)"

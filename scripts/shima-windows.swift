@@ -27,6 +27,7 @@ if inset > 0, let l = builtIn.auxiliaryTopLeftArea, let r = builtIn.auxiliaryTop
     notch = R(x: f.midX - 100, y: flipY - f.maxY, w: 200, h: 32)
 }
 let mode = CommandLine.arguments.dropFirst().first ?? ""
+let wantPID = CommandLine.arguments.dropFirst(2).first.flatMap { Int($0) }
 print("built-in \(Int(f.width))x\(Int(f.height)) notch \(fmt(notch))")
 
 let info = (CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]]) ?? []
@@ -54,7 +55,6 @@ if mode == "--menus" {
 if mode == "--settings" {
     // The Settings window is Shima's only layer-0 window (the island is layer 25, menus 101).
     // Titles are unreadable without Screen Recording, so match owner, pid and layer.
-    let wantPID = CommandLine.arguments.dropFirst(2).first.flatMap { Int($0) }
     let mine = info.filter {
         ($0[kCGWindowOwnerName as String] as? String) == "Shima"
             && (($0[kCGWindowLayer as String] as? Int) ?? -1) == 0
@@ -67,7 +67,8 @@ if mode == "--settings" {
 
 var best: (layer: Int, rect: R)?
 for w in info where (w[kCGWindowOwnerName as String] as? String) == "Shima" {
-    guard let r = rectOf(w), abs(r.y) < 0.5 else { continue }
+    guard wantPID == nil || (w[kCGWindowOwnerPID as String] as? Int) == wantPID,
+          let r = rectOf(w), abs(r.y) < 0.5 else { continue }
     let layer = (w[kCGWindowLayer as String] as? Int) ?? 0
     if best == nil || abs((r.x + r.w / 2) - (notch.x + notch.w / 2))
         < abs((best!.rect.x + best!.rect.w / 2) - (notch.x + notch.w / 2)) {

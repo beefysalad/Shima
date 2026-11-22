@@ -80,7 +80,7 @@ h1 .q{display:block;color:var(--o)}
 .stage{--pt:1px;--sw:540;--sh:236;--bez:9px;margin:0;justify-self:end}
 .screen{position:relative;width:calc(var(--sw) * var(--pt));height:calc(var(--sh) * var(--pt));overflow:hidden;
   border-radius:calc(12 * var(--pt)) calc(12 * var(--pt)) 0 0;font-family:var(--sys);color:#fff;user-select:none;-webkit-user-select:none;
-  box-shadow:0 0 0 var(--bez) #0a0908,0 0 0 calc(var(--bez) + 1px) #2c2723,0 40px 80px -30px rgba(255,101,0,.22);
+  box-shadow:0 0 0 var(--bez) #0a0908,0 0 0 calc(var(--bez) + 1px) #2c2723,0 40px 80px -30px rgba(0,0,0,.7);
   background:
     radial-gradient(60% 55% at 72% 112%,rgba(255,110,30,.55),transparent 70%),
     radial-gradient(70% 70% at 12% -10%,rgba(60,92,130,.45),transparent 70%),

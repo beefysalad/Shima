@@ -14,6 +14,19 @@ public enum NowPlayingLayout {
     public static let timesSize: CGFloat = 11
     public static let progressHeight: CGFloat = 4
 
+    /// The title is narrower than the column so the settings gear fits at the top right.
+    public static let titleWidth: CGFloat = 200
+    public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 18) }
+
+    /// Settings gear: top right of the open island, below the notch strip and the 33 pt menu bar
+    /// (status items there are other windows at the island's level).
+    public static let settingsButton = CGRect(x: 322, y: 38, width: 24, height: 24)
+
+    /// Centre in global top-left CG points; topY is the screen's top edge.
+    public static func settingsButtonCenter(notchMidX: CGFloat, topY: CGFloat) -> CGPoint {
+        CGPoint(x: notchMidX - IslandLayout.expanded.width / 2 + settingsButton.midX, y: topY + settingsButton.midY)
+    }
+
     public static func controlRect(_ command: SpotifyCommand) -> CGRect {
         switch command {
         case .previous: CGRect(x: 173, y: 114, width: 28, height: 28)

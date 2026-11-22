@@ -35,4 +35,23 @@ import Testing
         #expect(bars == NowPlayingLayout.equalizer.width && bars <= IslandLayout.liveWingWidth)
         #expect(NowPlayingLayout.miniArtwork.width <= IslandLayout.liveWingWidth && NowPlayingLayout.miniArtwork.height <= 32)
     }
+    @Test func settingsButtonSitsTopRightBelowTheMenuBar() {
+        let g = NowPlayingLayout.settingsButton
+        #expect(g == CGRect(x: 322, y: 38, width: 24, height: 24))
+        #expect(island.contains(g) && g.minY >= 34 && g.maxX == NowPlayingLayout.column.maxX)
+    }
+    @Test func settingsButtonClearsTitleArtworkAndControls() {
+        let g = NowPlayingLayout.settingsButton
+        #expect(NowPlayingLayout.titleRect == CGRect(x: 116, y: 44, width: 200, height: 18))
+        for r in [NowPlayingLayout.titleRect, NowPlayingLayout.artwork] + SpotifyCommand.allCases.map(NowPlayingLayout.controlRect) {
+            #expect(!g.intersects(r))
+        }
+        #expect(NowPlayingLayout.titleRect.maxX + 6 == g.minX && g.maxY <= NowPlayingLayout.artistTop)
+    }
+    @Test func settingsButtonCenterOnThisMac() {
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: 735.5, topY: 0) == CGPoint(x: 889.5, y: 50))
+    }
+    @Test func settingsButtonCenterOnOffsetScreen() {
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: -735.5, topY: -900) == CGPoint(x: -581.5, y: -850))
+    }
 }

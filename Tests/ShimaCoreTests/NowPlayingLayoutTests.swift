@@ -38,7 +38,7 @@ import Testing
     }
     @Test func homeButtonIsTheFirstHeaderIconLeftOfTheNotch() {
         let g = NowPlayingLayout.settingsButton
-        #expect(g == CGRect(x: 14, y: 5, width: 24, height: 22))
+        #expect(g == CGRect(x: 12, y: 5, width: 22, height: 22))
         #expect(island.contains(g) && g.maxY <= 32 && g.maxX < (island.width - 179) / 2)
     }
     @Test func tabIconsFollowHomeInsideTheStripWithoutOverlap() {
@@ -49,6 +49,13 @@ import Testing
         #expect(music.minX > home.maxX && camera.minX > music.maxX)
         #expect(camera.maxY <= 32 && camera.maxX < (island.width - 179) / 2)
         for r in [home, music, camera] { #expect(!r.intersects(NowPlayingLayout.artwork)) }
+    }
+    @Test func calendarIsTheFourthHeaderIconAndClearsTheNotch() {
+        let icons = [NowPlayingLayout.settingsButton] + IslandTab.allCases.map(NowPlayingLayout.tabRect)
+        #expect(icons.map(\.minX) == [12, 36, 60, 84])
+        #expect(NowPlayingLayout.tabRect(.calendar) == CGRect(x: 84, y: 5, width: 22, height: 22))
+        #expect(NowPlayingLayout.tabRect(.calendar).maxX < (island.width - 179) / 2)
+        for (a, b) in zip(icons, icons.dropFirst()) { #expect(a.maxX <= b.minX) }
     }
     @Test func cameraPanelIsPreviewLeftAndControlColumnRight() {
         let preview = NowPlayingLayout.cameraPreview
@@ -68,9 +75,9 @@ import Testing
         }
     }
     @Test func homeButtonCenterOnThisMac() {
-        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: 735.5, topY: 0) == CGPoint(x: 561.5, y: 16))
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: 735.5, topY: 0) == CGPoint(x: 558.5, y: 16))
     }
     @Test func homeButtonCenterOnOffsetScreen() {
-        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: -735.5, topY: -900) == CGPoint(x: -909.5, y: -884))
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: -735.5, topY: -900) == CGPoint(x: -912.5, y: -884))
     }
 }

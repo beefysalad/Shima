@@ -9,6 +9,8 @@ public enum SpotifyEvent: Equatable, Sendable {
     /// A user command was accepted by Spotify. Carries no playback data; it only owes a late refresh.
     case commandSucceeded(SpotifyCommand)
     case reading(SpotifyReading, source: ReadingSource, at: Date)
+    /// A script refresh failed without a permission error (timeout, Spotify gone). Carries no data.
+    case refreshFailed
 }
 
 public enum SpotifyChange: Equatable, Sendable {
@@ -57,7 +59,7 @@ public struct SpotifyModel: Equatable, Sendable {
             }
             availability = .notRunning
             clearTrack(changes: &changes)
-        case .commandSucceeded: break
+        case .commandSucceeded, .refreshFailed: break
         case .permissionDenied:
             if availability == .running {
                 availability = .permissionDenied
@@ -109,14 +111,16 @@ public struct SpotifyModel: Equatable, Sendable {
 
     /// Applies a late follow-up reading: only the position anchor of the same track may change.
     /// State, identity and metadata are left to the broadcasts, which are more reliable than the script state.
-    public mutating func applyPositionOnly(_ reading: SpotifyReading, at: Date) -> NowPlaying? {
+    /// Outside `.running` this is the normal reducer, so availability transitions are never swallowed.
+    public mutating func applyPositionOnly(_ reading: SpotifyReading, at: Date) -> (NowPlaying?, [SpotifyChange]) {
+        guard availability == .running else { return apply(.reading(reading, source: .script, at: at)) }
         guard var current = nowPlaying, current.trackID == reading.trackID, let position = reading.position else {
-            return nowPlaying
+            return (nowPlaying, [])
         }
         current.position = position
         current.positionDate = at
         nowPlaying = current
-        return current
+        return (current, [])
     }
 
     private mutating func clearTrack(changes: inout [SpotifyChange]) {

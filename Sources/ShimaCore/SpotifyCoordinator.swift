@@ -26,9 +26,14 @@ import Foundation
             if command == .previous { scheduleFollowUp() }
             return
         }
-        if case let .reading(reading, source: .script, at) = event, followUpReadingPending, model.availability != .notRunning {
+        if case .refreshFailed = event {
+            followUpReadingPending = false  // the owed follow-up reading will never arrive
+            return
+        }
+        if case .permissionDenied = event { followUpReadingPending = false }
+        if case let .reading(reading, source: .script, at) = event, followUpReadingPending, model.availability == .running {
             followUpReadingPending = false
-            state.nowPlaying = model.applyPositionOnly(reading, at: at)
+            state.nowPlaying = model.applyPositionOnly(reading, at: at).0
             return
         }
         let wasLive = model.isLive

@@ -55,8 +55,10 @@ final class SpotifyAppleEventClient: SpotifyClient {
             switch result {
             case let .success(reading): onEvent?(.reading(reading, source: .script, at: date))
             case .failure(.permissionDenied): onEvent?(.permissionDenied)
-            case .failure: break  // didTerminate is the authority for "not running"; a timeout waits for the next broadcast or open
+            case .failure: onEvent?(.refreshFailed)  // didTerminate is the authority for "not running"; a timeout waits for the next broadcast or open
             }
+        } else if !consistent, outcome.next == nil {
+            onEvent?(.refreshFailed)  // the one re-read was not possible or also inconsistent
         }
         if let next = outcome.next { run(next) }
     }

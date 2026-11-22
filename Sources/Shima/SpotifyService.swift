@@ -77,6 +77,7 @@ final class SpotifyService: NSObject {
         case .launched: Log.spotify.info("spotify event launched")
         case .terminated: Log.spotify.info("spotify event terminated")
         case .permissionDenied: Log.spotify.info("spotify event permissionDenied")
+        case .refreshFailed: Log.spotify.info("spotify event refreshFailed")
         case let .commandSucceeded(command): Log.spotify.info("spotify event commandSucceeded \(command.rawValue, privacy: .public)")
         case let .reading(reading, source, _):
             let src = source == .notification ? "notification" : "script"

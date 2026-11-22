@@ -478,4 +478,51 @@ extension SpotifyCoordinatorTests {
         c.handle(followUpReading(.paused, "a", 2, at: t0.addingTimeInterval(1)))
         #expect(state.nowPlaying?.state == .paused)
     }
+
+    @Test func failedFollowUpClearsPendingFlag() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        client.duringRefresh = { c.handle(.refreshFailed) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        c.handle(script("a", art: art))
+        #expect(state.nowPlaying?.artworkURL == art)
+    }
+
+    @Test func permissionDeniedClearsPendingFlagAndLaterReadingRecovers() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        client.duringRefresh = { c.handle(.permissionDenied) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        #expect(state.spotifyAvailability == .permissionDenied)
+        c.handle(script("a", art: art))
+        #expect(state.spotifyAvailability == .running && state.nowPlaying?.artworkURL == art)
+    }
+
+    @Test func artworkReadingIsAppliedFullyAfterFailedFollowUp() {
+        let s = ManualScheduler(), (c, client, state) = running(s)
+        c.handle(script("b", art: nil))
+        client.duringRefresh = { c.handle(.refreshFailed) }
+        c.handle(.commandSucceeded(.previous))
+        s.advance(by: .milliseconds(250))
+        let other = URL(string: "https://i.scdn.co/image/b")!
+        c.handle(script("b", art: other))
+        #expect(state.nowPlaying?.artworkURL == other)
+    }
+
+    @Test func refreshFailedWithoutPendingFollowUpIsHarmless() {
+        let (c, _, state, taps) = make()
+        c.handle(.launched); c.handle(note())
+        let before = state.nowPlaying, changes = taps.changes.count
+        c.handle(.refreshFailed)
+        #expect(state.nowPlaying == before && taps.changes.count == changes)
+    }
+
+    @Test func applyPositionOnlyInPermissionDeniedModelUsesNormalReducer() {
+        var m = SpotifyModel()
+        _ = m.apply(.launched); _ = m.apply(.permissionDenied)
+        let reading = SpotifyReading(state: .playing, trackID: "a", title: "T", artist: "A", position: 3)
+        let (np, changes) = m.applyPositionOnly(reading, at: t0)
+        #expect(m.availability == .running && np?.trackID == "a")
+        #expect(changes.contains(.availabilityChanged(.running)))
+    }
 }

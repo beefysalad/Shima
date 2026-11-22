@@ -6,7 +6,7 @@ import ShimaCore
 @main struct ViewLayoutCheck {
     @MainActor static func main() {
         NSApplication.shared.setActivationPolicy(.prohibited)
-        let expectsNowPlaying = CommandLine.arguments.contains("--now-playing")
+        let expectsNowPlaying = true // --now-playing is the default since the Settings milestone; the flag is still accepted
         let state = AppState()
         state.live = true
         state.spotifyAvailability = .running
@@ -58,7 +58,15 @@ import ShimaCore
         // The centre can contain text; scan the black silhouette at a blank column instead.
         let silhouette = expanded.rows(at: 150.5) { $0.alphaComponent > 0.9 }
         check(silhouette == 0..<165, "expanded silhouette rows: \(silhouette)")
-        check(expanded.rows(in: 290..<320, matching: isGreen).isEmpty, "expanded equalizer must be hidden")
+        check(expanded.rows(in: 290..<320, ys: 0..<32, matching: isGreen) == 9..<23,
+              "expanded equalizer (track shown) must sit right of the notch, rows 9..<23")
+        check(expanded.rows(in: 82..<102, ys: 0..<32, matching: isMagenta).isEmpty, "expanded mini artwork must be hidden")
+        state.spotifyAvailability = .notRunning
+        host.layoutSubtreeIfNeeded()
+        let notRunning = render(host)
+        check(notRunning.rows(in: 290..<320, ys: 0..<32, matching: isGreen).isEmpty, "expanded equalizer must be hidden without a track")
+        state.spotifyAvailability = .running
+        host.layoutSubtreeIfNeeded()
         if expectsNowPlaying {
             check(expanded.rows(at: 76.5, matching: isMagenta) == 44..<132, "expanded artwork must occupy y44..<132")
             for command in SpotifyCommand.allCases {
@@ -66,10 +74,8 @@ import ShimaCore
                 let glyph = expanded.rows(in: Int(r.minX)..<Int(r.maxX), ys: 100..<160) { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 }
                 check(!glyph.isEmpty && glyph.lowerBound >= Int(r.minY) && glyph.upperBound <= Int(r.maxY), "\(command) glyph rows \(glyph) outside \(r)")
             }
-        } else {
-            check(expanded.rows(at: 76.5, matching: isMagenta).isEmpty, "expanded mini artwork must be hidden")
         }
-        print("expanded 396x173: silhouette 0..<165, wings hidden\(expectsNowPlaying ? ", artwork 44..<132" : "") PASS")
+        print("expanded 396x173: silhouette 0..<165, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 44..<132 PASS")
         state.mode = .collapsed
         state.live = false
         window.setContentSize(NSSize(width: 179, height: 32))

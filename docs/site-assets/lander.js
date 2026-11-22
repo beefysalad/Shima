@@ -14,7 +14,8 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   });
 });
 
-// The hero island: idle, then wings while "playing", then the cursor hovers and the island opens.
+// The hero island: idle, wings while "playing", the cursor hovers and the island opens on Music, then on Calendar,
+// then a small banner when a device connects.
 // Like the app, nothing runs while nobody is looking: the loop stops when the drawing is off screen,
 // the tab is hidden, or the visitor asked for reduced motion (then it rests open, and the buttons still work).
 (() => {
@@ -34,7 +35,9 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   const notes = {
     idle: 'Idle: flush with the notch, nothing drawn.',
     live: 'Spotify is playing: the wings are out.',
-    open: 'Hovered: the island springs open.'
+    open: 'Hovered: the island opens on Music.',
+    calendar: 'The Calendar tab (next release).',
+    peek: 'AirPods connect: a banner, then it folds away (next release).'
   };
   const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   function paintTime() {
@@ -58,12 +61,15 @@ document.querySelectorAll('[data-copy]').forEach(button => {
 
   // [state, cursor, how long to hold it]
   const script = [
-    ['idle', 'none', 2200],
-    ['live', 'none', 2600],
-    ['live', 'near', 1100],
-    ['open', 'on', 5200],
+    ['idle', 'none', 2000],
+    ['live', 'none', 2400],
+    ['live', 'near', 1000],
+    ['open', 'on', 4200],
+    ['calendar', 'on', 4600],
     ['live', 'near', 900],
-    ['live', 'none', 1600]
+    ['live', 'none', 1200],
+    ['peek', 'none', 3000],
+    ['idle', 'none', 1400]
   ];
   function run() {
     clearTimeout(timer);
@@ -87,7 +93,7 @@ document.querySelectorAll('[data-copy]').forEach(button => {
     hovering = false;
     if (manual || reduced.matches) { show(manual ? before : 'open'); return; }
     show('live');
-    step = 5;
+    step = 6;
     timer = setTimeout(run, 900);
   });
 

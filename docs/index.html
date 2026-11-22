@@ -6,20 +6,20 @@
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#000000">
   <title>shima | A free Dynamic Island for your MacBook notch</title>
-  <meta name="description" content="shima is a free, local Dynamic Island for the MacBook notch. Invisible while idle; while Spotify plays, two small wings grow beside the notch, and hovering opens an island with artwork and controls. macOS 14+, Apple Silicon.">
+  <meta name="description" content="shima is a free, local Dynamic Island for the MacBook notch. Invisible while idle. It shows what Spotify is playing and a camera mirror today; your calendar, reminders and a banner when AirPods connect are next. macOS 14+, Apple Silicon.">
   <link rel="canonical" href="https://beefysalad.github.io/Shima/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="shima">
   <meta property="og:title" content="shima | A free Dynamic Island for your MacBook notch">
-  <meta property="og:description" content="Invisible while idle. While Spotify plays, two small wings grow beside the notch. Hover and an island springs open. Free and local, macOS 14+.">
+  <meta property="og:description" content="Invisible while idle. Spotify now playing and a camera mirror today; calendar, reminders and device banners next. Free and local, macOS 14+.">
   <meta property="og:url" content="https://beefysalad.github.io/Shima/">
   <meta property="og:image" content="https://beefysalad.github.io/Shima/site-assets/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The shima logo and the line Invisible until the music starts, in orange on black, with a small notch showing album art and green equalizer bars.">
+  <meta property="og:image:alt" content="The shima logo and the line Invisible until it is needed, in orange on black, with a small notch showing a device banner: Connected, AirPods 4, 82 percent.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="shima | A free Dynamic Island for your MacBook notch">
-  <meta name="twitter:description" content="Invisible while idle. While Spotify plays, two small wings grow beside the notch. Hover and an island springs open.">
+  <meta name="twitter:description" content="Invisible while idle. Music, a camera mirror, and soon your calendar and device banners, in the notch.">
   <meta name="twitter:image" content="https://beefysalad.github.io/Shima/site-assets/og.png">
   <link rel="icon" href="site-assets/shima-icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="site-assets/shima-icon-512.png">
@@ -40,8 +40,8 @@
     <div class="wrap hero-grid">
       <div class="hero-inner">
         <p class="kicker"><span lang="ja">島</span> &middot; &ldquo;island&rdquo;</p>
-        <h1 id="hero-title">Invisible until<span class="q">the music starts.</span></h1>
-        <p class="lede">A free Dynamic Island for the MacBook notch. <b>Idle, it&rsquo;s just your notch.</b> Play something on Spotify and two small wings grow beside it. Hover, and an island springs open with the song and its controls.</p>
+        <h1 id="hero-title">Invisible until<span class="q">it&rsquo;s needed.</span></h1>
+        <p class="lede">A free Dynamic Island for the MacBook notch. <b>Idle, it&rsquo;s just your notch.</b> Play a song and two small wings grow beside it. Hover, and the island opens: now playing, a camera mirror and, in the next release, your calendar and a banner when AirPods connect.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/beefysalad/Shima/releases/latest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download for macOS</a>
           <a class="button secondary" href="https://github.com/beefysalad/Shima"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>View on GitHub</a>
@@ -51,7 +51,7 @@
           <div><b>Free</b><span>no account, all local</span></div>
           <div><b>14+</b><span>macOS, Apple Silicon</span></div>
         </div>
-        <p class="first-time">Version 0.1.6. It isn&rsquo;t notarized yet, so the first launch takes one right-click. <a href="#first-launch">Here&rsquo;s how</a></p>
+        <p class="first-time">Version 0.1.7. It isn&rsquo;t notarized yet, so the first launch takes one right-click. <a href="#first-launch">Here&rsquo;s how</a></p>
       </div>
 
       <figure class="stage" aria-labelledby="stage-cap">
@@ -69,15 +69,38 @@
                 <span class="wing"><span class="eq"><i></i><i></i><i></i><i></i></span></span>
               </div>
               <div class="open">
-                <span class="art art-big"></span>
-                <b class="np-title">Low Tide, High Noon</b>
-                <span class="np-artist">The Harbour Lights</span>
-                <svg class="gear" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                <span class="prog"><i id="prog-fill"></i></span>
-                <span class="times"><span id="t-el">1:24</span><span id="t-rem">-2:13</span></span>
-                <span class="ctl prev"><svg viewBox="0 0 24 24"><path d="M11 12 20 6v12Zm-7 0 7-6v12Z" fill="currentColor"/><rect x="3" y="6" width="2" height="12" rx="1" fill="currentColor"/></svg></span>
-                <span class="ctl play"><svg viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor"/></svg></span>
-                <span class="ctl next"><svg viewBox="0 0 24 24"><path d="M13 12 4 6v12Zm7 0-7-6v12Z" fill="currentColor"/><rect x="19" y="6" width="2" height="12" rx="1" fill="currentColor"/></svg></span>
+                <span class="hub-tabs" aria-hidden="true">
+                  <span class="tab t-home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></span>
+                  <span class="tab t-music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
+                  <span class="tab t-cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+                  <span class="tab t-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
+                </span>
+                <div class="np-view">
+                  <span class="art art-big"></span>
+                  <b class="np-title">Low Tide, High Noon</b>
+                  <span class="np-artist">The Harbour Lights</span>
+                  <span class="prog"><i id="prog-fill"></i></span>
+                  <span class="times"><span id="t-el">1:24</span><span id="t-rem">-2:13</span></span>
+                  <span class="ctl prev"><svg viewBox="0 0 24 24"><path d="M11 12 20 6v12Zm-7 0 7-6v12Z" fill="currentColor"/><rect x="3" y="6" width="2" height="12" rx="1" fill="currentColor"/></svg></span>
+                  <span class="ctl play"><svg viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor"/></svg></span>
+                  <span class="ctl next"><svg viewBox="0 0 24 24"><path d="M13 12 4 6v12Zm7 0-7-6v12Z" fill="currentColor"/><rect x="19" y="6" width="2" height="12" rx="1" fill="currentColor"/></svg></span>
+                </div>
+                <div class="cal-view">
+                  <span class="cal-dow"><b>FRI</b><u></u><span>NOV</span></span>
+                  <span class="cal-num">20</span>
+                  <span class="cal-row r1"><i></i><b>Standup</b><em>Now &middot; 9:30&ndash;10:00</em></span>
+                  <span class="cal-row r2"><i></i><b>Design review</b><em>11:00&ndash;12:00</em></span>
+                  <span class="cal-row r3"><s></s><b>Renew passport</b><em>Today</em></span>
+                  <span class="cal-mon"><b>NOVEMBER</b> 2026</span>
+                  <span class="cal-wk"><i>S</i><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i></span>
+                  <span class="cal-grid"><i>1</i><i>2</i><i class="d">3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i class="d">9</i><i>10</i><i>11</i><i>12</i><i class="d">13</i><i>14</i><i>15</i><i>16</i><i>17</i><i>18</i><i>19</i><i class="t d">20</i><i>21</i><i>22</i><i>23</i><i>24</i><i>25</i><i>26</i><i class="d">27</i><i>28</i><i>29</i><i>30</i><i class="o">1</i><i class="o">2</i><i class="o">3</i><i class="o">4</i><i class="o">5</i></span>
+                </div>
+              </div>
+              <div class="peek" aria-hidden="true">
+                <span class="pk-badge"><svg viewBox="0 0 24 24"><path d="M7 3.5a3.6 3.6 0 0 0-3.6 3.6c0 1.6.9 2.7 2 3.3V19a1.6 1.6 0 0 0 3.2 0v-8.6c1.1-.6 2-1.7 2-3.3A3.6 3.6 0 0 0 7 3.5Z"/><path d="M17 3.5a3.6 3.6 0 0 1 3.6 3.6c0 1.6-.9 2.7-2 3.3V19a1.6 1.6 0 0 1-3.2 0v-8.6c-1.1-.6-2-1.7-2-3.3A3.6 3.6 0 0 1 17 3.5Z"/></svg></span>
+                <b class="pk-title">Connected</b>
+                <span class="pk-name">AirPods 4</span>
+                <span class="pk-batt">82%<svg viewBox="0 0 24 12"><rect x=".6" y=".6" width="20" height="10.8" rx="3" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="14" height="8" rx="1.6" fill="currentColor"/><rect x="21.8" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".5"/></svg></span>
               </div>
             </div>
             <span class="lens"></span>
@@ -87,18 +110,20 @@
           <div class="sea" aria-hidden="true"></div>
         </div>
         <figcaption class="stage-cap" id="stage-cap">
-          <span class="sr-only">A drawing of the top of a MacBook screen. shima cycles through its three states: idle, flush with the notch; playing, with album art and green equalizer bars beside the notch; and open, a black island under the notch showing the song, a progress bar and playback controls.</span>
+          <span class="sr-only">A drawing of the top of a MacBook screen. shima cycles through what it can show: idle, flush with the notch; playing, with album art and green equalizer bars beside the notch; the open island on its Music tab, with the song, a progress bar and playback controls; the open island on its Calendar tab, with today&rsquo;s events and reminders and a month grid; and a small banner under the notch when AirPods connect.</span>
           <span class="stage-btns" role="group" aria-label="Show a state">
             <button type="button" data-show="idle" aria-pressed="false">Idle</button>
             <button type="button" data-show="live" aria-pressed="false">Playing</button>
-            <button type="button" data-show="open" aria-pressed="true">Hovered</button>
+            <button type="button" data-show="open" aria-pressed="true">Music</button>
+            <button type="button" data-show="calendar" aria-pressed="false">Calendar</button>
+            <button type="button" data-show="peek" aria-pressed="false">Device</button>
           </span>
           <span class="stage-note" id="stage-note" aria-hidden="true">Hover the notch to open it.</span>
         </figcaption>
       </figure>
     </div>
   </section>
-  <div class="wrap news"><span class="tag">0.1.6</span><a href="https://github.com/beefysalad/Shima/releases/latest">Settings now follows the mockup, with the real brand logos <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
+  <div class="wrap news"><span class="tag">0.1.7</span><a href="https://github.com/beefysalad/Shima/releases/latest">A camera mirror in the island: check yourself before a meeting <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
 
   <section class="k-sec wrap" id="how" aria-labelledby="how-title">
     <header class="k-head">
@@ -107,22 +132,24 @@
     </header>
     <ol class="relay">
       <li><span class="relay-who">Idle</span><h3>Just your notch</h3><p>Flush with the notch, black on black. No wings, no glow, nothing ticking in the background.</p><code>0% CPU</code></li>
-      <li><span class="relay-who">Spotify playing</span><h3>Two small wings</h3><p>Album art grows on the left of the notch and bouncing green bars on the right. Pause, and they fold back in.</p><code>33 pt each side</code></li>
-      <li><span class="relay-who">Hover</span><h3>The island opens</h3><p>Point at the notch and a black island springs out: artwork, title, artist, progress, previous, play/pause and next. Move away and it collapses.</p><code>360 &times; 165 pt</code></li>
+      <li><span class="relay-who">Something happening</span><h3>A small signal</h3><p>Play a song and album art grows on the left of the notch, bouncing green bars on the right. In the next release, a connecting device drops a short banner instead. Either way it folds back in on its own.</p><code>33 pt each side</code></li>
+      <li><span class="relay-who">Hover</span><h3>The island opens</h3><p>Point at the notch and a black island springs out, with tabs along its top edge: Music, Camera and, in the next release, Calendar. It always reopens on Music. Move away and it collapses.</p><code>400 &times; 200 pt</code></li>
     </ol>
   </section>
 
   <section class="k-sec wrap" id="features" aria-labelledby="features-title">
     <header class="k-head">
-      <h2 id="features-title">Small on purpose. <em>Spotify, for now.</em></h2>
-      <p>Version 0.1.6 does one thing: the song that&rsquo;s playing. It does it quietly, and it never takes focus from the app you&rsquo;re in.</p>
+      <h2 id="features-title">One island. <em>A few small jobs.</em></h2>
+      <p>shima does a handful of things, quietly, and never takes focus from the app you&rsquo;re in. Features marked next release are built and tested, and waiting for the next version.</p>
     </header>
     <dl class="index">
       <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="8" width="5" height="8" rx="1.5"/><path d="M9 7h6v5a3 3 0 0 1-6 0Z"/><path d="M18 10v4M20.5 11v2"/></svg></span>The wings</dt><dd><p>Album art and an equalizer, in the strip of menu bar the notch already takes. They only exist while music is playing, so a quiet Mac looks exactly like it did before.</p></dd></div>
-      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v6a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6Z"/><path d="M8 20h8"/></svg></span>The open island</dt><dd><p>Pure black with concave corners that melt into the menu bar, and a spring that feels like the iPhone one. The progress bar ticks once a second, and only while the island is open.</p></dd></div>
+      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v6a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6Z"/><path d="M8 20h8"/></svg></span>The open island</dt><dd><p>Pure black with concave corners that melt into the menu bar, and a spring that feels like the iPhone one. Home, Music, Camera and Calendar sit along the top edge; the Music tab&rsquo;s progress bar ticks once a second, and only while the island is open.</p></dd></div>
       <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l8-6v12Z"/><path d="M15 6v12M19 6v12"/></svg></span>Real controls</dt><dd><p>Previous, play/pause and next go straight to Spotify. Clicking them doesn&rsquo;t pull you out of your editor or your browser.</p></dd></div>
-      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>A Settings window</dt><dd><p>Launch at login, Quit, Spotify&rsquo;s status with a shortcut to the right privacy pane, and the equalizer mode: animated, only when open, or off. Open it by launching Shima again, or from the gear on the island.</p></dd></div>
-      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M9 4h6v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1ZM8 21h8M12 17v4"/></svg></span>Built-in display</dt><dd><p>The island lives on your MacBook&rsquo;s own screen. On a built-in display without a notch it becomes an invisible hover zone at the top centre. External monitors aren&rsquo;t handled yet.</p></dd></div>
+      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>A camera mirror</dt><dd><p>Open the Camera tab for a live, mirrored preview, to check yourself and your background before a call. The camera runs only while that tab is open, so the green light goes out the moment the island closes.</p></dd></div>
+      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><span class="dt-text">Calendar and reminders<span class="tag-next">Next release</span></span></dt><dd><p>Today&rsquo;s date, what&rsquo;s on and what&rsquo;s due, with a month grid beside it, read from the Calendar and Reminders apps you already use. Anything synced there shows up, and you can tick a reminder off from the island.</p></dd></div>
+      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5a3.6 3.6 0 0 0-3.6 3.6c0 1.6.9 2.7 2 3.3V19a1.6 1.6 0 0 0 3.2 0v-8.6c1.1-.6 2-1.7 2-3.3A3.6 3.6 0 0 0 7 3.5Z"/><path d="M17 3.5a3.6 3.6 0 0 1 3.6 3.6c0 1.6-.9 2.7-2 3.3V19a1.6 1.6 0 0 1-3.2 0v-8.6c-1.1-.6-2-1.7-2-3.3A3.6 3.6 0 0 1 17 3.5Z"/></svg></span><span class="dt-text">Device banners<span class="tag-next">Next release</span></span></dt><dd><p>When AirPods, a keyboard or a mouse connects, a small banner drops under the notch with its name and battery, then folds away after three seconds. Hovering it opens the island, and a switch in Settings turns it off.</p></dd></div>
+      <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>A Settings window</dt><dd><p>Launch at login, Quit, Spotify&rsquo;s status with a shortcut to the right privacy pane, and the equalizer mode: animated, only when open, or off. Open it by launching Shima again, or from the Home icon on the island.</p></dd></div>
       <div><dt><span class="b-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span>Small and hackable</dt><dd><p>Native Swift and SwiftUI, built with SwiftPM, with no third-party dependencies. The logic lives in a tested core library, so it&rsquo;s easy to bend into your own thing.</p><a class="k-link" href="https://github.com/beefysalad/Shima">Read the source</a></dd></div>
     </dl>
   </section>
@@ -131,11 +158,11 @@
     <h2 class="sr-only" id="privacy-title">Privacy and cost</h2>
     <div class="statement">
       <p>shima <em>never launches Spotify</em>, only goes online to fetch album artwork, and does <em>nothing at all</em> while it&rsquo;s idle.</p>
-      <p class="statement-foot">No timers, no polling, no analytics, no account. Free, and it all stays on your Mac.</p>
+      <p class="statement-foot">No timers, no polling, no analytics, no account. Free. Your camera, calendar and reminders are read on your Mac and never sent anywhere.</p>
     </div>
     <ul class="trio">
-      <li><h3>It listens, it doesn&rsquo;t poll</h3><p>Track changes arrive as Spotify&rsquo;s own notifications. If Spotify isn&rsquo;t running, shima leaves it alone and stays invisible.</p></li>
-      <li><h3>One permission</h3><p>macOS asks once whether shima may control Spotify (Automation). Say no and the island tells you where to change your mind.</p></li>
+      <li><h3>It listens, it doesn&rsquo;t poll</h3><p>Track changes arrive as Spotify&rsquo;s own notifications, and the next release hears calendar changes and Bluetooth connections the same way. If there&rsquo;s nothing to show, shima stays invisible.</p></li>
+      <li><h3>Permissions, asked when needed</h3><p>Spotify control the first time you play something, the camera the first time you open the Camera tab, and in the next release Calendar and Reminders when you open that tab and Bluetooth so it can see devices connect. Say no to any and shima tells you where to change your mind.</p></li>
       <li><h3>Artwork and optional updates</h3><p>Shima fetches the cover image Spotify points to over HTTPS. When you click Check for updates, it also contacts GitHub for release information and update downloads. There is no analytics or tracking.</p></li>
     </ul>
   </section>
@@ -143,22 +170,32 @@
   <section class="k-sec wrap" id="roadmap" aria-labelledby="roadmap-title">
     <header class="k-head">
       <h2 id="roadmap-title">What&rsquo;s here, <em>what&rsquo;s next.</em></h2>
-      <p>One milestone at a time. Upcoming features are planned, not built, so take them as intent rather than a promise.</p>
+      <p>One milestone at a time. Anything marked Later is planned, not built, so take it as intent rather than a promise.</p>
     </header>
     <ol class="releases">
       <li class="release">
-        <div class="release-meta"><span class="version">0.1.6</span><span class="badge">Shipped</span></div>
+        <div class="release-meta"><span class="version">Next release</span><span class="badge soft">Built, being checked</span></div>
         <div class="release-body">
-          <h3>Spotify in the notch</h3>
+          <h3>Calendar, Reminders and device banners</h3>
           <ul>
-            <li><b>Wings while playing:</b> album art on the left, a green equalizer on the right.</li>
-            <li><b>The open island:</b> artwork, title, artist, progress, and previous, play/pause and next.</li>
-            <li><b>Settings:</b> launch at login, Spotify status, equalizer mode, quit.</li>
+            <li><b>Calendar tab:</b> today&rsquo;s events and what&rsquo;s due, a month grid, and a tick to complete a reminder, from the Calendar and Reminders apps you already use.</li>
+            <li><b>Device banners:</b> a three-second banner with the name and battery when AirPods, a keyboard or a mouse connects, with a switch in Settings.</li>
+            <li><b>Still to do before it ships:</b> trying it with real calendars and real devices.</li>
           </ul>
         </div>
       </li>
       <li class="release">
-        <div class="release-meta"><span class="version">Next</span><span class="badge soft">In design</span></div>
+        <div class="release-meta"><span class="version">0.1.7</span><span class="badge">Shipped</span></div>
+        <div class="release-body">
+          <h3>A camera mirror</h3>
+          <ul>
+            <li><b>Camera tab:</b> a live, mirrored preview with Mirror, Switch camera and Close. The camera runs only while the tab is open.</li>
+            <li><b>A tidier header:</b> outlined Home, Music and Camera icons along the top edge. Home opens Settings.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="release">
+        <div class="release-meta"><span class="version">Later</span><span class="badge soft">In design</span></div>
         <div class="release-body">
           <h3>Claude Code sessions</h3>
           <ul>
@@ -188,10 +225,12 @@
       <li class="release">
         <div class="release-meta"><span class="version">0.1.6</span><span class="badge">Shipped</span></div>
         <div class="release-body">
-          <h3>Update from Settings</h3>
+          <h3>Spotify in the notch, and updates from Settings</h3>
           <ul>
-            <li><b>Download, install and restart:</b> get new releases inside shima, with verification and rollback.</li>
-            <li><b>Release signing is still planned:</b> public builds remain ad-hoc signed, so Spotify permission may need to be granted again.</li>
+            <li><b>Wings while playing:</b> album art on the left, a green equalizer on the right.</li>
+            <li><b>The open island:</b> artwork, title, artist, progress, and previous, play/pause and next.</li>
+            <li><b>Settings:</b> launch at login, Spotify status, equalizer mode, quit, and download, install and restart for new releases, with verification and rollback.</li>
+            <li><b>Release signing is still planned:</b> public builds remain ad-hoc signed, so permissions may need to be granted again after an update.</li>
           </ul>
         </div>
       </li>
@@ -201,13 +240,14 @@
   <section class="k-sec wrap" id="faq" aria-labelledby="faq-title">
     <header class="k-head"><h2 id="faq-title">Questions.</h2></header>
     <div class="k-faq">
-      <details><summary>What is shima?</summary><p>A small Mac app that turns the MacBook notch into a Dynamic Island, like the one on the iPhone. Today it shows what Spotify is playing. It&rsquo;s a personal project: small, local and easy to hack on.</p></details>
+      <details><summary>What is shima?</summary><p>A small Mac app that turns the MacBook notch into a Dynamic Island, like the one on the iPhone. Today it shows what Spotify is playing and a camera mirror; the next release adds your calendar and reminders and a banner when AirPods or a keyboard connects. It&rsquo;s a personal project: small, local and easy to hack on.</p></details>
       <details><summary>Is it free?</summary><p>Yes. No price, no account, no trial. The source is on <a href="https://github.com/beefysalad/Shima">GitHub</a>.</p></details>
       <details><summary>Why does macOS warn me when I open it?</summary><p>shima is ad-hoc signed and not notarized by Apple, so Gatekeeper blocks the first double-click. Right-click it and choose Open once, or use the one-line Terminal command in <a href="#first-launch">the first-launch steps</a>.</p></details>
-      <details><summary>Does it work with Apple Music or other players?</summary><p>Not yet. Version 0.1.6 talks to the Spotify desktop app only. Without Spotify running, shima simply stays invisible.</p></details>
-      <details><summary>Will it slow my Mac down?</summary><p>It&rsquo;s built not to. While idle, it runs no timers and does no polling. While music plays it&rsquo;s event-driven, and the equalizer runs at a low frame rate. You can turn the equalizer off in Settings.</p></details>
+      <details><summary>Does it work with Apple Music or other players?</summary><p>Not yet. Version 0.1.7 talks to the Spotify desktop app only for music. Without Spotify running, the wings simply don&rsquo;t appear, and the camera and the next release&rsquo;s calendar are separate tabs.</p></details>
+      <details><summary>Will it slow my Mac down?</summary><p>It&rsquo;s built not to. While idle, it runs no timers and does no polling. While music plays it&rsquo;s event-driven, and the equalizer runs at a low frame rate; you can turn it off in Settings. The camera runs only while the Camera tab is open.</p></details>
       <details><summary>What about external monitors or a Mac without a notch?</summary><p>shima only uses the built-in display for now. On a built-in screen without a notch it becomes an invisible hover zone at the top centre. External monitors and clamshell mode are still on the list.</p></details>
-      <details><summary>Where is it once it&rsquo;s running?</summary><p>There&rsquo;s no Dock icon. Launch Shima again from Spotlight or Finder to open Settings, or click the gear on the open island. Quit from Settings, or from the small capsule icon in the menu bar if your menu bar has room for it.</p></details>
+      <details><summary>Where is it once it&rsquo;s running?</summary><p>There&rsquo;s no Dock icon. Launch Shima again from Spotlight or Finder to open Settings, or click the Home icon on the open island. Quit from Settings, or from the small capsule icon in the menu bar if your menu bar has room for it.</p></details>
+      <details><summary>What does it ask permission for?</summary><p>Spotify control (Automation) the first time you play something, and the camera the first time you open the Camera tab. The next release also asks for Calendar and Reminders when you open that tab, and Bluetooth so it can see a device connect. Each is asked once, only when the feature is used, and shima points you to the right System Settings pane if you say no.</p></details>
       <details><summary>What does &ldquo;shima&rdquo; mean?</summary><p><span lang="ja">島</span>, shima, is Japanese for &ldquo;island&rdquo;. A small island in the notch.</p></details>
     </div>
   </section>
@@ -217,7 +257,7 @@
       <div class="get-copy">
         <img class="get-icon" src="site-assets/shima-icon.svg" alt="" width="64" height="64">
         <h2 id="install-title">Give your notch <em>something to do.</em></h2>
-        <p>shima 0.1.6 for macOS 14 or newer on Apple Silicon. The release has a DMG and a ZIP; either one works.</p>
+        <p>shima 0.1.7 for macOS 14 or newer on Apple Silicon. The release has a DMG and a ZIP; either one works.</p>
         <p class="note">It&rsquo;s ad-hoc signed, not notarized, so the first launch needs one extra click.</p>
       </div>
       <div class="get-os">
@@ -242,7 +282,7 @@ scripts/bundle.sh   # builds dist/Shima.app</code></pre></details>
         <ol class="steps">
           <li><b>Move it to Applications.</b> <a href="https://github.com/beefysalad/Shima/releases/latest">Download the release</a>, open the DMG and drag Shima into Applications (or unzip the ZIP and move <code>Shima.app</code> there). Launch at login and the Spotify permission want it to live in Applications.</li>
           <li><b>Right-click, then Open.</b> In Applications, right-click Shima, choose <b>Open</b>, then <b>Open</b> again. If macOS only offers <b>Done</b>, go to <b>System Settings &rsaquo; Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b>.</li>
-          <li><b>Play something.</b> Start Spotify and play a song. macOS asks once whether Shima may control Spotify: click <b>Allow</b>, and the wings appear.</li>
+          <li><b>Play something.</b> Start Spotify and play a song. macOS asks once whether Shima may control Spotify: click <b>Allow</b>, and the wings appear. Hover the notch and click the camera icon to try the Camera tab.</li>
         </ol>
         <div class="guide-shortcut"><div class="command-heading"><span>Or skip step 2 in Terminal, after step 1</span><button type="button" data-copy="xattr -dr com.apple.quarantine /Applications/Shima.app" aria-label="Copy the Terminal command">Copy</button></div><pre><code>xattr -dr com.apple.quarantine /Applications/Shima.app</code></pre></div>
       </article>

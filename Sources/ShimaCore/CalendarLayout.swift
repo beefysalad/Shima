@@ -25,12 +25,12 @@ public enum CalendarLayout {
         CGRect(x: 18, y: rowsTop + CGFloat(index) * rowPitch, width: rowsWidth, height: rowHeight)
     }
 
-    // Right column (x 196..386)
-    public static let monthTitle = CGRect(x: 196, y: 38, width: 150, height: 18)
-    public static let previousMonth = CGRect(x: 350, y: 38, width: 18, height: 18)
-    public static let nextMonth = CGRect(x: 368, y: 38, width: 18, height: 18)
-    public static let weekdayRow = CGRect(x: 196, y: 58, width: 190, height: 12)
-    public static let gridOrigin = CGPoint(x: 196, y: 72)
+    // Right column (x 236..426)
+    public static let monthTitle = CGRect(x: 236, y: 38, width: 150, height: 18)
+    public static let previousMonth = CGRect(x: 390, y: 38, width: 18, height: 18)
+    public static let nextMonth = CGRect(x: 408, y: 38, width: 18, height: 18)
+    public static let weekdayRow = CGRect(x: 236, y: 58, width: 190, height: 12)
+    public static let gridOrigin = CGPoint(x: 236, y: 72)
     public static let cellSize = CGSize(width: 190.0 / 7.0, height: 19)
     public static let maxWeeks = 6
     public static let dayCircle: CGFloat = 17

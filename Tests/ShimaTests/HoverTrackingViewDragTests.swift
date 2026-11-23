@@ -18,7 +18,7 @@ import Testing
 }
 
 @MainActor private struct Rig {
-    let view = HoverTrackingView(frame: CGRect(x: 0, y: 0, width: 436, height: 208))
+    let view = HoverTrackingView(frame: CGRect(x: 0, y: 0, width: 476, height: 208))
     let store = ShelfStore()
     var events: Events
 

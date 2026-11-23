@@ -24,7 +24,7 @@ public enum HotRegion: Equatable, Sendable {
 
 public enum IslandLayout {
     public static let peek = IslandShapeMetrics(width: 340, height: 76, bottomRadius: 22, earRadius: 10)
-    public static let expanded = IslandShapeMetrics(width: 400, height: 200, bottomRadius: 24, earRadius: 10)
+    public static let expanded = IslandShapeMetrics(width: 440, height: 200, bottomRadius: 24, earRadius: 10)
     public static let collapsedBottomRadius: CGFloat = 9
     public static let hoverMargin: CGFloat = 8
     public static let liveWingWidth: CGFloat = 33

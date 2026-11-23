@@ -92,7 +92,7 @@ case "--peek":
     expected = R(x: notch.x + notch.w / 2 - 188, y: notch.y, w: 376, h: 84)
     okMessage = "PASS peek frame matches layout within 1pt"
 case "--expanded":
-    expected = R(x: notch.x + notch.w / 2 - 218, y: notch.y, w: 436, h: 208)
+    expected = R(x: notch.x + notch.w / 2 - 238, y: notch.y, w: 476, h: 208)  // IslandLayout.expanded: width 440 + 2 * earRadius 10 + 2 * hoverMargin 8 = 476 (x offset 238)
     okMessage = "PASS expanded frame matches layout within 1pt"
 case "": break
 default: print("unknown mode \(mode)"); exit(2)

@@ -4,7 +4,7 @@ import CoreGraphics
 public enum NowPlayingLayout {
     public static let artwork = CGRect(x: 18, y: 50, width: 104, height: 104)
     public static let artworkRadius: CGFloat = 12
-    public static let column = CGRect(x: 140, y: 48, width: 242, height: 140)
+    public static let column = CGRect(x: 140, y: 48, width: 282, height: 140)
     public static let sourceTop: CGFloat = 48
     public static let titleTop: CGFloat = 72
     public static let artistTop: CGFloat = 94
@@ -19,7 +19,7 @@ public enum NowPlayingLayout {
     public static var titleRect: CGRect { CGRect(x: column.minX, y: titleTop, width: titleWidth, height: 20) }
 
     /// Header tab icons, upper left of the open island in the menu-bar-height strip left of the notch
-    /// (the notch occupies x 110.5..289.5 of the 400 pt island): one icon per tab in `IslandTab.allCases`
+    /// (the notch occupies x 130.5..309.5 of the 440 pt island): one icon per tab in `IslandTab.allCases`
     /// order (Home, Music, Camera, Calendar). 22 x 22 pt hit areas on a 24 pt pitch starting at x 12 with a 14 pt
     /// outlined glyph, matching mockup/index.html. The last icon ends at x 106, clear of the notch.
     public static let headerPitch: CGFloat = 24
@@ -31,22 +31,22 @@ public enum NowPlayingLayout {
     }
 
     /// Settings gear: right wing of the expanded header only (the left strip holds the tabs).
-    public static let settingsButton = CGRect(x: 366, y: 5, width: 22, height: 22)
+    public static let settingsButton = CGRect(x: IslandLayout.expanded.width - 12 - 22, y: 5, width: 22, height: 22)
 
     /// Camera tab, as in the mockup: the preview on the left, a column of Live / Mirror / Switch camera / Close / note on the right.
-    public static let cameraPreview = CGRect(x: 14, y: 40, width: 258, height: 146)
-    public static let cameraLive = CGRect(x: 282, y: 40, width: 104, height: 16)
-    public static let cameraMirror = CGRect(x: 282, y: 61, width: 104, height: 30)
-    public static let cameraSwitch = CGRect(x: 282, y: 96, width: 104, height: 30)
-    public static let cameraClose = CGRect(x: 282, y: 131, width: 104, height: 30)
-    public static let cameraNote = CGRect(x: 282, y: 165, width: 104, height: 21)
+    public static let cameraPreview = CGRect(x: 14, y: 40, width: 298, height: 146)
+    public static let cameraLive = CGRect(x: 322, y: 40, width: 104, height: 16)
+    public static let cameraMirror = CGRect(x: 322, y: 61, width: 104, height: 30)
+    public static let cameraSwitch = CGRect(x: 322, y: 96, width: 104, height: 30)
+    public static let cameraClose = CGRect(x: 322, y: 131, width: 104, height: 30)
+    public static let cameraNote = CGRect(x: 322, y: 165, width: 104, height: 21)
 
     /// Centre in global top-left CG points; topY is the screen's top edge.
     public static func settingsButtonCenter(notchMidX: CGFloat, topY: CGFloat) -> CGPoint {
         CGPoint(x: notchMidX - IslandLayout.expanded.width / 2 + settingsButton.midX, y: topY + settingsButton.midY)
     }
 
-    /// The three controls span 116 pt and are centred in the text column (x 203..319 of the 400 pt island).
+    /// The three controls span 116 pt and are centred in the text column (x 223..339 of the 440 pt island).
     public static let controlsMinX: CGFloat = column.midX - 58
 
     public static func controlRect(_ command: SpotifyCommand) -> CGRect {

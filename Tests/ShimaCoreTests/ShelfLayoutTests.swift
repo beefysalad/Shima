@@ -4,24 +4,24 @@ import Testing
 @testable import ShimaCore
 
 struct ShelfLayoutTests {
-    private let island = CGRect(x: 0, y: 0, width: 400, height: 200)
+    private let island = CGRect(x: 0, y: 0, width: IslandLayout.expanded.width, height: IslandLayout.expanded.height)
 
     @Test func rectsMatchTheApprovedMockup() {
-        #expect(ShelfLayout.veil == CGRect(x: 0, y: 32, width: 400, height: 168))
-        #expect(ShelfLayout.veilTileRow == CGRect(x: 0, y: 52, width: 400, height: 96))
-        #expect(ShelfLayout.veilTile == CGRect(x: 120, y: 52, width: 160, height: 96))
+        #expect(ShelfLayout.veil == CGRect(x: 0, y: 32, width: 440, height: 168))
+        #expect(ShelfLayout.veilTileRow == CGRect(x: 0, y: 52, width: 440, height: 96))
+        #expect(ShelfLayout.veilTile == CGRect(x: 140, y: 52, width: 160, height: 96))
         #expect(ShelfLayout.veilTileRadius == 14)
-        #expect(ShelfLayout.veilIcon == CGRect(x: 186, y: 70, width: 28, height: 28))
-        #expect(ShelfLayout.veilCaption == CGRect(x: 120, y: 110, width: 160, height: 16))
-        #expect(ShelfLayout.veilCount == CGRect(x: 12, y: 156, width: 376, height: 16))
-        #expect(ShelfLayout.chipRow == CGRect(x: 14, y: 44, width: 372, height: 64))
+        #expect(ShelfLayout.veilIcon == CGRect(x: 206, y: 70, width: 28, height: 28))
+        #expect(ShelfLayout.veilCaption == CGRect(x: 140, y: 110, width: 160, height: 16))
+        #expect(ShelfLayout.veilCount == CGRect(x: 12, y: 156, width: 416, height: 16))
+        #expect(ShelfLayout.chipRow == CGRect(x: 14, y: 44, width: 412, height: 64))
         #expect(ShelfLayout.chipSize == CGSize(width: 116, height: 64))
         #expect(ShelfLayout.chipRadius == 10)
         #expect(ShelfLayout.chipGap == 8)
-        #expect(ShelfLayout.emptyState == CGRect(x: 14, y: 44, width: 372, height: 88))
-        #expect(ShelfLayout.statusLine == CGRect(x: 14, y: 116, width: 372, height: 16))
+        #expect(ShelfLayout.emptyState == CGRect(x: 14, y: 44, width: 412, height: 88))
+        #expect(ShelfLayout.statusLine == CGRect(x: 14, y: 116, width: 412, height: 16))
         #expect(ShelfLayout.countLabel == CGRect(x: 14, y: 166, width: 200, height: 20))
-        #expect(ShelfLayout.clearButton == CGRect(x: 326, y: 166, width: 60, height: 22))
+        #expect(ShelfLayout.clearButton == CGRect(x: 366, y: 166, width: 60, height: 22))
     }
 
     @Test func everyRectIsInsideTheIsland() {
@@ -47,7 +47,7 @@ struct ShelfLayoutTests {
 
     @Test func tabsEndByX106AndGearClearsTheNotch() {
         #expect(NowPlayingLayout.tabRect(.calendar).maxX == 106)
-        let notch = CGRect(x: 110.5, y: 0, width: 179, height: 32)
+        let notch = CGRect(x: 130.5, y: 0, width: 179, height: 32)
         #expect(!NowPlayingLayout.settingsButton.intersects(notch))
         for tab in IslandTab.allCases { #expect(!NowPlayingLayout.tabRect(tab).intersects(notch)) }
     }
@@ -113,22 +113,30 @@ struct ShelfTextTests {
 
 struct ShelfLayoutVeilHitTests {
     @Test func veilTileHitTestInsideOutsideAndEdges() {
-        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 100)))
-        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 120, y: 52)))
-        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 279.9, y: 147.9)))
-        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 280, y: 100)))
-        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 148)))
-        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 119.9, y: 100)))
-        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 51.9)))
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 220, y: 100)))
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 140, y: 52)))
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 299.9, y: 147.9)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 300, y: 100)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 220, y: 148)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 139.9, y: 100)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 220, y: 51.9)))
         #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 10, y: 10)))
     }
 
     @Test func panelPointConvertsToIslandSpace() {
-        let size = CGSize(width: 436, height: 208)
+        let size = CGSize(width: 476, height: 208)
         // Non-flipped: y counts from the bottom, so the panel's top edge is island y 0.
         #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 18, y: 208), panelSize: size, flipped: false) == .zero)
-        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 218, y: 108), panelSize: size, flipped: false) == CGPoint(x: 200, y: 100))
-        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 218, y: 100), panelSize: size, flipped: true) == CGPoint(x: 200, y: 100))
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 238, y: 108), panelSize: size, flipped: false) == CGPoint(x: 220, y: 100))
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 238, y: 100), panelSize: size, flipped: true) == CGPoint(x: 220, y: 100))
         #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 0, y: 208), panelSize: size, flipped: false) == CGPoint(x: -18, y: 0))
+    }
+
+    @Test func panelCentreMapsToTheIslandCentre() {
+        let e = IslandLayout.expanded
+        let size = CGSize(width: e.width + 2 * e.earRadius + 2 * IslandLayout.hoverMargin, height: e.height + IslandLayout.hoverMargin)
+        #expect(size == CGSize(width: 476, height: 208))
+        let p = ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: size.width / 2, y: 50), panelSize: size, flipped: true)
+        #expect(p == CGPoint(x: 220, y: 50))
     }
 }

@@ -72,7 +72,7 @@ final class ArtworkCache {
     }
 
     /// Network suspension and ImageIO decoding execute away from the main actor.
-    nonisolated private static func fetch(_ url: URL, session: URLSession) async throws -> CGImage {
+    nonisolated static func fetch(_ url: URL, session: URLSession) async throws -> CGImage {
         let (data, response) = try await session.data(from: url)
         try Task.checkCancellation()
         guard let response = response as? HTTPURLResponse,
@@ -97,7 +97,7 @@ final class ArtworkCache {
 }
 
 /// Reject a redirect before URLSession can send an insecure request.
-private final class HTTPSArtworkRedirects: NSObject, URLSessionTaskDelegate {
+final class HTTPSArtworkRedirects: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask,
                     willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest,
                     completionHandler: @escaping @Sendable (URLRequest?) -> Void) {

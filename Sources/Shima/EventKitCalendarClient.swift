@@ -70,12 +70,7 @@ extension EKReminder: CalendarReminderRecord { var itemTitle: String? { title } 
     var remindersAccess: CalendarAccess { access(for: .reminder) }
 
     private func access(for entity: EKEntityType) -> CalendarAccess {
-        switch authorization(entity) {
-        case .fullAccess: .authorized
-        case .notDetermined: .notDetermined
-        case .denied, .restricted, .writeOnly: .denied
-        @unknown default: .denied
-        }
+        CalendarMapping.access(authorizationStatus: authorization(entity).rawValue)
     }
 
     func requestEventsAccess(_ completion: @escaping @MainActor (CalendarAccess) -> Void) {
@@ -103,13 +98,9 @@ extension EKReminder: CalendarReminderRecord { var itemTitle: String? { title } 
         }
         Log.calendar.debug("calendar loading events")
         return records.compactMap { event in
-            guard let id = event.eventID, let start = event.eventStart, let end = event.eventEnd else { return nil }
-            // Recurrences can share an EventKit identifier. Include the occurrence date.
-            let occurrence = event.eventOccurrence ?? start
-            return CalendarEvent(
-                id: "\(id):\(occurrence.timeIntervalSinceReferenceDate)",
-                title: event.itemTitle ?? "", start: start, end: end, isAllDay: event.isAllDay,
-                colorRGB: Self.rgbComponents(of: event.calendarColor))
+            CalendarMapping.event(id: event.eventID, title: event.itemTitle,
+                                  start: event.eventStart, end: event.eventEnd, occurrence: event.eventOccurrence,
+                                  isAllDay: event.isAllDay, colorRGB: Self.rgbComponents(of: event.calendarColor))
         }
     }
 
@@ -124,16 +115,9 @@ extension EKReminder: CalendarReminderRecord { var itemTitle: String? { title } 
         let receive: @Sendable ([any CalendarReminderRecord]?) -> Void = { reminders in
             // Read EventKit objects on the callback queue and send only value types.
             let items: [ReminderItem] = (reminders ?? []).compactMap { reminder in
-                guard !reminder.isCompleted,
-                      var components = reminder.dueDateComponents else { return nil }
-                var calendar = components.calendar ?? Calendar(identifier: .gregorian)
-                // Floating due dates use the local time zone, including all-day reminders.
-                calendar.timeZone = components.timeZone ?? timeZone
-                components.calendar = nil
-                components.timeZone = calendar.timeZone
-                guard let due = calendar.date(from: components), due < today.end else { return nil }
-                return ReminderItem(id: reminder.calendarItemIdentifier, title: reminder.itemTitle ?? "",
-                                    due: due, isCompleted: false)
+                CalendarMapping.reminder(id: reminder.calendarItemIdentifier, title: reminder.itemTitle,
+                                         components: reminder.dueDateComponents, isCompleted: reminder.isCompleted,
+                                         before: today.end, timeZone: timeZone)
             }
             Task { @MainActor in completion(items) }
         }
@@ -191,9 +175,9 @@ extension EKReminder: CalendarReminderRecord { var itemTitle: String? { title } 
     }
 
     static func rgbComponents(of color: CGColor?) -> [Double] {
-        guard let space = CGColorSpace(name: CGColorSpace.sRGB),
-              let components = color?.converted(to: space, intent: .defaultIntent, options: nil)?.components,
-              components.count >= 3 else { return [0.5, 0.5, 0.5] }
-        return components.prefix(3).map { min(1, max(0, Double($0))) }
+        let components = CGColorSpace(name: CGColorSpace.sRGB).flatMap { space in
+            color?.converted(to: space, intent: .defaultIntent, options: nil)?.components
+        }
+        return CalendarMapping.rgbComponents(components?.map(Double.init))
     }
 }

@@ -110,3 +110,25 @@ struct ShelfTextTests {
         #expect(ShelfText.subline(file, fileSize: nil) == "0 B")
     }
 }
+
+struct ShelfLayoutVeilHitTests {
+    @Test func veilTileHitTestInsideOutsideAndEdges() {
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 100)))
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 120, y: 52)))
+        #expect(ShelfLayout.isOverVeilTile(CGPoint(x: 279.9, y: 147.9)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 280, y: 100)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 148)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 119.9, y: 100)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 200, y: 51.9)))
+        #expect(!ShelfLayout.isOverVeilTile(CGPoint(x: 10, y: 10)))
+    }
+
+    @Test func panelPointConvertsToIslandSpace() {
+        let size = CGSize(width: 436, height: 208)
+        // Non-flipped: y counts from the bottom, so the panel's top edge is island y 0.
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 18, y: 208), panelSize: size, flipped: false) == .zero)
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 218, y: 108), panelSize: size, flipped: false) == CGPoint(x: 200, y: 100))
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 218, y: 100), panelSize: size, flipped: true) == CGPoint(x: 200, y: 100))
+        #expect(ShelfLayout.islandPoint(fromPanelPoint: CGPoint(x: 0, y: 208), panelSize: size, flipped: false) == CGPoint(x: -18, y: 0))
+    }
+}

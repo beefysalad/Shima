@@ -79,6 +79,11 @@ struct IslandView: View {
             PeekContent(state: state)
         }
         .overlay(alignment: .top) {
+            if state.dragHovering && state.mode == .expanded {
+                ShelfVeil(count: shelf?.items.count ?? 0, isFull: shelf?.isFull ?? false, overTile: state.veilOverTile)
+            }
+        }
+        .overlay(alignment: .top) {
             HeaderTabIcon(state: state, shelf: shelf, onSettings: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)

@@ -32,4 +32,18 @@ public enum ShelfLayout {
         let home = NowPlayingLayout.tabRect(.home)
         return CGRect(x: home.maxX - 3 - 6, y: home.minY + 3, width: 6, height: 6)
     }
+
+    /// True when an island-space point is over the veil's Shelf tile (edges: minimum inclusive, maximum exclusive).
+    public static func isOverVeilTile(_ p: CGPoint) -> Bool {
+        p.x >= veilTile.minX && p.x < veilTile.maxX && p.y >= veilTile.minY && p.y < veilTile.maxY
+    }
+
+    /// Converts a point in the panel's view coordinates to island coordinates (top-left origin, 400 x 200).
+    /// The island is centred horizontally in the panel and top-aligned.
+    public static func islandPoint(fromPanelPoint p: CGPoint, panelSize: CGSize, flipped: Bool) -> CGPoint {
+        let island = IslandLayout.expanded
+        let x = p.x - (panelSize.width - island.width) / 2
+        let y = flipped ? p.y : panelSize.height - p.y
+        return CGPoint(x: x, y: y)
+    }
 }

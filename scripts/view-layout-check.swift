@@ -223,6 +223,47 @@ import ShimaCore
               "home must leave the settings gear unchanged")
         print("home tab: silhouette, empty state, chips with pdf badge, count, Clear, dot with items only, empty notch zone, content ends by y188 PASS")
         shelf.clear()
+        // Drag veil: black below the header strip on any tab, Shelf tile grey / blue over / dimmed full; header strip untouched.
+        state.selectedTab = .music
+        let veilBlue: (NSColor) -> Bool = { $0.alphaComponent > 0.9 && $0.blueComponent > 0.55 && $0.blueComponent > $0.redComponent + 0.15 }
+        let tileXs = Int(ShelfLayout.veilTile.minX + shiftX + 4)..<Int(ShelfLayout.veilTile.maxX + shiftX - 4)
+        let tileYs = Int(ShelfLayout.veilTile.minY + 4)..<Int(ShelfLayout.veilTile.maxY - 4)
+        let headerBefore = { (p: Pixels) in p.span(in: 0..<436, ys: 0..<32, matching: notBlack) }
+        state.dragHovering = true
+        state.veilOverTile = false
+        host.layoutSubtreeIfNeeded()
+        let veilNormal = render(host)
+        check(veilNormal.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200, "veil must preserve expanded silhouette")
+        check(veilNormal.rows(at: 88.5, matching: isMagenta).isEmpty, "veil must cover the tab content (music artwork)")
+        check(veilNormal.span(in: Int(4 + shiftX)..<Int(396 + shiftX), ys: 33..<200, matching: { $0.alphaComponent > 0.9 && $0.blueComponent > 0.6 && $0.redComponent < 0.2 }).isEmpty, "veil normal tile must not be blue")
+        let tileInk = veilNormal.span(in: tileXs, ys: tileYs, matching: notBlack)
+        check(!tileInk.isEmpty, "veil must draw the Shelf tile fill, icon and caption")
+        check(!veilNormal.span(in: Int(ShelfLayout.veilCount.minX + shiftX)..<Int(ShelfLayout.veilCount.maxX + shiftX), ys: Int(ShelfLayout.veilCount.minY)..<Int(ShelfLayout.veilCount.maxY), matching: notBlack).isEmpty, "veil count line must draw")
+        check(veilNormal.span(in: Int(110.5 + shiftX)..<Int(289.5 + shiftX), ys: 0..<32, matching: notBlack).isEmpty, "veil must leave the notch zone empty")
+        check(veilNormal.span(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear) == Array(gear.lowerBound..<gear.upperBound), "veil must leave the header strip (gear) unchanged")
+        check(veilNormal.span(in: Int(4 + shiftX)..<Int(396 + shiftX), ys: 33..<200, matching: notBlack).first.map { $0 >= Int(ShelfLayout.veilTile.minY) - 2 } ?? false,
+              "veil content must start at the tile row (y>=50), none in 33..50")
+        state.veilOverTile = true
+        host.layoutSubtreeIfNeeded()
+        let veilOver = render(host)
+        check(!veilOver.span(in: tileXs, ys: tileYs, matching: veilBlue).isEmpty, "veil over tile must draw blue")
+        check(headerBefore(veilOver) == headerBefore(veilNormal), "veil over tile must not touch the header strip")
+        check(veilOver.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200, "veil over tile must preserve expanded silhouette")
+        shelf.add((0..<ShelfStore.cap).map { DroppedEntry(string: "t\($0)") })
+        host.layoutSubtreeIfNeeded()
+        let veilFull = render(host)
+        check(shelf.isFull && veilFull.span(in: tileXs, ys: tileYs, matching: veilBlue).isEmpty, "full veil must not highlight the tile even when hovered")
+        let fillXs = Int(ShelfLayout.veilTile.minX + shiftX + 6)..<Int(ShelfLayout.veilTile.minX + shiftX + 14)
+        let fillYs = Int(ShelfLayout.veilTile.minY + 20)..<Int(ShelfLayout.veilTile.minY + 28)
+        let tileFill: (NSColor) -> Bool = { $0.alphaComponent > 0.9 && $0.redComponent > 0.06 }
+        check(!veilNormal.span(in: fillXs, ys: fillYs, matching: tileFill).isEmpty, "veil tile fill must be the grey fill")
+        check(veilFull.span(in: fillXs, ys: fillYs, matching: tileFill).isEmpty, "full veil tile must be dimmed to half")
+        shelf.clear()
+        state.veilOverTile = false
+        state.dragHovering = false
+        host.layoutSubtreeIfNeeded()
+        check(!render(host).rows(at: 88.5, matching: isMagenta).isEmpty, "veil must disappear when the drag ends")
+        print("drag veil: covers content below y32, header strip and notch zone untouched, grey tile, blue over tile, dimmed and not blue when full, gone afterwards PASS")
         state.selectedTab = .music
         host.layoutSubtreeIfNeeded()
 

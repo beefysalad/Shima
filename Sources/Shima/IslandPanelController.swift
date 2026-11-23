@@ -48,11 +48,23 @@ final class IslandPanelController {
         hover = HoverController(scheduler: DispatchScheduler()) { [weak self] effect in
             self?.perform(effect)
         }
-        hover.onPhaseChange = { from, to in
+        hover.onPhaseChange = { [weak self] from, to in
             Log.hover.debug("hover \(String(describing: from), privacy: .public) -> \(String(describing: to), privacy: .public)")
+            guard let self else { return }
+            self.state.dragHovering = (to == .dragHovering)
+            if to != .dragHovering { self.state.veilOverTile = false }
         }
         trackingView.onPointer = { [weak self] inside in
             self?.hover.pointer(inside: inside)
+        }
+        trackingView.onDragEvent = { [weak self] in self?.shelfDrag($0) }
+        trackingView.onDrop = { [weak self] entries in
+            self?.shelfService?.drop(entries) ?? ShelfAddResult(added: 0, refused: 0)
+        }
+        trackingView.onDragLocation = { [weak self] point in
+            guard let self else { return }
+            let over = point.map(ShelfLayout.isOverVeilTile) ?? false
+            if self.state.veilOverTile != over { self.state.veilOverTile = over }
         }
     }
 

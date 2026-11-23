@@ -131,3 +131,41 @@ extension AppUpdaterTests {
         }
     }
 }
+
+private actor ReleaseCheckRecorder {
+    let release: AppRelease
+    private(set) var calls = 0
+    init(_ release: AppRelease) { self.release = release }
+    func load(failAfterFirst: Bool = false) throws -> AppRelease {
+        calls += 1
+        if failAfterFirst && calls > 1 { throw URLError(.notConnectedToInternet) }
+        return release
+    }
+}
+
+extension AppUpdaterTests {
+    @Test func busyCheckDoesNotStartASecondReleaseLoad() async throws {
+        let recorder = ReleaseCheckRecorder(try updateRelease())
+        let updater = AppUpdater(currentVersion: "1.0.0", loadRelease: { try await recorder.load() })
+        updater.check()
+        updater.check()
+        try await waitForCheck(updater)
+        #expect(await recorder.calls == 1)
+    }
+
+    @Test func retryImmediatelyClearsPreviouslyInstallableRelease() async throws {
+        let recorder = ReleaseCheckRecorder(try updateRelease())
+        let updater = AppUpdater(currentVersion: "1.0.0", bundleURL: URL(fileURLWithPath: "/Applications/Shima.app"),
+                                 signing: { .adHoc }, loadRelease: { try await recorder.load(failAfterFirst: true) },
+                                 isWritable: { _ in true })
+        updater.check()
+        try await waitForCheck(updater)
+        #expect(updater.canInstall && updater.release != nil)
+        updater.check()
+        #expect(updater.busy && !updater.canInstall && updater.release == nil)
+        try await waitForCheck(updater)
+        #expect(!updater.canInstall && updater.release == nil)
+        #expect(updater.message == URLError(.notConnectedToInternet).localizedDescription)
+        #expect(await recorder.calls == 2)
+    }
+}

@@ -68,7 +68,9 @@ import ShimaCore
 
     private func update(mode: IslandMode? = nil, tab: IslandTab? = nil) {
         guard let state else { return }
-        coordinator.setContext(mode: mode ?? state.mode, tab: tab ?? state.selectedTab, screenAvailable: awake && systemAwake && !locked && sessionActive)
+        coordinator.setContext(mode: mode ?? state.mode, tab: tab ?? state.selectedTab,
+                               screenAvailable: ScreenAvailability.allowsWork(screenAwake: awake,
+                                   systemAwake: systemAwake, locked: locked, sessionActive: sessionActive))
     }
 
     @objc private func slept() { awake = false; update() }

@@ -71,7 +71,8 @@ import ShimaCore
 
     private func setContext(mode: IslandMode, tab: IslandTab) {
         coordinator.setContext(mode: mode, tab: tab,
-                               screenAvailable: screenAwake && systemAwake && !locked && sessionActive)
+                               screenAvailable: ScreenAvailability.allowsWork(screenAwake: screenAwake,
+                                   systemAwake: systemAwake, locked: locked, sessionActive: sessionActive))
     }
 
     private func updateContext() {

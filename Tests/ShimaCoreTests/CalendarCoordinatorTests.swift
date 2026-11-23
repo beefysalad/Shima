@@ -224,6 +224,47 @@ import Testing
         FakeCalendarClient(eventsAccess: .authorized, remindersAccess: .authorized)
     }
 
+    @Test func selectingADayNormalizesItsTimeWithoutReloading() {
+        let client = authorizedClient()
+        let coordinator = makeCoordinator(client)
+        open(coordinator)
+        let selection = calendarTestDate(2026, 10, 28).addingTimeInterval(12 * 3600)
+        coordinator.selectDay(selection)
+        #expect(coordinator.model.selectedDay == calendarTestDate(2026, 10, 28))
+        #expect(client.loadCount == 1)
+    }
+
+    @Test func todayReturnsFromAnotherMonthAndIsIgnoredAfterShutdown() {
+        let client = authorizedClient()
+        let coordinator = makeCoordinator(client)
+        open(coordinator)
+        coordinator.showMonth(offset: 1)
+        coordinator.goToToday()
+        #expect(coordinator.model.selectedDay == now)
+        #expect(coordinator.model.displayedMonth == calendarTestDate(2026, 10, 1))
+        #expect(client.loadCount == 3)
+        coordinator.shutdown()
+        coordinator.goToToday()
+        #expect(client.loadCount == 3 && !coordinator.model.isVisible)
+    }
+
+    @Test func dayChangeAdvancesTodayAcrossMonthBoundaryAndReloadsOnlyWhenVisible() {
+        let client = authorizedClient()
+        var clock = calendarTestDate(2026, 10, 31)
+        let coordinator = CalendarCoordinator(client: client, calendar: calendarTestCalendar(), now: { clock })
+        open(coordinator)
+        clock = calendarTestDate(2026, 11, 1)
+        client.onDayChanged?()
+        #expect(coordinator.model.selectedDay == clock && coordinator.model.displayedMonth == clock)
+        #expect(client.loadCount == 2)
+        close(coordinator)
+        clock = calendarTestDate(2026, 11, 2)
+        client.onDayChanged?()
+        #expect(client.loadCount == 2)
+        open(coordinator)
+        #expect(coordinator.model.selectedDay == clock && client.loadCount == 3)
+    }
+
     private func makeCoordinator(_ client: FakeCalendarClient) -> CalendarCoordinator {
         CalendarCoordinator(client: client, calendar: calendarTestCalendar(), now: { now })
     }

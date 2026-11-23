@@ -107,11 +107,11 @@ final class AppUpdater {
         } catch { try? FileManager.default.removeItem(at: stage); throw error }
     }
 
-    nonisolated private static func fetch(_ asset: AppRelease.Asset, limit: Int) async throws -> Data {
+    nonisolated static func fetch(_ asset: AppRelease.Asset, limit: Int, session: URLSession = .shared) async throws -> Data {
         guard asset.size <= limit else { throw failure("The release file is too large.") }
         var request = URLRequest(url: asset.browser_download_url)
         request.timeoutInterval = 60
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        let (bytes, response) = try await session.bytes(for: request)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw failure("Couldn’t download the update. Try again later.") }
         var data = Data()
         for try await byte in bytes {

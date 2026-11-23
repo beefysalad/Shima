@@ -80,6 +80,7 @@ Failures even if the feature works:
 - `HoverTrackingView` (the panel's content view) registers for `.fileURL`, `.URL` and `.string` and implements the dragging-destination methods. The drop stays on the AppKit view; the SwiftUI hosting view gets no `.onDrop`.
 - Dragging out: each chip is an `NSDraggingSource` through a small `NSViewRepresentable`. **[My call]** Like the mockup ("get out of the way"), the island collapses about 250 ms after the drag starts so the drop target is visible.
 - **[My call]** Drag-out copies and the chip stays on the shelf (it is a reference; remove it with its x or Clear). Files go out as file URLs, text as a plain string, links as a URL plus a string. No `.webloc` files in v1.
+- **Spike finding:** the island receives its own chip drags. The drop destination ignores drags that originate in this app (a `selfDragActive` flag set by the chip's `NSDraggingSource` and cleared in `draggingSession(_:endedAt:operation:)`), so the veil never shows over its own chip and the 250 ms collapse goes through the normal pointer path. See `docs/superpowers/spikes/2026-11-23-shelf-spikes.md`.
 - The panel stays non-activating throughout. `verify-focus.sh --clicks` must still pass.
 
 ### Fakes and checks

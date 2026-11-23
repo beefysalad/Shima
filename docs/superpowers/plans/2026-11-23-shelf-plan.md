@@ -153,7 +153,7 @@ Gates Tasks 7 to 9, not Tasks 1 and 2. Throwaway code on branch `shelf-spike`, n
 - Consumes: `HoverController.dragEntered/dragExited/dragEnded(dropped:)`, `ShelfStore.add`, `DroppedEntry`.
 - Produces: `HoverTrackingView.onDrag: (DragEvent) -> Void` where `enum DragEvent { case entered, exited, ended(dropped: Bool) }`, and `onDrop: ([DroppedEntry]) -> ShelfAddResult`.
 
-- [ ] **Step 1: Write failing tests** that call the view's dragging-destination methods with a fake `NSDraggingInfo`: `enteredReportsEntered`, `dropAddsAndSwitchesToHome`, `dropWhenFullShowsRefusedCount`, `exitedReportsExited`, `unsupportedTypesAreRejected`.
+- [ ] **Step 1: Write failing tests** that call the view's dragging-destination methods with a fake `NSDraggingInfo`: `enteredReportsEntered`, `dropAddsAndSwitchesToHome`, `dropWhenFullShowsRefusedCount`, `exitedReportsExited`, `unsupportedTypesAreRejected`, `ownChipDragIsIgnored` (with `selfDragActive` set, `draggingEntered` returns no operation and sends no `onDrag` event).
 - [ ] **Step 2: Run** `swift test --filter HoverTrackingViewDragTests`. Expected: FAIL.
 - [ ] **Step 3: Register for `.fileURL`, `.URL`, `.string`** and implement `draggingEntered`, `draggingExited`, `performDragOperation`, `draggingEnded`; read every pasteboard item into a `DroppedEntry`. Keep drops off the SwiftUI hosting view.
 - [ ] **Step 4: Add the veil overlay** and the island-controller wiring so `dragEntered` shows it on any tab and a drop selects Home and shows "Added n" or "Added n, m did not fit" for about 2 s (a single scheduled task, none while idle).
@@ -172,7 +172,7 @@ Gates Tasks 7 to 9, not Tasks 1 and 2. Throwaway code on branch `shelf-spike`, n
 
 - [ ] **Step 1: Write failing tests** `fileWritesFileURL`, `textWritesPlainString`, `linkWritesURLAndString`, `missingFileIsMarkedAndRemoved`.
 - [ ] **Step 2: Run** `swift test --filter ShelfPasteboardTests`. Expected: FAIL.
-- [ ] **Step 3: Implement `ShelfPasteboard` and the drag source.** Copy semantics; the chip stays. Per the spike 3 result, collapse the island about 250 ms after drag start or leave it open.
+- [ ] **Step 3: Implement `ShelfPasteboard` and the drag source** as an `NSDraggingSource` that sets `selfDragActive` on start and clears it in `draggingSession(_:endedAt:operation:)` (spike 3: the island otherwise receives its own drags). Copy semantics; the chip stays. Spike 3 passed, so collapse the island about 250 ms after drag start through `pointer(inside: false)`. The `NSDraggingSource` drag itself (not just SwiftUI `.onDrag`) is verified with a real drag in Task 11.
 - [ ] **Step 4: Run** `swift test`. Expected: pass. Commit `feat: shelf drag-out`.
 
 ## Task 10: Automated checks (SCRIPT, Claude)

@@ -51,7 +51,7 @@ final class SpotifyAppleEventClient: SpotifyClient {
     private func finished(_ ticket: SpotifyRequestGate.Ticket, _ result: Result<SpotifyReading, SpotifyScriptError>, _ date: Date, _ consistent: Bool) {
         let outcome = gate.finish(ticket, currentPid: pidProvider(), consistent: consistent)
         var suffix = ""
-        if case let .failure(error) = result { suffix = " error=\(Self.code(error))" }
+        if case let .failure(error) = result { suffix = " error=\(error.code)" }
         if !consistent { suffix += " inconsistent" }
         Log.spotify.info("spotify result seq=\(ticket.seq, privacy: .public) applied=\(outcome.apply, privacy: .public)\(suffix, privacy: .public)")
         if outcome.apply {
@@ -70,7 +70,7 @@ final class SpotifyAppleEventClient: SpotifyClient {
         let outcome = gate.finish(ticket, currentPid: pidProvider())
         var status = "ok"
         if case let .failure(error) = result {
-            status = "error=\(Self.code(error))"
+            status = "error=\(error.code)"
             if outcome.apply, error == .permissionDenied { onEvent?(.permissionDenied) }
         }
         let succeeded: Bool
@@ -79,11 +79,4 @@ final class SpotifyAppleEventClient: SpotifyClient {
         if succeeded, outcome.apply { onEvent?(.commandSucceeded(command)) }
     }
 
-    private static func code(_ error: SpotifyScriptError) -> Int {
-        switch error {
-        case let .notRunning(code), let .other(code): return code
-        case .permissionDenied: return -1743
-        case .timeout: return -1712
-        }
-    }
 }

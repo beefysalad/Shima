@@ -91,6 +91,14 @@ public enum SpotifyScriptError: Error, Equatable, Sendable {
     case timeout
     case other(code: Int)
 
+    public var code: Int {
+        switch self {
+        case let .notRunning(code), let .other(code): return code
+        case .permissionDenied: return -1743
+        case .timeout: return -1712
+        }
+    }
+
     public init(code: Int) {
         switch code {
         case -600, -609: self = .notRunning(code: code)

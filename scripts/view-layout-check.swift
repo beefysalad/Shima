@@ -247,6 +247,9 @@ import ShimaCore
         check(noBattery.span(in: xs(PeekLayout.batteryGroup), ys: 40..<70, matching: { c in
             c.alphaComponent > 0.9 && (c.redComponent > 0.2 || c.greenComponent > 0.2 || c.blueComponent > 0.2) }).isEmpty,
               "no battery value must leave the battery area empty")
+        if CommandLine.arguments.contains("--snapshot") {
+            try! noBattery.bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: ".build/view-layout-regression/peek-nobattery.png"))
+        }
         let inkCols = (0..<Int(IslandLayout.peek.width)).filter { x in
             !noBattery.span(in: (x + Int(peekDX))..<(x + Int(peekDX) + 1), ys: 38..<72, matching: { c in
                 c.alphaComponent > 0.9 && (c.redComponent > 0.2 || c.greenComponent > 0.2 || c.blueComponent > 0.2) }).isEmpty }

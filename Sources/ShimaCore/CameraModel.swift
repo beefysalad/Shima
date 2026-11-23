@@ -1,5 +1,5 @@
 public enum IslandTab: String, CaseIterable, Hashable, Sendable {
-    case music, camera, calendar
+    case home, music, camera, calendar
 }
 
 public enum CameraEffect: Equatable, Sendable {

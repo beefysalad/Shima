@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private lazy var devices = DeviceService(islandController: islandController)
     private lazy var camera = CameraService(state: islandController.state)
     private lazy var calendar = CalendarService(state: islandController.state, environment: environment)
+    private let shelf = ShelfStore()
     private var statusItem: NSStatusItem?
     private let environment = ProcessInfo.processInfo.environment
     private lazy var settings = SettingsModel(
@@ -44,6 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setUpStatusItem()
         islandController.camera = camera
         islandController.calendar = calendar
+        islandController.shelf = shelf
         showPanel()
         spotify.onLiveChange = { [weak self] in self?.islandController.setLive($0) }
         spotify.onFakeEqualizerMode = { [weak self] in self?.settings.setEqualizerMode($0) }

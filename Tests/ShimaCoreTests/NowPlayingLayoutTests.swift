@@ -36,26 +36,40 @@ import Testing
         #expect(bars == NowPlayingLayout.equalizer.width && bars <= IslandLayout.liveWingWidth)
         #expect(NowPlayingLayout.miniArtwork.width <= IslandLayout.liveWingWidth && NowPlayingLayout.miniArtwork.height <= 32)
     }
-    @Test func homeButtonIsTheFirstHeaderIconLeftOfTheNotch() {
-        let g = NowPlayingLayout.settingsButton
-        #expect(g == CGRect(x: 12, y: 5, width: 22, height: 22))
-        #expect(island.contains(g) && g.maxY <= 32 && g.maxX < (island.width - 179) / 2)
+    @Test func homeIsFirstTab() {
+        #expect(IslandTab.allCases == [.home, .music, .camera, .calendar])
+        #expect(NowPlayingLayout.tabRect(.home) == CGRect(x: 12, y: 5, width: 22, height: 22))
     }
-    @Test func tabIconsFollowHomeInsideTheStripWithoutOverlap() {
-        let home = NowPlayingLayout.settingsButton
-        let music = NowPlayingLayout.tabRect(.music)
-        let camera = NowPlayingLayout.tabRect(.camera)
-        #expect(music == NowPlayingLayout.tabIcon)
-        #expect(music.minX > home.maxX && camera.minX > music.maxX)
-        #expect(camera.maxY <= 32 && camera.maxX < (island.width - 179) / 2)
-        for r in [home, music, camera] { #expect(!r.intersects(NowPlayingLayout.artwork)) }
+    @MainActor @Test func defaultTabIsMusicAndCollapseSnapsToMusic() {
+        let state = AppState()
+        #expect(state.selectedTab == .music)
+        state.mode = .expanded
+        state.selectedTab = .home
+        state.mode = .collapsed
+        #expect(state.selectedTab == .music)
     }
-    @Test func calendarIsTheFourthHeaderIconAndClearsTheNotch() {
-        let icons = [NowPlayingLayout.settingsButton] + IslandTab.allCases.map(NowPlayingLayout.tabRect)
+    @Test func tabIconsAreOnA24PitchInsideTheStripWithoutOverlap() {
+        let icons = IslandTab.allCases.map(NowPlayingLayout.tabRect)
         #expect(icons.map(\.minX) == [12, 36, 60, 84])
-        #expect(NowPlayingLayout.tabRect(.calendar) == CGRect(x: 84, y: 5, width: 22, height: 22))
-        #expect(NowPlayingLayout.tabRect(.calendar).maxX < (island.width - 179) / 2)
+        #expect(icons.allSatisfy { $0.width == 22 && $0.height == 22 && $0.minY == 5 })
         for (a, b) in zip(icons, icons.dropFirst()) { #expect(a.maxX <= b.minX) }
+        for r in icons { #expect(!r.intersects(NowPlayingLayout.artwork)) }
+    }
+    @Test func tabRectsEndBeforeNotch() {
+        #expect(NowPlayingLayout.tabRect(.calendar).maxX <= 106)
+        #expect(NowPlayingLayout.tabRect(.calendar).maxX < (island.width - 179) / 2)
+    }
+    @Test func settingsButtonInRightWing() {
+        let g = NowPlayingLayout.settingsButton
+        #expect(g == CGRect(x: 366, y: 5, width: 22, height: 22))
+        #expect(island.contains(g) && g.maxY <= 32)
+        #expect(g.minX > (island.width + 179) / 2)
+    }
+    @Test func settingsButtonClearsTheNowPlayingContent() {
+        let g = NowPlayingLayout.settingsButton
+        for r in [NowPlayingLayout.titleRect, NowPlayingLayout.artwork] + SpotifyCommand.allCases.map(NowPlayingLayout.controlRect) {
+            #expect(!g.intersects(r))
+        }
     }
     @Test func cameraPanelIsPreviewLeftAndControlColumnRight() {
         let preview = NowPlayingLayout.cameraPreview
@@ -68,16 +82,10 @@ import Testing
         }
         #expect(column.last!.maxY <= preview.maxY)
     }
-    @Test func homeButtonClearsTheNowPlayingContent() {
-        let g = NowPlayingLayout.settingsButton
-        for r in [NowPlayingLayout.titleRect, NowPlayingLayout.artwork] + SpotifyCommand.allCases.map(NowPlayingLayout.controlRect) {
-            #expect(!g.intersects(r))
-        }
+    @Test func settingsButtonCenterOnThisMac() {
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: 735.5, topY: 0) == CGPoint(x: 912.5, y: 16))
     }
-    @Test func homeButtonCenterOnThisMac() {
-        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: 735.5, topY: 0) == CGPoint(x: 558.5, y: 16))
-    }
-    @Test func homeButtonCenterOnOffsetScreen() {
-        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: -735.5, topY: -900) == CGPoint(x: -912.5, y: -884))
+    @Test func settingsButtonCenterOnOffsetScreen() {
+        #expect(NowPlayingLayout.settingsButtonCenter(notchMidX: -735.5, topY: -900) == CGPoint(x: -558.5, y: -884))
     }
 }

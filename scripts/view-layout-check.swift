@@ -52,9 +52,10 @@ import ShimaCore
                           end: startOfToday.addingTimeInterval(Double($0) * 3600 + 1800), isAllDay: false, colorRGB: [0.3, 0.6, 1])
         }
         calendarClient.reminders = [ReminderItem(id: "r1", title: "Reminder", due: startOfToday, isCompleted: false)]
+        let shelf = ShelfStore()
         let host = NSHostingView(rootView: IslandView(state: state, media: media,
             notch: notch, hasNotch: true, debug: false, hitOpacity: 0, onCommand: { _ in }, onSettings: {}, camera: camera,
-            calendar: calendarCoordinator))
+            calendar: calendarCoordinator, shelf: shelf))
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 245, height: 32),
             styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false
@@ -114,13 +115,13 @@ import ShimaCore
         let gearRect = NowPlayingLayout.settingsButton.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
         let gear = expanded.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear)
         check(!gear.isEmpty && gear.lowerBound >= Int(gearRect.minY) && gear.upperBound <= Int(gearRect.maxY),
-              "home glyph rows \(gear) outside \(gearRect)")
-        print("home button at \(gearRect): glyph rows \(gear) PASS")
+              "settings gear rows \(gear) outside \(gearRect)")
+        print("settings gear at \(gearRect): glyph rows \(gear) PASS")
         let tabRect = NowPlayingLayout.tabIcon.offsetBy(dx: (436 - IslandLayout.expanded.width) / 2, dy: 0)
         let tabGlyph = expanded.rows(in: Int(tabRect.minX)..<Int(tabRect.maxX), ys: 0..<32, matching: isGear)
         check(!tabGlyph.isEmpty && tabGlyph.lowerBound >= Int(tabRect.minY) && tabGlyph.upperBound <= Int(tabRect.maxY),
-              "tab icon glyph rows \(tabGlyph) outside \(tabRect)")
-        print("tab icon at \(tabRect): glyph rows \(tabGlyph) PASS")
+              "home tab icon glyph rows \(tabGlyph) outside \(tabRect)")
+        print("home tab icon at \(tabRect): glyph rows \(tabGlyph) PASS")
         // Camera stays inside the same root and leaves the existing gear untouched.
         state.selectedTab = .camera
         host.layoutSubtreeIfNeeded()
@@ -132,7 +133,7 @@ import ShimaCore
         check(cameraPixels.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200,
               "camera must preserve expanded silhouette")
         check(cameraPixels.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear) == gear,
-              "camera must leave the home button unchanged")
+              "camera must leave the settings gear unchanged")
         camera.fake?.permission = .denied
         camera.coordinator.refreshPermission()
         host.layoutSubtreeIfNeeded()
@@ -179,6 +180,52 @@ import ShimaCore
         calendarClient.eventsAccess = .authorized
         calendarClient.remindersAccess = .authorized
         calendarCoordinator.refreshAccess()
+        // Home tab: same root, empty state then chips. Header strip and notch zone stay empty of content, the dot shows with items.
+        let blueDot: (NSColor) -> Bool = { $0.alphaComponent > 0.9 && $0.blueComponent > 0.85 && $0.redComponent > 0.45 && $0.redComponent < 0.75 && $0.greenComponent > 0.6 && $0.greenComponent < 0.85 }
+        let dotRect = ShelfLayout.homeDot.offsetBy(dx: shiftX, dy: 0)
+        let dotXs = Int(dotRect.minX + 1)..<Int(dotRect.maxX - 1)
+        let dotYs = Int(dotRect.minY + 1)..<Int(dotRect.maxY - 1)
+        state.selectedTab = .home
+        host.layoutSubtreeIfNeeded()
+        let homeEmpty = render(host)
+        check(homeEmpty.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200, "home (empty) must preserve expanded silhouette")
+        check(homeEmpty.rows(at: 88.5, matching: isMagenta).isEmpty, "home must hide the music artwork")
+        let emptyRect = ShelfLayout.emptyState.offsetBy(dx: shiftX, dy: 0)
+        let emptyInk = homeEmpty.span(in: Int(emptyRect.minX)..<Int(emptyRect.maxX), ys: 33..<200, matching: notBlack)
+        check(!emptyInk.isEmpty && emptyInk.first! >= Int(emptyRect.minY) && emptyInk.last! < Int(ShelfLayout.countLabel.minY) + 20,
+              "home empty state must draw inside y 44..186, got \(emptyInk.first ?? -1)...\(emptyInk.last ?? -1)")
+        check(homeEmpty.span(in: Int(110.5 + shiftX)..<Int(289.5 + shiftX), ys: 0..<32, matching: notBlack).isEmpty, "home must leave the notch zone empty")
+        check(homeEmpty.span(in: dotXs, ys: dotYs, matching: blueDot).isEmpty, "home dot must be hidden while the shelf is empty")
+        let homeGlyph = homeEmpty.rows(in: Int(tabRect.minX)..<Int(tabRect.maxX), ys: 0..<32, matching: { $0.alphaComponent > 0.9 && $0.redComponent > 0.9 && $0.greenComponent > 0.9 && $0.blueComponent > 0.9 })
+        check(!homeGlyph.isEmpty, "selected home icon must draw bright")
+        let files = ["a.pdf", "b.png", "c.swift", "d.zip"].map { DroppedEntry(fileURL: URL(fileURLWithPath: "/nonexistent/\($0)")) }
+        shelf.add(files + [DroppedEntry(string: "Some text"), DroppedEntry(url: URL(string: "https://example.com/x"))])
+        host.layoutSubtreeIfNeeded()
+        let homeChips = render(host)
+        check(homeChips.rows(at: 162.5) { $0.alphaComponent > 0.9 } == 0..<200, "home (chips) must preserve expanded silhouette")
+        if CommandLine.arguments.contains("--snapshot") {
+            try! homeChips.bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: ".build/view-layout-regression/home.png"))
+        }
+        let chipRect = ShelfLayout.chipRow.offsetBy(dx: shiftX, dy: 0)
+        let pdfBadge = homeChips.span(in: Int(chipRect.minX)..<Int(chipRect.minX) + 120, ys: 33..<200) { c in
+            c.alphaComponent > 0.9 && c.redComponent > 0.85 && abs(c.greenComponent - 0.54) < 0.1 && abs(c.blueComponent - 0.5) < 0.1 }
+        check(!pdfBadge.isEmpty && pdfBadge.first! >= Int(chipRect.minY) && pdfBadge.last! < Int(chipRect.maxY),
+              "pdf badge must draw inside the chip row, got \(pdfBadge.first ?? -1)...\(pdfBadge.last ?? -1)")
+        let chipInk = homeChips.span(in: Int(chipRect.minX)..<Int(chipRect.maxX), ys: 33..<200, matching: notBlack)
+        check(chipInk.last! < Int(ShelfLayout.clearButton.maxY), "home content must end by y 188, got \(chipInk.last ?? -1)")
+        check(!homeChips.span(in: Int(ShelfLayout.countLabel.minX + shiftX)..<Int(ShelfLayout.countLabel.maxX + shiftX), ys: Int(ShelfLayout.countLabel.minY)..<Int(ShelfLayout.countLabel.maxY), matching: notBlack).isEmpty,
+              "home count label must draw")
+        check(!homeChips.span(in: Int(ShelfLayout.clearButton.minX + shiftX)..<Int(ShelfLayout.clearButton.maxX + shiftX), ys: Int(ShelfLayout.clearButton.minY)..<Int(ShelfLayout.clearButton.maxY), matching: notBlack).isEmpty,
+              "Clear button must draw")
+        check(homeChips.span(in: Int(110.5 + shiftX)..<Int(289.5 + shiftX), ys: 0..<32, matching: notBlack).isEmpty, "home with chips must leave the notch zone empty")
+        check(!homeChips.span(in: dotXs, ys: dotYs, matching: blueDot).isEmpty, "home dot must show while the shelf has items")
+        check(homeChips.span(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear) == Array(gear.lowerBound..<gear.upperBound),
+              "home must leave the settings gear unchanged")
+        print("home tab: silhouette, empty state, chips with pdf badge, count, Clear, dot with items only, empty notch zone, content ends by y188 PASS")
+        shelf.clear()
+        state.selectedTab = .music
+        host.layoutSubtreeIfNeeded()
+
         state.selectedTab = .music
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
@@ -188,12 +235,12 @@ import ShimaCore
         state.selectedTab = .music
         state.mode = .expanded
         host.layoutSubtreeIfNeeded()
-        // The home button is an expanded-only control: the same frame rendered collapsed must show no glyph pixel.
+        // The settings gear is an expanded-only control: the same frame rendered collapsed must show no glyph pixel.
         state.mode = .collapsed
         host.layoutSubtreeIfNeeded()
         let collapsedSameFrame = render(host)
         check(collapsedSameFrame.rows(in: Int(gearRect.minX)..<Int(gearRect.maxX), ys: 0..<32, matching: isGear).isEmpty,
-              "collapsed island must not show the home button (436x208 frame)")
+              "collapsed island must not show the settings gear (436x208 frame)")
         state.mode = .expanded
         host.layoutSubtreeIfNeeded()
         print("expanded 436x208: silhouette 0..<200, equalizer 9..<23 with a track and hidden without, mini artwork hidden, artwork 50..<154 PASS")

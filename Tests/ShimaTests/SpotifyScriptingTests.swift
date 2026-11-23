@@ -19,6 +19,7 @@ struct SpotifyScriptingTests {
             }
         }
         #expect(snapshot == .failure(.notRunning(code: -600)))
+        try #require(kill(pid, 0) == -1 && errno == ESRCH)
         let command: Result<Void, SpotifyScriptError> = await withCheckedContinuation { continuation in
             scripting.command(.next, pid: pid) { continuation.resume(returning: $0) }
         }

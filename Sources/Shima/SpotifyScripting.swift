@@ -25,7 +25,12 @@ private struct AppleEventTransport: SpotifyEventTransport {
     }
 }
 
-final class SpotifyScripting: @unchecked Sendable {
+protocol SpotifyScriptingClient: Sendable {
+    func snapshot(pid: Int32, completion: @escaping @Sendable (Result<SpotifyReading, SpotifyScriptError>, Date, Bool) -> Void)
+    func command(_ command: SpotifyCommand, pid: Int32, completion: @escaping @Sendable (Result<Void, SpotifyScriptError>) -> Void)
+}
+
+final class SpotifyScripting: SpotifyScriptingClient, @unchecked Sendable {
     private let transport: any SpotifyEventTransport
     private let now: @Sendable () -> Date
 

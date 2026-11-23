@@ -380,6 +380,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .peek-badge.dev svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .peek-batt { display: flex; align-items: center; gap: 8px; flex: none; font: 600 12px var(--font); font-variant-numeric: tabular-nums; color: var(--i-ink2); }
 .peek-batt.low { color: var(--danger); }
+.peek-row.solo { justify-content: center; }
+.peek-row.solo .peek-text { flex: none; max-width: 270px; }
 
 
 /* --- Home --- */
@@ -884,8 +886,10 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   function renderPeek() {
     const p = S.peek || { kind: 'track' };
     const row = $('#peekRow');
+    row.classList.remove('solo');
     if (p.kind === 'device') {
       const d = p.dev, low = d.battery != null && d.battery <= 15;
+      row.classList.toggle('solo', d.battery == null);
       row.innerHTML = `<div class="peek-badge dev"><svg viewBox="0 0 24 24">${DEVGLYPH[d.kind] || DEVGLYPH.other}</svg></div>
         <div class="peek-text"><b>Connected</b><span>${esc(d.name)}</span></div>` +
         (d.battery != null ? `<div class="peek-batt ${low ? 'low' : ''}">${d.battery}%${battGlyph(d.battery)}</div>` : '');

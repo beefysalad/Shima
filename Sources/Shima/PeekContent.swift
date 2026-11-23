@@ -26,10 +26,11 @@ struct PeekContent: View {
         .allowsHitTesting(false)
     }
 
-    private func deviceBanner(_ device: DevicePeek) -> some View {
+    private func deviceBanner(_ device: DevicePeek) -> AnyView {
         let percent = device.batteryText.flatMap { Int($0.dropLast()) }
-        let subtitleRect = device.batteryText == nil ? PeekLayout.subtitleWide : PeekLayout.subtitle
-        return ZStack(alignment: .topLeading) {
+        if device.batteryText == nil { return AnyView(centeredBanner(device)) }
+        let subtitleRect = PeekLayout.subtitle
+        return AnyView(ZStack(alignment: .topLeading) {
             Circle().fill(Color.white.opacity(0.13))
                 .overlay(Image(systemName: Self.symbolName(for: device.kind))
                     .font(.system(size: PeekLayout.glyphSize, weight: .medium)).foregroundStyle(.white))
@@ -48,7 +49,26 @@ struct PeekContent: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(device.title), \(device.subtitle)" + (device.batteryText.map { ", battery \($0)" } ?? ""))
+        .accessibilityLabel("\(device.title), \(device.subtitle)" + (device.batteryText.map { ", battery \($0)" } ?? "")))
+    }
+
+    /// No battery to balance the row, so badge and text sit as one group centred under the notch.
+    private func centeredBanner(_ device: DevicePeek) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color.white.opacity(0.13))
+                .overlay(Image(systemName: Self.symbolName(for: device.kind))
+                    .font(.system(size: PeekLayout.glyphSize, weight: .medium)).foregroundStyle(.white))
+                .frame(width: PeekLayout.badge.width, height: PeekLayout.badge.height)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(device.title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white).lineLimit(1)
+                Text(device.subtitle).font(.system(size: 11.5)).foregroundStyle(ink2).lineLimit(1).truncationMode(.tail)
+            }
+            .frame(maxWidth: 256, alignment: .leading)
+        }
+        .frame(width: IslandLayout.peek.width, height: IslandLayout.peek.height - 32, alignment: .center)
+        .offset(y: 32 - 1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(device.title), \(device.subtitle)")
     }
 
     private func battery(text: String, percent: Int?) -> some View {

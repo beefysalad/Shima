@@ -86,6 +86,11 @@ for raw in CommandLine.arguments.dropFirst().joined(separator: ";").split(separa
         DistributedNotificationCenter.default().postNotificationName(
             .init("local.shima.fake-calendar"), object: w[1], userInfo: nil, deliverImmediately: true)
         wait(5)
+    case "fake-shelf" where w.count > 1:
+        // Payload may contain spaces (text, paths); it is everything after the step name.
+        DistributedNotificationCenter.default().postNotificationName(
+            .init("local.shima.fake-shelf"), object: w.dropFirst().joined(separator: " "), userInfo: nil, deliverImmediately: true)
+        wait(5)
     case "fake" where w.count > 1:
         DistributedNotificationCenter.default().postNotificationName(
             .init("local.shima.fake-spotify"), object: w[1], userInfo: nil, deliverImmediately: true)

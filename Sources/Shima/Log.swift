@@ -12,5 +12,6 @@ enum Log {
     static let artwork = Logger(subsystem: "local.shima", category: "artwork")
     static let eq = Logger(subsystem: "local.shima", category: "eq")
     static let focus = Logger(subsystem: "local.shima", category: "focus")
+    static let shelf = Logger(subsystem: "local.shima", category: "shelf")
     static let settings = Logger(subsystem: "local.shima", category: "settings")
 }

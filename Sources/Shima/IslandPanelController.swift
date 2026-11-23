@@ -21,7 +21,7 @@ final class IslandPanelController {
     let media = IslandMedia()
     var camera: CameraService?
     var calendar: CalendarService?
-    var shelf: ShelfStore?
+    var shelfService: ShelfService?
     var onCommand: (@MainActor (SpotifyCommand) -> Void)?
     var onSettings: (@MainActor () -> Void)?
     var onIslandOpened: (@MainActor () -> Void)?
@@ -95,7 +95,8 @@ final class IslandPanelController {
             state: state, media: media, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity,
             onCommand: { [weak self] in self?.handle($0) },
-            onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator, shelf: shelf)
+            onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator,
+            shelf: shelfService?.store, shelfService: shelfService)
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
@@ -104,6 +105,15 @@ final class IslandPanelController {
     private func handle(_ command: SpotifyCommand) {
         Log.spotify.info("spotify command \(command.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(self.panel?.isKeyWindow ?? false, privacy: .public)")
         onCommand?(command)
+    }
+
+    /// Drag events from the shelf service (fake driver now, the drop destination view in Task 8).
+    func shelfDrag(_ event: ShelfDragEvent) {
+        switch event {
+        case .entered: hover.dragEntered()
+        case .exited: hover.dragExited()
+        case .ended(let dropped): hover.dragEnded(dropped: dropped)
+        }
     }
 
     private func openSettings() {

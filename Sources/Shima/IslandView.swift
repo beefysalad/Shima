@@ -32,6 +32,7 @@ struct IslandView: View {
     var camera: CameraService? = nil
     var calendar: CalendarCoordinator? = nil
     var shelf: ShelfStore? = nil
+    var shelfService: ShelfService? = nil
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -61,7 +62,7 @@ struct IslandView: View {
         }
         .overlay(alignment: .top) {
             if state.mode == .expanded && state.selectedTab == .home, let shelf {
-                HomeContent(shelf: shelf)
+                HomeContent(shelf: shelf, status: shelfService?.status.map { ($0, shelfService?.statusWarn ?? false) })
             }
         }
         .overlay(alignment: .top) {

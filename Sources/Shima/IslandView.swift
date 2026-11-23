@@ -33,6 +33,7 @@ struct IslandView: View {
     var calendar: CalendarCoordinator? = nil
     var shelf: ShelfStore? = nil
     var shelfService: ShelfService? = nil
+    var onShelfDragStarted: @MainActor () -> Void = {}
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -62,7 +63,7 @@ struct IslandView: View {
         }
         .overlay(alignment: .top) {
             if state.mode == .expanded && state.selectedTab == .home, let shelf {
-                HomeContent(shelf: shelf, status: shelfService?.status.map { ($0, shelfService?.statusWarn ?? false) })
+                HomeContent(shelf: shelf, status: shelfService?.status.map { ($0, shelfService?.statusWarn ?? false) }, onDragStarted: onShelfDragStarted)
             }
         }
         .overlay(alignment: .top) {

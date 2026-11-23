@@ -108,7 +108,8 @@ final class IslandPanelController {
             debug: Self.debug, hitOpacity: Self.hitOpacity,
             onCommand: { [weak self] in self?.handle($0) },
             onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator,
-            shelf: shelfService?.store, shelfService: shelfService)
+            shelf: shelfService?.store, shelfService: shelfService,
+            onShelfDragStarted: { [weak self] in self?.shelfDragOutStarted() })
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
@@ -126,6 +127,12 @@ final class IslandPanelController {
         case .exited: hover.dragExited()
         case .ended(let dropped): hover.dragEnded(dropped: dropped)
         }
+    }
+
+    /// A chip drag-out began: the drag never reaches the hover machine (OwnDrag filters it), so collapse
+    /// the island through the normal pointer path.
+    func shelfDragOutStarted() {
+        hover.pointer(inside: false)
     }
 
     private func openSettings() {

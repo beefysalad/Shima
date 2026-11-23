@@ -19,7 +19,8 @@ sources=(Sources/Shima/ArtworkCache.swift Sources/Shima/IslandMedia.swift Source
     Sources/Shima/CameraCaptureClient.swift Sources/Shima/CameraService.swift Sources/Shima/CameraContent.swift
     Sources/Shima/EqualizerView.swift Sources/Shima/WingsView.swift Sources/Shima/IslandView.swift Sources/Shima/BrandAssets.swift
     Sources/Shima/CalendarContent.swift Sources/Shima/PeekContent.swift Sources/Shima/HomeContent.swift
-    Sources/Shima/ShelfService.swift Sources/Shima/ShelfVeil.swift Sources/Shima/DispatchScheduler.swift)
+    Sources/Shima/ShelfService.swift Sources/Shima/ShelfVeil.swift Sources/Shima/DispatchScheduler.swift
+    Sources/Shima/ShelfChipDragSource.swift Sources/Shima/ShelfPasteboard.swift Sources/Shima/OwnDrag.swift)
 [[ ! -f Sources/Shima/NowPlayingView.swift ]] || sources+=(Sources/Shima/NowPlayingView.swift)
 swiftc -swift-version 6 -parse-as-library -I "$bin" "${sources[@]}" \
     scripts/view-layout-check.swift "${objects[@]}" -o "$out/check"

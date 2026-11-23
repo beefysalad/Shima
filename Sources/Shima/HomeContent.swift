@@ -8,6 +8,8 @@ struct HomeContent: View {
     let shelf: ShelfStore
     /// Transient status line ("Added 3"); set by the drop handling, nil here.
     var status: (text: String, warn: Bool)? = nil
+    /// Fired once shortly after a chip drag-out begins, so the island can collapse out of the way.
+    var onDragStarted: @MainActor () -> Void = {}
 
     private let fill = Color.white.opacity(0.075)
     private let fill2 = Color.white.opacity(0.13)
@@ -88,6 +90,9 @@ struct HomeContent: View {
         .padding(.vertical, 5)
         .frame(width: ShelfLayout.chipSize.width, height: ShelfLayout.chipSize.height)
         .background(RoundedRectangle(cornerRadius: ShelfLayout.chipRadius).fill(fill))
+        .overlay {
+            ShelfChipDragSource(item: item, onMissing: { shelf.remove(id: $0) }, onDragStarted: onDragStarted)
+        }
         .overlay(alignment: .topLeading) {
             let x = ShelfLayout.chipRemove(chipX: 0, chipY: 0)
             Button { shelf.remove(id: item.id) } label: {

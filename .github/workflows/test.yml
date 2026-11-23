@@ -1,0 +1,44 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: spm-${{ runner.os }}-${{ hashFiles('Package.swift') }}-${{ github.sha }}
+          restore-keys: spm-${{ runner.os }}-${{ hashFiles('Package.swift') }}-
+      # Compiles every target (Shima, shimactl, ShimaUpdater), so glue code that no test imports still has to build.
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test --enable-code-coverage
+      - name: Coverage summary
+        if: always()
+        run: |
+          path=$(swift test --show-codecov-path 2>/dev/null || true)
+          [ -f "$path" ] && python3 -I - "$path" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json, sys
+          t = json.load(open(sys.argv[1]))["data"][0]["totals"]["lines"]
+          print(f"Line coverage: {t['percent']:.1f}% ({t['covered']}/{t['count']})")
+          PY
+          true
+      - name: Bundle script still builds the app
+        run: scripts/bundle.sh

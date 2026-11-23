@@ -25,9 +25,8 @@ struct UpdaterInvocationCharacterizationTests {
         }
         let helper = directory.appendingPathComponent("ShimaUpdater")
         try #require(FileManager.default.isExecutableFile(atPath: helper.path))
-        let profileDirectory = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent(".build/updater-validation", isDirectory: true)
+        // SwiftPM merges this directory after the suite, including child executables.
+        let profileDirectory = directory.appendingPathComponent("codecov", isDirectory: true)
         try FileManager.default.createDirectory(at: profileDirectory, withIntermediateDirectories: true)
         for arguments in cases {
             let process = Process()
@@ -35,7 +34,7 @@ struct UpdaterInvocationCharacterizationTests {
             process.executableURL = helper
             process.arguments = arguments
             var environment = ProcessInfo.processInfo.environment
-            environment["LLVM_PROFILE_FILE"] = profileDirectory.appendingPathComponent("helper-%p.profraw").path
+            environment["LLVM_PROFILE_FILE"] = profileDirectory.appendingPathComponent("helper-%m-%p.profraw").path
             process.environment = environment
             process.standardOutput = output
             process.standardError = output

@@ -11,9 +11,8 @@ struct ShimactlTests {
         }
         let executable = directory.appendingPathComponent("shimactl")
         try #require(FileManager.default.isExecutableFile(atPath: executable.path))
-        let profiles = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent(".build/cli-tests", isDirectory: true)
+        // Keep child profiles beside SwiftPM's test profiles so coverage includes the CLI.
+        let profiles = directory.appendingPathComponent("codecov", isDirectory: true)
         try FileManager.default.createDirectory(at: profiles, withIntermediateDirectories: true)
         for arguments in [[], ["event", "started"], ["--unknown", "", "日本語", "spaces and punctuation !?"], Array(repeating: "arg", count: 100)] {
             let process = Process()
@@ -21,7 +20,7 @@ struct ShimactlTests {
             process.executableURL = executable
             process.arguments = arguments
             var environment = ProcessInfo.processInfo.environment
-            environment["LLVM_PROFILE_FILE"] = profiles.appendingPathComponent("shimactl-%p.profraw").path
+            environment["LLVM_PROFILE_FILE"] = profiles.appendingPathComponent("shimactl-%m-%p.profraw").path
             process.environment = environment
             process.standardOutput = output
             process.standardError = output

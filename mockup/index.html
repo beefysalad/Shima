@@ -202,20 +202,20 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .peek-badge { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: rgba(224,122,79,.16); color: var(--claude); }
 
 /* expanded: top row splits around the notch */
-.topbar { position: absolute; inset: 0 0 auto 0; height: 34px; display: flex; justify-content: space-between; padding: 0 16px; }
+.topbar { position: absolute; inset: 0 0 auto 0; height: 34px; display: flex; justify-content: space-between; padding: 0 12px; }
 .wing { width: 262px; display: flex; align-items: center; gap: 2px; }
-.wing.r { justify-content: flex-end; gap: 8px; font-size: 12px; color: var(--i-ink2); padding-right: 2px; }
+.wing.r { justify-content: flex-end; gap: 8px; font-size: 12px; color: var(--i-ink2); }
 .tab {
   position: relative; border: 0; background: transparent; color: var(--i-ink3);
   font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 8px; transition: color .15s, background .15s;
 }
 .tab:hover { color: var(--i-ink2); }
 .tab[aria-selected="true"] { color: var(--i-ink); background: var(--i-fill2); }
-.tab { display: grid; place-items: center; width: 26px; height: 24px; padding: 0; }
+.tab { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; }
 .tab[hidden] { display: none; }
 .tab svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .brand { font-size: 12px; font-weight: 600; color: var(--i-ink3); margin-right: 8px; letter-spacing: .01em; }
-.gear { border: 0; background: transparent; color: var(--i-ink3); width: 26px; height: 24px; border-radius: 8px; display: grid; place-items: center; transition: color .15s, background .15s; }
+.gear { border: 0; background: transparent; color: var(--i-ink3); width: 22px; height: 22px; flex: none; border-radius: 8px; display: grid; place-items: center; transition: color .15s, background .15s; }
 .gear:hover { color: var(--i-ink); background: var(--i-fill2); }
 .gear svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .cam { display: grid; grid-template-columns: 1fr 150px; gap: 14px; height: 100%; }
@@ -233,6 +233,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .cam-note { font-size: 11px; color: var(--i-ink3); text-align: center; }
 .tab .badge { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--claude); }
 .tab .badge.err { background: var(--danger); }
+.tab .badge.shelf { background: var(--done); }
 .status-pill { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .status-pill .sdot { width: 7px; height: 7px; }
 .status-pill.toast { color: var(--i-ink); }
@@ -295,37 +296,49 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sright .go { font: 600 11px var(--font); color: var(--i-ink2); padding: 4px 8px; border-radius: 7px; background: var(--i-fill2); }
 .sess-foot { margin-top: 10px; font-size: 11.5px; color: var(--i-ink3); }
 
-/* --- File tray --- */
-.tray { display: grid; grid-template-columns: 210px 1fr; gap: 16px; height: 100%; }
-.dropzone {
-  border: 1.5px dashed rgba(255,255,255,.2); border-radius: 16px; display: grid; place-items: center; align-content: center; gap: 8px;
-  color: var(--i-ink2); font-size: 12.5px; text-align: center; padding: 12px; transition: border-color .15s, background .15s, color .15s;
-}
-.dropzone svg { color: var(--i-ink3); }
-.dropzone.over { border-color: var(--done); background: rgba(134,174,247,.1); color: var(--i-ink); }
-.dropzone .mode { font: 600 11px var(--font); padding: 3px 8px; border-radius: 6px; background: var(--i-fill2); color: var(--i-ink); }
-.shelf { display: flex; flex-direction: column; min-width: 0; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; flex: 1; overflow-y: auto; padding: 2px; }
+/* --- Home: the shelf. Boxes are placed from 400 x 200 pt coordinates (see SH in the script) --- */
+.shelf-home { position: absolute; left: 0; top: -34px; width: 720px; height: 330px; pointer-events: none; }
+.shelf-home > * { position: absolute; pointer-events: auto; }
+.chip-row { display: flex; gap: 14.4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.chip-row::-webkit-scrollbar { display: none; }
 .chip {
-  display: inline-flex; align-items: center; gap: 8px; max-width: 220px; padding: 6px 10px 6px 6px;
-  border-radius: 10px; background: var(--i-fill); border: 0; color: var(--i-ink); cursor: grab; text-align: left;
-  transition: background .15s, box-shadow .15s;
+  position: relative; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 6px 12px 6px;
+  border-radius: 10px; background: var(--i-fill); color: var(--i-ink); cursor: grab; text-align: center; min-width: 0;
+  transition: background .15s;
 }
 .chip:hover { background: var(--i-fill2); }
-.chip[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--done); }
 .chip:active { cursor: grabbing; }
-.chip .ft { width: 26px; height: 30px; border-radius: 5px; flex: none; display: grid; place-items: end center; padding-bottom: 3px; font: 700 7.5px var(--font); text-transform: uppercase; color: rgba(0,0,0,.65); background: var(--ftc, #c8ccd2); }
-.chip span { display: grid; min-width: 0; line-height: 1.25; }
+.chip .ft { width: 34px; height: 40px; border-radius: 5px; flex: none; display: grid; place-items: end center; padding-bottom: 4px; font: 700 8.5px var(--font); text-transform: uppercase; color: rgba(0,0,0,.65); background: var(--ftc, #c8ccd2); }
+.chip .nm { display: grid; min-width: 0; max-width: 100%; line-height: 1.25; }
 .chip b { font-size: 12px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.chip em { font-size: 11px; font-style: normal; color: var(--i-ink3); }
+.chip em { font-size: 11px; font-style: normal; color: var(--i-ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chip.new { animation: pop .4s var(--spring); }
-.tray-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.chip .sx { position: absolute; top: 7px; right: 8px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--i-fill2); color: var(--i-ink2); display: grid; place-items: center; padding: 0; opacity: 0; transition: opacity .15s, background .15s; }
+.chip:hover .sx, .chip .sx:focus-visible { opacity: 1; }
+.chip .sx:hover { background: rgba(255,255,255,.22); color: var(--i-ink); }
+.chip .sx svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.shelf-empty { border: 1.5px dashed rgba(255,255,255,.2); border-radius: 16px; display: grid; place-items: center; color: var(--i-ink3); font-size: 12.5px; text-align: center; }
+.shelf-status { font-size: 12px; font-weight: 600; color: var(--done); line-height: 1; display: flex; align-items: center; }
+.shelf-status.warn { color: var(--claude); }
+.shelf-count { font-size: 12px; color: var(--i-ink3); display: flex; align-items: center; font-variant-numeric: tabular-nums; }
+.shelf-clear { justify-content: center; padding: 0; }
+.shelf-clear:disabled { opacity: .4; cursor: default; }
 .pbtn { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 6px 11px; border-radius: 9px; font-size: 12px; font-weight: 600; background: var(--i-fill2); color: var(--i-ink); transition: background .15s; }
 .pbtn:hover { background: rgba(255,255,255,.2); }
 .pbtn.blue { background: rgba(134,174,247,.2); color: #cfe0ff; }
 .pbtn.blue:hover { background: rgba(134,174,247,.3); }
-.hint { margin-left: auto; font-size: 11px; color: var(--i-ink3); }
-.tray-empty { color: var(--i-ink3); font-size: 12.5px; padding: 8px 2px; }
+
+/* drag veil: covers the content area below the header strip, on any tab */
+.veil { position: absolute; z-index: 5; background: var(--i-bg); display: none; }
+.veil.on { display: block; }
+.veil .vrow { position: absolute; display: flex; justify-content: center; gap: 18px; }
+.veil .vtile { flex: 0 0 288px; height: 100%; border-radius: 14px; background: var(--i-fill); border: 1px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--i-ink2); transition: background .15s, border-color .15s, color .15s; }
+.veil .vtile svg { width: 44px; height: 44px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.veil .vtile .vcap { font-size: 12px; font-weight: 600; color: var(--i-ink3); }
+.veil .vtile.over { background: rgba(134,174,247,.25); border-color: var(--done); color: var(--done); }
+.veil .vtile.over .vcap { color: var(--done); }
+.veil.full .vtile { opacity: .5; background: var(--i-fill); border-color: transparent; color: var(--i-ink3); }
+.veil .vc { position: absolute; display: grid; place-items: center; font-size: 12px; color: var(--i-ink3); font-variant-numeric: tabular-nums; }
 
 
 /* --- Calendar --- */
@@ -595,14 +608,12 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                 <div class="view v-exp">
                   <div class="topbar">
                     <div class="wing l" role="tablist" aria-label="Island tabs">
-                      <span class="brand">shima</span>
-                      <button class="tab" role="tab" data-tab="home" id="tab-home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></button>
+                                            <button class="tab" role="tab" data-tab="home" id="tab-home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></button>
                       <button class="tab" role="tab" data-tab="music" id="tab-music" aria-label="Music" title="Music"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
-                      <button class="tab" role="tab" data-tab="tray" id="tab-tray" aria-label="File tray" title="File tray"><svg viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/></svg></button>
                       <button class="tab" role="tab" data-tab="camera" id="tab-camera" aria-label="Camera" title="Camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
                       <button class="tab" role="tab" data-tab="calendar" id="tab-calendar" aria-label="Calendar" title="Calendar"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button>
                       <button class="tab" role="tab" data-tab="claude" id="tab-claude" aria-label="Claude sessions (developer)" title="Claude sessions (developer)" hidden><svg viewBox="0 0 24 24"><path d="M5 7l5 5-5 5M12 18h7"/></svg></button>
-                      <button class="tab" role="tab" data-tab="rules" id="tab-rules" aria-label="Automations" title="Automations"><svg viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></button>
+                      <button class="tab" role="tab" data-tab="rules" id="tab-rules" aria-label="Automations" title="Automations" hidden><svg viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></button>
                     </div>
                     <div class="wing r" id="wingRight"></div>
                   </div>
@@ -612,9 +623,9 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
                     <div class="panel" data-panel="claude" id="pClaude" hidden></div>
                     <div class="panel" data-panel="camera" id="pCamera" hidden></div>
                     <div class="panel" data-panel="calendar" id="pCalendar" hidden></div>
-                    <div class="panel" data-panel="tray" id="pTray" hidden></div>
                     <div class="panel" data-panel="rules" id="pRules" hidden></div>
                   </div>
+                  <div class="veil" id="veil" role="status" aria-live="polite"></div>
                 </div>
               </div>
             </div>
@@ -633,12 +644,11 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <div class="states" id="states">
         <button class="sbtn" data-state="idle">Idle <small>M0</small></button>
         <button class="sbtn" data-state="peek">Peek <small>M1</small></button>
-        <button class="sbtn" data-state="home">Home <small>new</small></button>
+        <button class="sbtn" data-state="home">Home <small>shelf</small></button>
         <button class="sbtn" data-state="music">Now Playing <small>M1</small></button>
         <button class="sbtn" data-state="camera">Camera <small>new</small></button>
         <button class="sbtn" data-state="calendar">Calendar <small>new</small></button>
         <button class="sbtn" data-state="claude" id="stClaude" hidden>Claude <small>dev</small></button>
-        <button class="sbtn" data-state="tray">File tray <small>M3</small></button>
         <button class="sbtn" data-state="rules">Automations <small>M4</small></button>
       </div>
       <label class="note" style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="devOn"> Developer mode: show Claude sessions (Settings toggle)</label>
@@ -676,6 +686,18 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
         <p class="note">Shown only while the island is collapsed; folds after 3 s; hovering it opens the island; dropped (logged) if the island is already open or Device pop-ups is off in Settings.</p>
       </div>
       <div class="group">
+        <span class="glabel">Shelf</span>
+        <div class="btns">
+          <button class="btn" data-sim="shelf.hover" id="shelfHoverBtn">Simulate drag-hover</button>
+          <button class="btn" data-sim="shelf.drop">Simulate drop <code>2 files</code></button>
+          <button class="btn" data-sim="shelf.dropmixed">Drop a link and a snippet</button>
+          <button class="btn" data-sim="shelf.fill">Fill shelf <code>20 of 20</code></button>
+          <button class="btn" data-sim="shelf.overflow">Drop 5 on a nearly full shelf <code>3 did not fit</code></button>
+          <button class="btn" data-sim="shelf.empty">Empty shelf</button>
+        </div>
+        <p class="note">Drag-hover stays on until you click the veil, press Esc, or simulate a drop. A drop switches to Home and shows a status line for 2.2 s.</p>
+      </div>
+      <div class="group">
         <span class="glabel">Calendar and Reminders</span>
         <div class="btns">
           <button class="btn" data-sim="cal.denied" id="calDenyBtn">Deny access</button>
@@ -696,10 +718,10 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       <h2>Keyboard and pointer</h2>
       <dl class="keys">
         <div><dt><kbd>Esc</kbd></dt><dd>Collapse the island</dd></div>
-        <div><dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Home, Music, Tray, Camera, Calendar, (Claude), Rules</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Home, Music, Camera, Calendar, (Claude), Rules</dd></div>
         <div><dt>Hover</dt><dd>Expand; leave to collapse</dd></div>
-        <div><dt>Drop</dt><dd>Drag files from Finder onto the notch. Hold <kbd>⌥</kbd> to move instead of copy</dd></div>
-        <div><dt>Drag out</dt><dd>Drag a tray chip onto the desktop</dd></div>
+        <div><dt>Drop</dt><dd>Drag files, text or links onto the notch from any tab. A veil shows; the drop lands on Home</dd></div>
+        <div><dt>Drag out</dt><dd>Drag a shelf chip onto the desktop. It copies; the chip stays</dd></div>
       </dl>
     </div>
   </section>
@@ -798,14 +820,14 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   ];
 
   const S = {
-    mode: 'collapsed', dev: false, mirror: true, tab: 'home', pinned: false, hover: false, pulse: true,
+    mode: 'collapsed', dev: false, mirror: true, tab: 'music', pinned: false, hover: false, pulse: true,
     spotify: { on: true, playing: true, idx: 0, pos: 71 },
     sessions: SESSIONS, target: 'kaze', focused: null,
     shelf: [
-      { id: 1, name: 'notch-geometry.png', size: 1264000 },
-      { id: 2, name: 'config.toml', size: 2140 }
+      { id: 1, kind: 'file', name: 'notch-geometry.png', size: 1264000 },
+      { id: 2, kind: 'file', name: 'config.toml', size: 2140 }
     ],
-    selected: new Set(), nextId: 3, newIds: new Set(),
+    selected: new Set(), nextId: 3, newIds: new Set(), veil: false, veilOver: false, shelfMsg: null,
     configOk: true, sound: true, peek: null, toast: null, log: [], sheet: false, desk: [
       { name: 'Screenshot 2026-11-20 at 09.12.png', x: 1300, y: 70 },
       { name: '2026-11-20-notch-design.md', x: 1300, y: 180 }
@@ -841,9 +863,10 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   /* ---------- mode control ---------- */
   function setMode(mode, o = {}) {
     clearTimeout(T.auto); clearTimeout(T.leave);
-    if (mode === 'expanded' && S.mode !== 'expanded' && !o.tab) S.tab = 'home';
+    if (mode === 'expanded' && S.mode !== 'expanded' && !o.tab) S.tab = 'music';
     if (mode === 'expanded' && (S.mode !== 'expanded' || (o.tab === 'calendar' && S.tab !== 'calendar'))) resetCal();
     S.mode = mode;
+    if (mode !== 'expanded') S.veil = false;
     if (o.tab) S.tab = o.tab;
     S.pinned = !!o.pinned;
     if (o.auto) T.auto = setTimeout(() => { if (!S.hover) setMode('collapsed'); }, o.auto);
@@ -869,7 +892,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     wrap.dataset.mode = S.mode;
     const attention = S.dev && S.pulse && S.sessions.some(s => s.state === 'needs');
     wrap.classList.toggle('attn', attention && S.mode !== 'expanded');
-    renderCollapsed(); renderPeek(); renderTabs(); renderWing(); renderHome();
+    renderCollapsed(); renderPeek(); renderTabs(); renderWing(); renderHome(); renderVeil();
   }
 
   function renderCollapsed() {
@@ -911,15 +934,16 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
       if (b.dataset.tab === 'claude') b.hidden = !S.dev;
       b.querySelector('.badge')?.remove();
       if (b.dataset.tab === 'claude' && S.sessions.some(s => s.state === 'needs')) b.insertAdjacentHTML('beforeend', '<i class="badge"></i>');
+      if (b.dataset.tab === 'home' && S.shelf.length) b.insertAdjacentHTML('beforeend', '<i class="badge shelf" title="Shelf has items"></i>');
       if (b.dataset.tab === 'rules' && !S.configOk) b.insertAdjacentHTML('beforeend', '<i class="badge err"></i>');
     });
     $$('.panel').forEach(p => { p.hidden = p.dataset.panel !== S.tab; });
   }
 
-  const GEAR = '';
+  const GEAR = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4Z"/></svg>';
   function renderWing() {
     const el = $('#wingRight');
-    const gear = '';
+    const gear = `<button class="gear" data-act="settings" aria-label="Settings" title="Settings">${GEAR}</button>`;
     if (S.toast) { el.innerHTML = `<span class="status-pill toast">${esc(S.toast)}</span>${gear}`; return; }
     const parts = [];
     if (S.dev) {
@@ -998,59 +1022,77 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     renderCalendar();
   });
 
-  /* ---------- Home tab: the overview, and where the island opens ---------- */
+  /* ---------- Home tab: the shelf ---------- */
+  // Boxes are authored in the real 400 x 200 pt island (header strip 0..32) and mapped onto the 720 x 330 mockup island.
+  const KX = 720 / 400, KY = 296 / 168;
+  const SHX = x => +(x * KX).toFixed(2), SHY = y => +(34 + (y - 32) * KY).toFixed(2);
+  const SHR = r => `left:${SHX(r[0])}px;top:${SHY(r[1])}px;width:${+(r[2] * KX).toFixed(2)}px;height:${+(r[3] * KY).toFixed(2)}px`;
+  const SH = {
+    cap: 20,
+    chipRow: [14, 44, 372, 64], chip: [116, 64], chipGap: 8, chipX: [96, 4, 16, 16],
+    empty: [14, 44, 372, 88], status: [14, 116, 372, 16],
+    count: [14, 166, 200, 20], clear: [326, 166, 60, 22],
+    veil: [0, 32, 400, 168], veilRow: [0, 52, 400, 96], veilTile: [120, 52, 160, 96], veilIcon: [186, 70, 28, 28], veilCaption: [120, 110, 160, 16], veilCount: [12, 156, 376, 16]
+  };
+  const XSVG = '<svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg>';
   function renderHome() {
     const el = $('#pHome'); if (!el) return;
-    const c = S.cal, t = TRACKS[S.spotify.idx];
-    const open = c.rem.filter(r => !r.done), over = open.filter(r => r.over).length;
-    const evs = c.denied ? [] : calEvents(CAL.today);
-    const running = evs.find(e => e.ph === 'running'), next = evs.find(e => e.ph === 'upcoming');
-    const parts = [];
-    if (running) parts.push(`<b>${esc(running.t)}</b> is on now`);
-    else if (next) parts.push(`<b>${esc(next.t)}</b> at ${next.time.split(' – ')[0]}`);
-    if (!c.denied) parts.push(open.length ? `${open.length} reminder${open.length > 1 ? 's' : ''} due${over ? ` · ${over} overdue` : ''}` : 'nothing due');
-    const sub = parts.length ? parts.join(' · ') : 'All quiet.';
-    const gearIcon = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4Z"/></svg>';
-
-    let up;
-    if (c.denied) {
-      up = `<div class="hlabel">Up next</div><div class="hmuted">Calendar access is off.</div><span class="hlink">Open Settings</span>`;
-    } else if (running || next) {
-      const e = running || next;
-      up = `<div class="hlabel">Up next <i>${running ? 'Now' : ''}</i></div>
-        <div class="hev" style="--c:${e.c}"><i class="bar3"></i><div><b>${esc(e.t)}</b><em class="${running ? 'now' : ''}">${running ? 'Until ' + e.time.split(' – ')[1] : e.time}</em></div></div>` +
-        (running && next ? `<div class="hthen">Then <b>${esc(next.t)}</b> · ${next.time.split(' – ')[0]}</div>` : '');
-    } else {
-      up = `<div class="hlabel">Up next</div><div class="hmuted">Nothing else today.</div>`;
-    }
-
-    let np;
-    if (!S.spotify.on) {
-      np = `<div class="hlabel">Now playing</div><div class="hmuted">Spotify isn’t running.</div>`;
-    } else {
-      np = `<div class="hlabel">Now playing <i>${S.spotify.playing ? 'Spotify' : 'Paused'}</i></div>
-        <div class="hnp"><div class="art" style="background:${art(t)}"></div><div><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div></div>
-        <div class="hctl"><button class="ibtn" data-sp="prev" aria-label="Previous">${ICON.prev}</button><button class="ibtn big" data-sp="toggle" aria-label="${S.spotify.playing ? 'Pause' : 'Play'}">${S.spotify.playing ? ICON.pause : ICON.play}</button><button class="ibtn" data-sp="next" aria-label="Next">${ICON.next}</button></div>`;
-    }
-
-    let dev;
-    if (!S.devices.length) {
-      dev = `<div class="hlabel">Connected</div><div class="hmuted">No Bluetooth devices connected.</div>`;
-    } else {
-      dev = `<div class="hlabel">Connected <i>${S.devices.length}</i></div><div class="hdev">` + S.devices.slice(0, 4).map(d =>
-        `<div class="hrow"><span class="ic"><svg viewBox="0 0 24 24">${DEVGLYPH[d.kind] || DEVGLYPH.other}</svg></span><b>${esc(d.name)}</b>` +
-        (d.battery != null ? `<em class="${d.battery <= 15 ? 'low' : ''}">${d.battery}%${battGlyph(d.battery)}</em>` : '<em></em>') + '</div>').join('') + '</div>';
-    }
-
-    el.innerHTML = `<div class="home">
-      <div class="home-head"><div><div class="home-date">FRIDAY 20 NOV</div><div class="home-hi">Good morning</div><div class="home-sub">${sub}</div></div>
-        <button class="gear home-gear" data-act="settings" aria-label="Settings" title="Settings">${gearIcon}</button></div>
-      <div class="tiles">
-        <div class="htile" ${c.denied ? '' : 'data-go="calendar"'} role="${c.denied ? 'group' : 'button'}">${up}</div>
-        <div class="htile" ${S.spotify.on ? 'data-go="music"' : ''}>${np}</div>
-        <div class="htile">${dev}</div>
-      </div></div>`;
+    const n = S.shelf.length;
+    const body = n
+      ? `<div class="chip-row" style="${SHR(SH.chipRow)}">${S.shelf.map(f => `
+          <div class="chip ${S.newIds.has(f.id) ? 'new' : ''}" draggable="true" data-file="${f.id}" title="${esc(f.name)}" style="width:${+(SH.chip[0] * KX).toFixed(2)}px;height:${+(SH.chip[1] * KY).toFixed(2)}px">
+            <span class="ft" style="--ftc:${EXT_COLOR[shelfBadge(f)] || '#c8ccd2'}">${esc(shelfBadge(f))}</span>
+            <span class="nm"><b>${esc(f.name)}</b><em>${esc(shelfSub(f))}</em></span>
+            <button class="sx" data-shelf-rm="${f.id}" aria-label="Remove ${esc(f.name)}" title="Remove">${XSVG}</button>
+          </div>`).join('')}</div>`
+      : `<div class="shelf-empty" style="${SHR(SH.empty)}">Drop files, text or links here</div>`;
+    const msg = S.shelfMsg ? `<div class="shelf-status ${S.shelfMsg.refused ? 'warn' : ''}" style="${SHR(SH.status)}">${esc(S.shelfMsg.text)}</div>` : '';
+    el.innerHTML = `<div class="shelf-home">${body}${msg}
+      <div class="shelf-count" style="${SHR(SH.count)}">${n ? n + (n === 1 ? ' item' : ' items') : 'No items'}</div>
+      <button class="pbtn shelf-clear" data-shelf-clear style="${SHR(SH.clear)}" ${n ? '' : 'disabled'}>Clear</button></div>`;
+    S.newIds.clear();
   }
+  function renderVeil() {
+    const v = $('#veil'); if (!v) return;
+    const n = S.shelf.length, full = n >= SH.cap;
+    v.classList.toggle('on', !!S.veil && S.mode === 'expanded');
+    v.classList.toggle('full', full);
+    v.setAttribute('style', SHR(SH.veil));
+    const rel = r => `left:${SHX(r[0])}px;top:${+((r[1] - SH.veil[1]) * KY).toFixed(2)}px;width:${+(r[2] * KX).toFixed(2)}px;height:${+(r[3] * KY).toFixed(2)}px`;
+    v.innerHTML = `<div class="vrow" style="${rel(SH.veilRow)}"><div class="vtile ${S.veilOver && !full ? 'over' : ''}" data-veil-tile>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5Z"/></svg>
+        <span class="vcap">${full ? 'Shelf full (20)' : 'Drop to add to shelf'}</span></div></div>
+      <div class="vc" style="${rel(SH.veilCount)}">${n} of ${SH.cap}</div>`;
+    syncShelfBtn();
+  }
+  const shelfBadge = f => f.kind === 'link' ? 'link' : f.kind === 'text' ? 'text' : (ext(f.name) || 'file');
+  const shelfSub = f => f.kind === 'link' ? (f.host || 'Link') : f.kind === 'text' ? 'Text' : fmtSize(f.size || 0);
+
+  /* shelf model: cap 20, a batch fills to the cap and the rest is refused, duplicate file names are ignored and not counted */
+  function shelfAdd(entries) {
+    let added = 0, refused = 0;
+    entries.forEach(e => {
+      if (e.kind === 'file' && S.shelf.some(x => x.kind === 'file' && x.name === e.name)) return;
+      if (S.shelf.length >= SH.cap) { refused++; return; }
+      const id = S.nextId++; S.shelf.push({ id, size: 0, ...e }); S.newIds.add(id); added++;
+    });
+    return { added, refused };
+  }
+  function shelfDrop(entries) {
+    const r = shelfAdd(entries);
+    S.veil = false; S.veilOver = false; clearTimeout(T.dragLeave);
+    setMode('expanded', { tab: 'home', pinned: S.pinned });
+    S.shelfMsg = { text: `Added ${r.added}` + (r.refused ? `, ${r.refused} did not fit` : ''), refused: r.refused > 0 };
+    renderHome();
+    clearTimeout(T.shelfMsg); T.shelfMsg = setTimeout(() => { S.shelfMsg = null; renderHome(); }, 2200);
+    if (r.added) fire('shelf.dropped');
+    syncShelfBtn();
+  }
+  function setVeil(on, over = false) {
+    if (on && S.mode !== 'expanded') setMode('expanded', { pinned: S.pinned });
+    S.veil = on; S.veilOver = on && over; renderVeil(); syncShelfBtn();
+  }
+  function syncShelfBtn() { const b = $('#shelfHoverBtn'); if (b) b.textContent = S.veil ? 'End drag-hover' : 'Simulate drag-hover'; }
 
   function renderCamera() {
     $('#pCamera').innerHTML = `<div class="cam">
@@ -1124,30 +1166,9 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     S.sessions.forEach(s => { const el = $(`[data-elapsed="${s.id}"]`); if (el) el.textContent = mmss(((s.ended || now()) - s.started) / 1000); });
   }
 
-  const EXT_COLOR = { png: '#7fd3c4', jpg: '#7fd3c4', jpeg: '#7fd3c4', gif: '#7fd3c4', heic: '#7fd3c4', pdf: '#ff8a80', md: '#c8ccd2', txt: '#c8ccd2', toml: '#f2c66d', json: '#f2c66d', zip: '#d7b48a', swift: '#ff9e6b', mov: '#b39dff', mp4: '#b39dff' };
+  const EXT_COLOR = { png: '#7fd3c4', jpg: '#7fd3c4', jpeg: '#7fd3c4', gif: '#7fd3c4', heic: '#7fd3c4', pdf: '#ff8a80', md: '#c8ccd2', txt: '#c8ccd2', toml: '#f2c66d', json: '#f2c66d', zip: '#d7b48a', swift: '#ff9e6b', mov: '#b39dff', mp4: '#b39dff', text: '#c8ccd2', link: '#86AEF7' };
   const ext = n => (n.includes('.') ? n.split('.').pop() : '').toLowerCase().slice(0, 4);
   const fmtSize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
-  function renderTray() {
-    const n = S.shelf.length, sel = S.selected.size;
-    $('#pTray').innerHTML = `<div class="tray">
-      <div class="dropzone" id="dropzone">${ICON.tray}<div>Drop files on the notch<br>to keep them here</div><span class="mode" id="dropMode">Copy · hold ⌥ to move</span></div>
-      <div class="shelf">
-        <div class="chips">${n ? S.shelf.map(f => `
-          <button class="chip ${S.newIds.has(f.id) ? 'new' : ''}" draggable="true" data-file="${f.id}" aria-pressed="${S.selected.has(f.id)}" title="${esc(f.name)}">
-            <span class="ft" style="--ftc:${EXT_COLOR[ext(f.name)] || '#c8ccd2'}">${esc(ext(f.name) || 'file')}</span>
-            <span><b>${esc(f.name)}</b><em>${fmtSize(f.size)}${f.moved ? ' · moved' : ''}</em></span>
-          </button>`).join('') : '<div class="tray-empty">The shelf is empty. Drag files from Finder onto the notch.</div>'}
-        </div>
-        <div class="tray-actions">
-          <button class="pbtn blue" data-tray="airdrop" ${n ? '' : 'disabled'}>${ICON.airdrop} AirDrop ${sel ? sel + ' selected' : n ? 'all ' + n : ''}</button>
-          <button class="pbtn" data-tray="clear" ${n ? '' : 'disabled'}>Clear</button>
-          <span class="hint">Drag a file out to the desktop</span>
-        </div>
-      </div>
-    </div>`;
-    S.newIds.clear();
-  }
-
   function renderRules() {
     $('#pRules').innerHTML = `<div class="rules-wrap">
       <div class="rules">
@@ -1203,7 +1224,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     $('#sessPick').innerHTML = S.sessions.map(s => `<label><input type="radio" name="sess" id="pick-${s.id}" value="${s.id}" ${S.target === s.id ? 'checked' : ''}><span>${esc(s.cwd)}</span></label>`).join('');
   }
 
-  function renderAll() { renderIsland(); renderHome(); renderMusic(); renderCamera(); renderCalendar(); renderClaude(); renderTray(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
+  function renderAll() { renderIsland(); renderHome(); renderVeil(); renderMusic(); renderCamera(); renderCalendar(); renderClaude(); renderRules(); renderTerm(); renderDesk(); renderStates(); renderSessPick(); }
 
   /* ---------- sound ---------- */
   let ac;
@@ -1308,12 +1329,31 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     } else if (kind === 'cal.reset') {
       S.cal.busy = false; S.cal.denied = false; S.cal.rem.forEach(r => r.done = false);
       $('#calDenyBtn').textContent = 'Deny access'; resetCal(); renderCalendar();
+    } else if (kind.startsWith('shelf.')) {
+      simShelf(kind.slice(6));
     } else if (kind === 'config.break') {
       S.configOk = !S.configOk;
       $('#cfgBtn').textContent = S.configOk ? 'Save a broken config.toml' : 'Fix config.toml';
       log('config.reload', S.configOk ? '<span class="act">loaded 3 rules</span>' : '<span class="skip">parse error, kept last good config</span>');
       renderRules(); renderTabs();
     }
+  }
+
+  const POOL = [['moodboard.png', 2480000], ['invoice-nov.pdf', 184000], ['notes.md', 3100], ['demo-take3.mov', 48200000], ['release.zip', 9100000], ['AppDelegate.swift', 5200], ['colors.json', 880], ['hero.jpg', 1730000], ['readme.txt', 640], ['export.mp4', 22800000]];
+  let poolI = 0;
+  const poolFile = () => { const [name, size] = POOL[poolI++ % POOL.length]; return { kind: 'file', name, size }; };
+  function simShelf(what) {
+    if (what === 'hover') { setVeil(!S.veil, true); return; }
+    if (what === 'drop') { const a = poolFile(), b = poolFile(); shelfDrop([a, b]); }
+    else if (what === 'dropmixed') shelfDrop([{ kind: 'link', name: 'developer.apple.com/documentation', host: 'developer.apple.com' }, { kind: 'text', name: 'Call Mira at 3pm about the invoice' }]);
+    else if (what === 'fill') { S.shelf = []; shelfAdd(Array.from({ length: SH.cap }, poolFile).map((f, i) => ({ ...f, name: f.name.replace(/(\.\w+)$/, `-${i + 1}$1`) }))); setMode('expanded', { tab: 'home', pinned: true }); renderHome(); renderTabs(); renderVeil(); }
+    else if (what === 'overflow') {
+      S.shelf = []; shelfAdd(Array.from({ length: SH.cap - 2 }, poolFile).map((f, i) => ({ ...f, name: f.name.replace(/(\.\w+)$/, `-${i + 1}$1`) })));
+      shelfDrop(Array.from({ length: 5 }, poolFile).map((f, i) => ({ ...f, name: f.name.replace(/(\.\w+)$/, `-new${i + 1}$1`) })));
+      setMode('expanded', { tab: 'home', pinned: true });
+    }
+    else if (what === 'empty') { S.shelf = []; S.shelfMsg = null; setMode('expanded', { tab: 'home', pinned: true }); renderHome(); renderTabs(); renderVeil(); }
+    renderTabs(); renderVeil(); renderStates();
   }
 
   function changeTrack(dir, to) {
@@ -1323,18 +1363,6 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     fire('spotify.track_changed');
   }
   function togglePlay() { S.spotify.playing = !S.spotify.playing; renderMusic(); renderIsland(); }
-
-  function addFiles(list, move) {
-    const room = 20 - S.shelf.length;
-    const files = [...list].slice(0, Math.max(0, room));
-    files.forEach(f => { const id = S.nextId++; S.shelf.push({ id, name: f.name, size: f.size, moved: move }); S.newIds.add(id); });
-    renderTray();
-    if (files.length) {
-      toast(`${move ? 'Moved' : 'Copied'} ${files.length} file${files.length > 1 ? 's' : ''} to the shelf`);
-      fire('shelf.dropped');
-    }
-    if (list.length > files.length) toast('The shelf holds 20 files');
-  }
 
   /* ---------- events: island hover / click ---------- */
   island.addEventListener('mouseenter', () => {
@@ -1347,6 +1375,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   });
   island.addEventListener('click', e => {
     if (S.mode !== 'expanded') { clearTimeout(T.enter); setMode('expanded', { pinned: S.pinned }); return; }
+    if (S.veil && e.target.closest('#veil')) { setVeil(false); return; }
     const act = e.target.closest('[data-act]');
     if (act && act.dataset.act === 'settings') { openSettings(); return; }
     const cam = e.target.closest('[data-cam]');
@@ -1363,13 +1392,9 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
     if (bar) { const r = bar.getBoundingClientRect(); S.spotify.pos = (e.clientX - r.left) / r.width * TRACKS[S.spotify.idx].len; tickMusic(); return; }
     const row = e.target.closest('[data-session]');
     if (row) { focusSession(row.dataset.session); return; }
-    const chip = e.target.closest('[data-file]');
-    if (chip) { const id = +chip.dataset.file; S.selected.has(id) ? S.selected.delete(id) : S.selected.add(id); renderTray(); return; }
-    const tr = e.target.closest('[data-tray]');
-    if (tr) {
-      if (tr.dataset.tray === 'clear') { S.shelf = []; S.selected.clear(); renderTray(); toast('Shelf cleared'); }
-      else { S.sheet = true; renderSheet(); }
-    }
+    const rm = e.target.closest('[data-shelf-rm]');
+    if (rm) { S.shelf = S.shelf.filter(x => x.id !== +rm.dataset.shelfRm); renderHome(); renderTabs(); return; }
+    if (e.target.closest('[data-shelf-clear]')) { S.shelf = []; S.shelfMsg = null; renderHome(); renderTabs(); toast('Shelf cleared'); }
   });
   island.addEventListener('change', e => {
     const id = e.target.dataset.rule; if (!id) return;
@@ -1393,27 +1418,36 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   /* ---------- drag and drop ---------- */
   const isOwn = e => [...(e.dataTransfer?.types || [])].includes('application/x-shima');
   const hasFiles = e => [...(e.dataTransfer?.types || [])].includes('Files');
+  const DROPPABLE = ['Files', 'text/uri-list', 'text/plain'];
+  const hasDrop = e => !isOwn(e) && [...(e.dataTransfer?.types || [])].some(t => DROPPABLE.includes(t));
   island.addEventListener('dragenter', e => {
-    if (!hasFiles(e)) return;
+    if (!hasDrop(e)) return;
     e.preventDefault(); clearTimeout(T.dragLeave);
-    if (!(S.mode === 'expanded' && S.tab === 'tray')) setMode('expanded', { tab: 'tray', pinned: S.pinned });
+    if (!S.veil) setVeil(true, false);
   });
   island.addEventListener('dragover', e => {
-    if (!hasFiles(e)) return;
+    if (!hasDrop(e)) return;
     e.preventDefault(); clearTimeout(T.dragLeave);
-    e.dataTransfer.dropEffect = e.altKey ? 'move' : 'copy';
-    $('#dropzone')?.classList.add('over');
-    const m = $('#dropMode'); if (m) m.textContent = e.altKey ? 'Move' : 'Copy · hold ⌥ to move';
+    e.dataTransfer.dropEffect = S.shelf.length >= SH.cap ? 'none' : 'copy';
+    const ov = !!e.target.closest('[data-veil-tile]'); if (S.veil && ov !== S.veilOver) { S.veilOver = ov; renderVeil(); }
   });
   island.addEventListener('dragleave', e => {
     if (island.contains(e.relatedTarget)) return;
-    $('#dropzone')?.classList.remove('over');
+    if (S.veil) setVeil(false);
     if (!S.pinned) T.dragLeave = setTimeout(() => setMode('collapsed'), 300);
   });
   island.addEventListener('drop', e => {
-    if (!hasFiles(e)) return;
+    if (!hasDrop(e)) return;
     e.preventDefault(); e.stopPropagation();
-    addFiles(e.dataTransfer.files, e.altKey);
+    const dt = e.dataTransfer, entries = [...dt.files].map(f => ({ kind: 'file', name: f.name, size: f.size }));
+    if (!entries.length) {
+      const url = (dt.getData('text/uri-list') || '').split('\n').find(l => /^https?:\/\//.test(l.trim()));
+      const txt = (dt.getData('text/plain') || '').trim();
+      const link = url ? url.trim() : /^https?:\/\/\S+$/.test(txt) ? txt : null;
+      if (link) { let host = link; try { host = new URL(link).host; } catch (_) {} entries.push({ kind: 'link', name: link.replace(/^https?:\/\//, ''), host }); }
+      else if (txt) entries.push({ kind: 'text', name: txt.slice(0, 80) });
+    }
+    shelfDrop(entries);
   });
   island.addEventListener('dragstart', e => {
     const chip = e.target.closest('[data-file]'); if (!chip) return;
@@ -1462,7 +1496,7 @@ kbd { font: 11px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px 
   $('#soundOn').addEventListener('change', e => { S.sound = e.target.checked; });
 
   /* ---------- keyboard ---------- */
-  const tabsNow = () => ['home', 'music', 'tray', 'camera', 'calendar'].concat(S.dev ? ['claude'] : [], ['rules']);
+  const tabsNow = () => ['home', 'music', 'camera', 'calendar'].concat(S.dev ? ['claude'] : [], ['rules']);
   document.addEventListener('keydown', e => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.matches('input[type="text"], textarea')) return;

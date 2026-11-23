@@ -60,7 +60,8 @@ wake() { d "move $mid $away; sleep 500"; }
 echo "== announcing: about 35 s of fake shelf commands, the pointer is parked away from the notch =="
 front0="$(front)"
 wake
-d "fake-shelf clear; sleep 300"
+# Start from a known state whatever an earlier run left: enter then exit always ends collapsed.
+d "fake-shelf clear; sleep 200; fake-shelf drag-enter; sleep 300; fake-shelf drag-exit; sleep 1500"
 
 wake
 cat > .build/shelf-a.sh <<EOF
@@ -127,7 +128,8 @@ print("PASS 4 re-enter inside the debounce stayed open; 6 drop-cancel ended(drop
 
 # --- check 5 and 7: the cap, then clear ---
 wake
-scripts/with-log.sh .build/shelf-d.log -- "$tools/drive" "fake-shelf clear; sleep 200; fake-shelf drag-enter; sleep 600; ${batch}sleep 300; fake-shelf drop; sleep 800; fake-shelf clear; sleep 300; fake-shelf drag-exit; sleep 1500" > /dev/null
+scripts/with-log.sh .build/shelf-d.log -- "$tools/drive" "fake-shelf clear; sleep 200; fake-shelf drag-enter; sleep 600; ${batch}sleep 300; fake-shelf drop; sleep 800; fake-shelf clear; sleep 300; fake-shelf drag-enter; sleep 300; fake-shelf drag-exit; sleep 1500" > /dev/null
+SHIMA_WINDOW_PID=$pid "$tools/shima-windows" 2>&1 | tail -1 | grep -q "^PASS idle frame" && ok "5b the island is back to the idle frame at the end" || bad "5b island not idle at the end: $(SHIMA_WINDOW_PID=$pid "$tools/shima-windows" 2>&1 | tail -1)"
 analyse .build/shelf-d.log "$pid" '
 assert count("shelf drop added=20 refused=2 items=20") == 1, "22 files onto an empty shelf did not give added=20 refused=2 items=20"
 assert count("shelf cleared items=0") >= 2, "clear did not empty the store"

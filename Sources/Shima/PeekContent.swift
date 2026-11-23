@@ -63,8 +63,8 @@ struct PeekContent: View {
                 Text(device.title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white).lineLimit(1)
                 Text(device.subtitle).font(.system(size: 11.5)).foregroundStyle(ink2).lineLimit(1).truncationMode(.tail)
             }
-            .frame(maxWidth: 256, alignment: .leading)
         }
+        .padding(.horizontal, 22)
         .frame(width: IslandLayout.peek.width, height: IslandLayout.peek.height - 32, alignment: .center)
         .offset(y: 32 - 1)
         .accessibilityElement(children: .ignore)

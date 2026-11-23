@@ -247,6 +247,13 @@ import ShimaCore
         check(noBattery.span(in: xs(PeekLayout.batteryGroup), ys: 40..<70, matching: { c in
             c.alphaComponent > 0.9 && (c.redComponent > 0.2 || c.greenComponent > 0.2 || c.blueComponent > 0.2) }).isEmpty,
               "no battery value must leave the battery area empty")
+        let inkCols = (0..<Int(IslandLayout.peek.width)).filter { x in
+            !noBattery.span(in: (x + Int(peekDX))..<(x + Int(peekDX) + 1), ys: 38..<72, matching: { c in
+                c.alphaComponent > 0.9 && (c.redComponent > 0.2 || c.greenComponent > 0.2 || c.blueComponent > 0.2) }).isEmpty }
+        if let lo = inkCols.min(), let hi = inkCols.max() {
+            let mid = Double(lo + hi + 1) / 2
+            check(abs(mid - Double(IslandLayout.peek.width) / 2) <= 3, "no-battery banner must be centred (ink midpoint \(mid), island midpoint \(IslandLayout.peek.width / 2))")
+        } else { check(false, "no-battery banner drew nothing") }
         let longName = peekPixels(.headphones, String(repeating: "Very Long Studio Headphones ", count: 3), "64%")
         check(longName.span(in: Int(252 + peekDX)..<Int(318 + peekDX), ys: 44..<64, matching: isLight).count >= 4,
               "battery text must stay readable beside a long name")

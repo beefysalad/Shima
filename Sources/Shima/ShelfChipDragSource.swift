@@ -56,6 +56,8 @@ struct ShelfChipDragSource: NSViewRepresentable {
         guard prepareDrag() else { return }
         let dragItem = NSDraggingItem(pasteboardWriter: ShelfPasteboard.pasteboardWriter(for: item))
         dragItem.setDraggingFrame(bounds, contents: Self.dragImage(for: item, size: bounds.size))
+        // Set before the session starts so the island's own drop destination can never see this drag unflagged.
+        OwnDrag.active = true
         beginDraggingSession(with: [dragItem], event: event, source: self)
     }
 

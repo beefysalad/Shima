@@ -26,7 +26,8 @@ public struct ShelfItem: Equatable, Identifiable, Sendable {
             candidate = (url.host ?? "") + url.path
             fallback = url.absoluteString
         case .text(let text):
-            candidate = String(text.prefix { !$0.isNewline }).trimmingCharacters(in: .whitespacesAndNewlines)
+            candidate = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix { !$0.isNewline })
+                .trimmingCharacters(in: .whitespaces)
             fallback = "Text"
         }
         let displayName = candidate.isEmpty ? fallback : candidate

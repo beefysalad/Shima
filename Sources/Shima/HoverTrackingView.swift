@@ -47,7 +47,8 @@ final class HoverTrackingView: NSView {
     // MARK: Drag destination (AppKit, never SwiftUI .onDrop; the app is never activated)
 
     override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
-        let op = handleEntered(pasteboard: sender.draggingPasteboard)
+        // `draggingSource` is non-nil only for a drag started inside this app (a shelf chip).
+        let op = handleEntered(pasteboard: sender.draggingPasteboard, fromThisApp: sender.draggingSource != nil)
         if op != [] { onDragLocation(islandPoint(fromWindowPoint: sender.draggingLocation)) }
         return op
     }
@@ -70,10 +71,15 @@ final class HoverTrackingView: NSView {
 
     // Seams: the NSDraggingInfo overrides above only unpack the session.
 
-    func handleEntered(pasteboard: NSPasteboard) -> NSDragOperation {
-        // Own chip drag: refuse, send nothing, and ignore the rest of this session.
-        guard !OwnDrag.active else { return [] }
-        guard !DroppedEntryReader.entries(from: pasteboard).isEmpty else { return [] }
+    func handleEntered(pasteboard: NSPasteboard, fromThisApp: Bool = false) -> NSDragOperation {
+        // Own chip drag or nothing droppable: refuse, send nothing, and ignore the rest of this session.
+        // A refusal also clears any state a previous session left behind (its draggingEnded may never have arrived).
+        guard !fromThisApp, !OwnDrag.active, !DroppedEntryReader.entries(from: pasteboard).isEmpty else {
+            acceptedSession = false
+            dropped = false
+            return []
+        }
+        dropped = false
         acceptedSession = true
         onDragEvent(.entered)
         return .copy

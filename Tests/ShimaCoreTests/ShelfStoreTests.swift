@@ -113,6 +113,19 @@ import Testing
         #expect(store.items[0].name == String(repeating: "🙂", count: 59) + "…")
         #expect(store.items[1].name == "Folder")
         #expect(store.items[2].name == unicodeName)
+        #expect(store.items[3].name == "Actual text")
+    }
+
+    @Test func equivalentFilePathsAreDuplicates() {
+        let store = ShelfStore()
+        let result = store.add([
+            DroppedEntry(fileURL: URL(fileURLWithPath: "/tmp/Folder/x.txt")),
+            DroppedEntry(fileURL: URL(fileURLWithPath: "/tmp/other/../Folder/x.txt")),
+            DroppedEntry(fileURL: URL(fileURLWithPath: "/tmp/Folder/", isDirectory: true)),
+            DroppedEntry(fileURL: URL(fileURLWithPath: "/tmp/Folder"))
+        ])
+        #expect(result == ShelfAddResult(added: 2, refused: 0))
+        #expect(store.items.count == 2)
     }
 
     @Test func idsComeFromInjectedFactory() {

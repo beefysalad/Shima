@@ -30,6 +30,14 @@ import Testing
         #expect(ShelfClassifier.classify(entry) == .link(URL(string: "https://example.com/page")!))
     }
 
+    @Test func hugeTextIsTruncatedToTheCap() {
+        let huge = String(repeating: "a", count: ShelfClassifier.maxTextLength + 50_000)
+        guard case .text(let stored)? = ShelfClassifier.classify(DroppedEntry(string: huge)) else {
+            Issue.record("expected text"); return
+        }
+        #expect(stored.count == ShelfClassifier.maxTextLength)
+    }
+
     @Test func plainStringBecomesText() {
         #expect(ShelfClassifier.classify(DroppedEntry(string: "hello world")) == .text("hello world"))
     }

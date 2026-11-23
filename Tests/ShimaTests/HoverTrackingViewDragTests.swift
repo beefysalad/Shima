@@ -103,6 +103,28 @@ import Testing
         #expect(rig.store.items.isEmpty)
     }
 
+    @Test func refusedEntryResetsStaleSessionState() {
+        let rig = Rig(); let b = Board(); b.text("hello")
+        // A previous session was dropped but its draggingEnded never arrived.
+        #expect(rig.view.handleEntered(pasteboard: b.pb) == .copy)
+        #expect(rig.view.handlePerform(pasteboard: b.pb))
+        rig.events.list.removeAll()
+        // The next drag is refused (own chip drag); stale state must not leak into later events.
+        OwnDrag.active = true
+        defer { OwnDrag.active = false }
+        #expect(rig.view.handleEntered(pasteboard: b.pb) == [])
+        rig.view.handleExited()
+        rig.view.handleEnded()
+        #expect(rig.events.list.isEmpty)
+    }
+
+    @Test func dragFromThisAppSourceIsRefusedEvenWithoutTheFlag() {
+        let rig = Rig(); let b = Board(); b.text("chip")
+        OwnDrag.active = false
+        #expect(rig.view.handleEntered(pasteboard: b.pb, fromThisApp: true) == [])
+        #expect(rig.events.list.isEmpty)
+    }
+
     @Test func registersForDragTypesInAWindow() {
         let rig = Rig()
         let window = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: true)

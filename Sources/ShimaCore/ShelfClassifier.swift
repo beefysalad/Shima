@@ -13,6 +13,9 @@ public struct DroppedEntry: Equatable, Sendable {
 }
 
 public enum ShelfClassifier {
+    /// A dropped snippet is stored (and written back on drag-out) at most this long.
+    public static let maxTextLength = 100_000
+
     public static func classify(_ entry: DroppedEntry) -> ShelfItemKind? {
         if let fileURL = entry.fileURL, fileURL.isFileURL {
             return .file(fileURL)
@@ -26,7 +29,7 @@ public enum ShelfClassifier {
         if let url = URL(string: trimmed), isHTTP(url) {
             return .link(url)
         }
-        return .text(string)
+        return .text(String(string.prefix(maxTextLength)))
     }
 
     private static func isHTTP(_ url: URL) -> Bool {

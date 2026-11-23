@@ -19,5 +19,6 @@ let package = Package(
         .executableTarget(name: "shimactl"),
         .executableTarget(name: "ShimaUpdater", dependencies: ["ShimaCore"]),
         .testTarget(name: "ShimaCoreTests", dependencies: ["ShimaCore"]),
+        .testTarget(name: "ShimaTests", dependencies: ["Shima"]),
     ]
 )

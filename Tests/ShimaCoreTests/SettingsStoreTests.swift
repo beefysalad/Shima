@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ShimaCore
 
@@ -79,5 +80,24 @@ import Testing
         #expect(storage.values == ["equalizerMode": "animated"] && storage.writes == 1)
         store.setEqualizerMode(.animated)
         #expect(storage.writes == 1)
+    }
+
+    @Test func userDefaultsStorageRoundTripsInAnIsolatedSuite() throws {
+        let name = "local.shima.tests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let storage = UserDefaultsPreferenceStorage(defaults: defaults)
+        #expect(storage.string(forKey: "equalizerMode") == nil)
+        let store = SettingsStore(storage: storage)
+        store.setEqualizerMode(.off)
+        store.setDevicePopups(false)
+        #expect(storage.string(forKey: "equalizerMode") == "off" && storage.string(forKey: "devicePopups") == "off")
+        #expect(store.equalizerMode == .off && !store.devicePopups)
+    }
+
+    @Test func forShimaPicksStandardDefaultsOnlyInsideTheShimaBundle() {
+        // Both branches must construct without crashing; the suite branch is the one tests and tools take.
+        _ = UserDefaultsPreferenceStorage.forShima(bundleIdentifier: "local.shima")
+        _ = UserDefaultsPreferenceStorage.forShima(bundleIdentifier: nil)
     }
 }

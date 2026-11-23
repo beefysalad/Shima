@@ -49,4 +49,12 @@ import Testing
         #expect(CalendarLayout.previousMonth.maxX <= CalendarLayout.nextMonth.minX)
         #expect(CalendarLayout.nextMonth.maxX == 386)
     }
+
+    @Test func centerMapsLocalRectToGlobalPoints() {
+        let rect = CGRect(x: 18, y: 38, width: 158, height: 14)
+        let point = CalendarLayout.center(of: rect, notchMidX: 700, topY: 0)
+        #expect(point.x == 700 - IslandLayout.expanded.width / 2 + rect.midX)
+        #expect(point.y == rect.midY)
+        #expect(CalendarLayout.center(of: rect, notchMidX: 700, topY: 25).y == 25 + rect.midY)
+    }
 }

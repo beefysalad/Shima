@@ -1,0 +1,42 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # macos-latest selects Xcode 26; the app requires the Swift 6.4.2 toolchain.
+    runs-on: xcode-27
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-xcode27.2-${{ hashFiles('Package.swift') }}-${{ github.sha }}
+          restore-keys: spm-${{ runner.os }}-${{ runner.arch }}-xcode27.2-${{ hashFiles('Package.swift') }}-
+      # Compiles every target (Shima, shimactl, ShimaUpdater), so glue code that no test imports still has to build.
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test --enable-code-coverage
+      # Measured locally with Xcode 27.2: Core 1885/1895 (99.47%), all production 2521/6642 (37.96%).
+      - name: Production coverage floors
+        run: |
+          set -o pipefail
+          python3 -I scripts/coverage.py --core-floor 99 --overall-floor 37 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Bundle script still builds the app
+        run: scripts/bundle.sh

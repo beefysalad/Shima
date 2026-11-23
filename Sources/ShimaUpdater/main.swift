@@ -10,13 +10,11 @@ import Security
         #else
         let expectedTarget = "/Applications/Shima.app"
         #endif
-        guard args.count == 4, let pid = Int32(args[1]), pid > 1,
-              args[2] == expectedTarget else { return }
-        let target = URL(fileURLWithPath: args[2]), stage = URL(fileURLWithPath: args[3])
-        guard stage.deletingLastPathComponent() == target.deletingLastPathComponent(),
-              stage.lastPathComponent.hasPrefix(".shima-update-"),
-              UUID(uuidString: String(stage.lastPathComponent.dropFirst(".shima-update-".count))) != nil,
-              stage.resolvingSymlinksInPath() == stage else { return }
+        guard args.count == 4,
+              let invocation = UpdateInvocation.parse(arguments: args,
+                  resolvedStage: { URL(fileURLWithPath: args[3]).resolvingSymlinksInPath() },
+                  expectedTarget: expectedTarget) else { return }
+        let pid = invocation.parentPID, target = invocation.target, stage = invocation.stage
         let fm = FileManager.default
         let backup = stage.appendingPathComponent("Previous.app")
         let incoming = stage.appendingPathComponent("Shima.app")

@@ -12,14 +12,17 @@ final class AppUpdater {
     private let bundleURL: URL
     private let signing: @MainActor () -> SigningSummary
     private let loadRelease: (@Sendable () async throws -> AppRelease)?
+    private let isWritable: @MainActor (String) -> Bool
 
     init(currentVersion: String? = nil, bundleURL: URL = Bundle.main.bundleURL,
          signing: @escaping @MainActor () -> SigningSummary = { SigningInfo.read() },
-         loadRelease: (@Sendable () async throws -> AppRelease)? = nil) {
+         loadRelease: (@Sendable () async throws -> AppRelease)? = nil,
+         isWritable: @escaping @MainActor (String) -> Bool = { FileManager.default.isWritableFile(atPath: $0) }) {
         self.current = currentVersion ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
         self.bundleURL = bundleURL
         self.signing = signing
         self.loadRelease = loadRelease
+        self.isWritable = isWritable
     }
 
     func check() {
@@ -49,7 +52,7 @@ final class AppUpdater {
                 guard bundleURL.path == "/Applications/Shima.app" else { message = "Shima \(found.displayVersion) is available. Install in Applications to update here."; return }
                 guard case .adHoc = signing() else { message = "Shima \(found.displayVersion) is available. Keep using your signed installer to preserve Spotify permission."; return }
                 guard found.asset(named: "Shima-\(found.displayVersion).zip") != nil, found.asset(named: "SHA256SUMS") != nil else { message = "Shima \(found.displayVersion) is available. This release needs a manual download."; return }
-                guard FileManager.default.isWritableFile(atPath: "/Applications") else { message = "Shima \(found.displayVersion) is available. Applications isn’t writable; download it manually."; return }
+                guard isWritable("/Applications") else { message = "Shima \(found.displayVersion) is available. Applications isn’t writable; download it manually."; return }
                 canInstall = true
                 message = "Shima \(found.displayVersion) is available."
             } catch { message = error.localizedDescription }
@@ -104,11 +107,11 @@ final class AppUpdater {
         } catch { try? FileManager.default.removeItem(at: stage); throw error }
     }
 
-    nonisolated private static func fetch(_ asset: AppRelease.Asset, limit: Int) async throws -> Data {
+    nonisolated static func fetch(_ asset: AppRelease.Asset, limit: Int, session: URLSession = .shared) async throws -> Data {
         guard asset.size <= limit else { throw failure("The release file is too large.") }
         var request = URLRequest(url: asset.browser_download_url)
         request.timeoutInterval = 60
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        let (bytes, response) = try await session.bytes(for: request)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw failure("Couldn’t download the update. Try again later.") }
         var data = Data()
         for try await byte in bytes {

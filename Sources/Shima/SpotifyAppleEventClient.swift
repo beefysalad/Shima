@@ -5,11 +5,14 @@ import ShimaCore
 @MainActor
 final class SpotifyAppleEventClient: SpotifyClient {
     var onEvent: (@MainActor (SpotifyEvent) -> Void)?
-    private let scripting: SpotifyScripting
+    private let scripting: any SpotifyScriptingClient
+    private let pidProvider: @MainActor () -> Int32?
     private var gate = SpotifyRequestGate()
 
-    init(scripting: SpotifyScripting = SpotifyScripting()) {
+    init(scripting: any SpotifyScriptingClient = SpotifyScripting(),
+         pidProvider: @escaping @MainActor () -> Int32? = { SpotifyAppleEventClient.spotifyPID() }) {
         self.scripting = scripting
+        self.pidProvider = pidProvider
     }
 
     static func spotifyPID() -> pid_t? {
@@ -18,7 +21,7 @@ final class SpotifyAppleEventClient: SpotifyClient {
     }
 
     func refresh() {
-        guard let pid = Self.spotifyPID() else { return }
+        guard let pid = pidProvider() else { return }
         guard let ticket = gate.request(pid: pid) else {
             Log.spotify.info("spotify refresh coalesced")
             return
@@ -27,7 +30,7 @@ final class SpotifyAppleEventClient: SpotifyClient {
     }
 
     func send(_ command: SpotifyCommand) {
-        guard let pid = Self.spotifyPID() else { return }
+        guard let pid = pidProvider() else { return }
         let ticket = gate.ticket(pid: pid)
         scripting.command(command, pid: pid) { [weak self] result in
             Task { @MainActor in self?.commandFinished(command, ticket, result) }
@@ -46,9 +49,9 @@ final class SpotifyAppleEventClient: SpotifyClient {
     }
 
     private func finished(_ ticket: SpotifyRequestGate.Ticket, _ result: Result<SpotifyReading, SpotifyScriptError>, _ date: Date, _ consistent: Bool) {
-        let outcome = gate.finish(ticket, currentPid: Self.spotifyPID(), consistent: consistent)
+        let outcome = gate.finish(ticket, currentPid: pidProvider(), consistent: consistent)
         var suffix = ""
-        if case let .failure(error) = result { suffix = " error=\(Self.code(error))" }
+        if case let .failure(error) = result { suffix = " error=\(error.code)" }
         if !consistent { suffix += " inconsistent" }
         Log.spotify.info("spotify result seq=\(ticket.seq, privacy: .public) applied=\(outcome.apply, privacy: .public)\(suffix, privacy: .public)")
         if outcome.apply {
@@ -64,10 +67,10 @@ final class SpotifyAppleEventClient: SpotifyClient {
     }
 
     private func commandFinished(_ command: SpotifyCommand, _ ticket: SpotifyRequestGate.Ticket, _ result: Result<Void, SpotifyScriptError>) {
-        let outcome = gate.finish(ticket, currentPid: Self.spotifyPID())
+        let outcome = gate.finish(ticket, currentPid: pidProvider())
         var status = "ok"
         if case let .failure(error) = result {
-            status = "error=\(Self.code(error))"
+            status = "error=\(error.code)"
             if outcome.apply, error == .permissionDenied { onEvent?(.permissionDenied) }
         }
         let succeeded: Bool
@@ -76,11 +79,4 @@ final class SpotifyAppleEventClient: SpotifyClient {
         if succeeded, outcome.apply { onEvent?(.commandSucceeded(command)) }
     }
 
-    private static func code(_ error: SpotifyScriptError) -> Int {
-        switch error {
-        case let .notRunning(code), let .other(code): return code
-        case .permissionDenied: return -1743
-        case .timeout: return -1712
-        }
-    }
 }

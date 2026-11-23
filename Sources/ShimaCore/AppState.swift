@@ -58,6 +58,10 @@ import Observation
     public var equalizerMode: EqualizerMode = .animated
     public var devicePopupsEnabled = true
     public var peek: PeekItem?
+    /// A droppable drag is over the island (the hover machine's `.dragHovering` phase): the veil shows.
+    public var dragHovering = false
+    /// The drag cursor is over the veil's Shelf tile.
+    public var veilOverTile = false
 
     public var content: NowPlayingContent {
         NowPlayingContent(availability: spotifyAvailability, nowPlaying: nowPlaying)

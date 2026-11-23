@@ -28,6 +28,6 @@ struct CalendarTypesTests {
     }
 
     @Test func tabOrder() {
-        #expect(IslandTab.allCases == [.music, .camera, .calendar])
+        #expect(IslandTab.allCases == [.home, .music, .camera, .calendar])
     }
 }

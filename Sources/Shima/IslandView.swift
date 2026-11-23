@@ -31,6 +31,9 @@ struct IslandView: View {
     let onSettings: @MainActor () -> Void
     var camera: CameraService? = nil
     var calendar: CalendarCoordinator? = nil
+    var shelf: ShelfStore? = nil
+    var shelfService: ShelfService? = nil
+    var onShelfDragStarted: @MainActor () -> Void = {}
 
     private var fill: Color {
         if debug { return Color.red.opacity(0.85) }
@@ -59,6 +62,11 @@ struct IslandView: View {
                 .allowsHitTesting(state.mode == .expanded && state.selectedTab == .music)
         }
         .overlay(alignment: .top) {
+            if state.mode == .expanded && state.selectedTab == .home, let shelf {
+                HomeContent(shelf: shelf, status: shelfService?.status.map { ($0, shelfService?.statusWarn ?? false) }, onDragStarted: onShelfDragStarted)
+            }
+        }
+        .overlay(alignment: .top) {
             if state.mode == .expanded && state.selectedTab == .camera, let camera {
                 CameraContent(service: camera, state: state)
             }
@@ -72,7 +80,12 @@ struct IslandView: View {
             PeekContent(state: state)
         }
         .overlay(alignment: .top) {
-            HeaderTabIcon(state: state, onSettings: onSettings)
+            if state.dragHovering && state.mode == .expanded {
+                ShelfVeil(count: shelf?.items.count ?? 0, isFull: shelf?.isFull ?? false, overTile: state.veilOverTile)
+            }
+        }
+        .overlay(alignment: .top) {
+            HeaderTabIcon(state: state, shelf: shelf, onSettings: onSettings)
                 .opacity(state.mode == .expanded ? 1 : 0)
                 .allowsHitTesting(state.mode == .expanded)
         }
@@ -80,7 +93,7 @@ struct IslandView: View {
 }
 
 /// Outlined 24-unit glyphs copied from mockup/index.html (stroke 1.7, round caps and joins).
-enum HeaderGlyph { case home, music, camera, calendar }
+enum HeaderGlyph { case home, music, camera, calendar, gear }
 
 struct HeaderGlyphShape: Shape {
     let glyph: HeaderGlyph
@@ -95,6 +108,14 @@ struct HeaderGlyphShape: Shape {
             path.move(to: p(4, 11)); path.addLine(to: p(12, 4)); path.addLine(to: p(20, 11)); path.addLine(to: p(20, 20))
             path.addLine(to: p(15, 20)); path.addLine(to: p(15, 14)); path.addLine(to: p(9, 14)); path.addLine(to: p(9, 20))
             path.addLine(to: p(4, 20)); path.closeSubpath()
+        case .gear:
+            path.addEllipse(in: circle(12, 12, 3.2))
+            let pts: [(CGFloat, CGFloat)] = [(19.4, 13.5), (19.4, 10.5), (21.4, 8.9), (19.4, 5.5), (17, 6.5), (14.4, 5), (14, 2.5), (10, 2.5),
+                (9.6, 5), (7, 6.5), (4.6, 5.5), (2.6, 8.9), (4.6, 10.5), (4.6, 13.5), (2.6, 15.1), (4.6, 18.5), (7, 17.5), (9.6, 19),
+                (10, 21.5), (14, 21.5), (14.4, 19), (17, 17.5), (19.4, 18.5), (21.4, 15.1)]
+            path.move(to: p(pts[0].0, pts[0].1))
+            for pt in pts.dropFirst() { path.addLine(to: p(pt.0, pt.1)) }
+            path.closeSubpath()
         case .music:
             path.move(to: p(9, 18)); path.addLine(to: p(9, 6)); path.addLine(to: p(19, 4)); path.addLine(to: p(19, 16))
             path.addEllipse(in: circle(6.5, 18, 2.5)); path.addEllipse(in: circle(16.5, 16, 2.5))
@@ -113,15 +134,15 @@ struct HeaderGlyphShape: Shape {
     }
 }
 
-/// The header strip left of the notch, as in the mockup: Home (opens Settings), Music, Camera.
+/// The header, as in the mockup: Home, Music, Camera, Calendar left of the notch and the Settings gear in the right wing.
 /// Island-sized overlay, so it never changes the layout.
 struct HeaderTabIcon: View {
     let state: AppState
+    var shelf: ShelfStore? = nil
     let onSettings: @MainActor () -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            headerButton(.home, rect: NowPlayingLayout.settingsButton, selected: false, label: SettingsText.windowTitle) { onSettings() }
             ForEach(IslandTab.allCases, id: \.self) { tab in
                 headerButton(Self.glyph(for: tab), rect: NowPlayingLayout.tabRect(tab),
                              selected: state.selectedTab == tab, label: Self.label(for: tab)) {
@@ -129,12 +150,22 @@ struct HeaderTabIcon: View {
                     Log.camera.info("camera tab clicked tab=\(tab.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public)")
                 }
             }
+            if let shelf, !shelf.items.isEmpty {
+                Circle().fill(Color(red: 134 / 255, green: 174 / 255, blue: 247 / 255))
+                    .frame(width: ShelfLayout.homeDot.width, height: ShelfLayout.homeDot.height)
+                    .help(ShelfText.homeDotTooltip)
+                    .accessibilityLabel(ShelfText.homeDotTooltip)
+                    .allowsHitTesting(false)
+                    .position(x: ShelfLayout.homeDot.midX, y: ShelfLayout.homeDot.midY)
+            }
+            headerButton(.gear, rect: NowPlayingLayout.settingsButton, selected: false, label: SettingsText.windowTitle) { onSettings() }
         }
         .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height, alignment: .topLeading)
     }
 
     private static func glyph(for tab: IslandTab) -> HeaderGlyph {
         switch tab {
+        case .home: .home
         case .music: .music
         case .camera: .camera
         case .calendar: .calendar
@@ -143,6 +174,7 @@ struct HeaderTabIcon: View {
 
     private static func label(for tab: IslandTab) -> String {
         switch tab {
+        case .home: "Home"
         case .music: "Music"
         case .camera: "Camera"
         case .calendar: "Calendar"

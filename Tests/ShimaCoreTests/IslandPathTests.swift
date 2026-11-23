@@ -3,11 +3,11 @@ import Testing
 @testable import ShimaCore
 
 @Suite struct IslandPathTests {
-    let box = CGRect(x: 0, y: 0, width: 436, height: 208) // expanded panel bounds
+    let box = CGRect(x: 0, y: 0, width: 476, height: 208) // expanded panel bounds
     var expanded: CGPath { IslandPath.make(in: box, metrics: IslandLayout.expanded) }
 
     @Test func expandedBoundsIncludeEars() {
-        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 420, height: 200))
+        #expect(expanded.boundingBoxOfPath == CGRect(x: 8, y: 0, width: 460, height: 200))
     }
     @Test func earCornerIsFilled() { #expect(expanded.contains(CGPoint(x: 17, y: 1))) }
     @Test func earCircleIsTransparent() { #expect(!expanded.contains(CGPoint(x: 10, y: 8))) }

@@ -24,7 +24,8 @@ if (( login )); then APP="/Applications/Shima.app"; else APP="$REPO/dist/Shima.a
 BIN="$APP/Contents/MacOS/Shima"
 [[ -x "$BIN" ]] || { echo "missing $BIN (scripts/bundle.sh, or scripts/install.sh for --login-item)"; exit 2; }
 H=620                                   # SettingsLayout.size.height
-N="735 16"; A="735 400"; GEAR="561.5 16" # NowPlayingLayout.settingsButtonCenter (the Home button) on this Mac
+# GEAR x = notchMidX - IslandLayout.expanded.width / 2 + NowPlayingLayout.settingsButton.midX (735.5 - 220 + 417)
+N="735 16"; A="735 400"; GEAR="932.5 16" # NowPlayingLayout.settingsButtonCenter (the right-wing gear) on this Mac
 SEG_animated="296 270"; SEG_whenOpen="415 270"; SEG_off="534 270"   # SettingsLayoutTests pins these
 LOGIN="815 68"; AUTOMATION="350 130"; QUIT="100 589"
 PAGE_general="100 141"; PAGE_music="100 179"

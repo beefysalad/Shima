@@ -39,11 +39,11 @@ import ShimaCore
                 Color.black
                 CalendarContent(coordinator: coordinator, now: { now })
             }
-            .frame(width: 400, height: 200)
+            .frame(width: IslandLayout.expanded.width, height: IslandLayout.expanded.height)
             .scaleEffect(scale, anchor: .topLeading)
-            .frame(width: 400 * scale, height: 200 * scale, alignment: .topLeading)
+            .frame(width: IslandLayout.expanded.width * scale, height: IslandLayout.expanded.height * scale, alignment: .topLeading)
             let host = NSHostingView(rootView: view)
-            host.frame = CGRect(x: 0, y: 0, width: 400 * scale, height: 200 * scale)
+            host.frame = CGRect(x: 0, y: 0, width: IslandLayout.expanded.width * scale, height: IslandLayout.expanded.height * scale)
             host.layoutSubtreeIfNeeded()
             guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { fatalError("no bitmap") }
             host.cacheDisplay(in: host.bounds, to: rep)

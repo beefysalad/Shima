@@ -21,6 +21,7 @@ final class IslandPanelController {
     let media = IslandMedia()
     var camera: CameraService?
     var calendar: CalendarService?
+    var shelfService: ShelfService?
     var onCommand: (@MainActor (SpotifyCommand) -> Void)?
     var onSettings: (@MainActor () -> Void)?
     var onIslandOpened: (@MainActor () -> Void)?
@@ -47,11 +48,23 @@ final class IslandPanelController {
         hover = HoverController(scheduler: DispatchScheduler()) { [weak self] effect in
             self?.perform(effect)
         }
-        hover.onPhaseChange = { from, to in
+        hover.onPhaseChange = { [weak self] from, to in
             Log.hover.debug("hover \(String(describing: from), privacy: .public) -> \(String(describing: to), privacy: .public)")
+            guard let self else { return }
+            self.state.dragHovering = (to == .dragHovering)
+            if to != .dragHovering { self.state.veilOverTile = false }
         }
         trackingView.onPointer = { [weak self] inside in
             self?.hover.pointer(inside: inside)
+        }
+        trackingView.onDragEvent = { [weak self] in self?.shelfDrag($0) }
+        trackingView.onDrop = { [weak self] entries in
+            self?.shelfService?.drop(entries) ?? ShelfAddResult(added: 0, refused: 0)
+        }
+        trackingView.onDragLocation = { [weak self] point in
+            guard let self else { return }
+            let over = point.map(ShelfLayout.isOverVeilTile) ?? false
+            if self.state.veilOverTile != over { self.state.veilOverTile = over }
         }
     }
 
@@ -94,7 +107,9 @@ final class IslandPanelController {
             state: state, media: media, notch: notch, hasNotch: hasNotch,
             debug: Self.debug, hitOpacity: Self.hitOpacity,
             onCommand: { [weak self] in self?.handle($0) },
-            onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator)
+            onSettings: { [weak self] in self?.openSettings() }, camera: camera, calendar: calendar?.coordinator,
+            shelf: shelfService?.store, shelfService: shelfService,
+            onShelfDragStarted: { [weak self] in self?.shelfDragOutStarted() })
         hover.reset()
         applyIdleGeometry(animated: false) // always re-applied, even if unchanged
         panel.orderFrontRegardless()
@@ -103,6 +118,21 @@ final class IslandPanelController {
     private func handle(_ command: SpotifyCommand) {
         Log.spotify.info("spotify command \(command.rawValue, privacy: .public) active=\(NSApp.isActive, privacy: .public) key=\(self.panel?.isKeyWindow ?? false, privacy: .public)")
         onCommand?(command)
+    }
+
+    /// Drag events from the shelf service (fake driver now, the drop destination view in Task 8).
+    func shelfDrag(_ event: ShelfDragEvent) {
+        switch event {
+        case .entered: hover.dragEntered()
+        case .exited: hover.dragExited()
+        case .ended(let dropped): hover.dragEnded(dropped: dropped)
+        }
+    }
+
+    /// A chip drag-out began: the drag never reaches the hover machine (OwnDrag filters it), so collapse
+    /// the island through the normal pointer path.
+    func shelfDragOutStarted() {
+        hover.pointer(inside: false)
     }
 
     private func openSettings() {

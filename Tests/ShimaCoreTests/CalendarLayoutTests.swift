@@ -3,8 +3,8 @@ import Testing
 @testable import ShimaCore
 
 @Suite struct CalendarLayoutTests {
-    let island = CGRect(x: 0, y: 0, width: 400, height: 200)
-    let notchZone = CGRect(x: 110.5, y: 0, width: 179, height: 32)
+    let island = CGRect(x: 0, y: 0, width: IslandLayout.expanded.width, height: IslandLayout.expanded.height)
+    let notchZone = CGRect(x: 130.5, y: 0, width: 179, height: 32)
 
     var singles: [CGRect] {
         [CalendarLayout.dateLine, CalendarLayout.dayNumber, CalendarLayout.moreLine, CalendarLayout.emptyLine,
@@ -24,7 +24,7 @@ import Testing
 
     @Test func leftAndRightColumnsDoNotOverlap() {
         let left = singles.filter { $0.maxX <= 176 }
-        let right = singles.filter { $0.minX >= 196 }
+        let right = singles.filter { $0.minX >= 236 }
         #expect(left.count + right.count == singles.count)
         for l in left { for r in right { #expect(!l.intersects(r)) } }
     }
@@ -39,15 +39,15 @@ import Testing
 
     @Test func sixWeekGridEndsAboveTheRoundedBottom() {
         #expect(CalendarLayout.cell(week: 5, day: 6).maxY == 186)
-        #expect(CalendarLayout.cell(week: 0, day: 0).minX == 196)
-        #expect(abs(CalendarLayout.cell(week: 0, day: 6).maxX - 386) < 0.001)
+        #expect(CalendarLayout.cell(week: 0, day: 0).minX == 236)
+        #expect(abs(CalendarLayout.cell(week: 0, day: 6).maxX - 426) < 0.001)
         #expect(CalendarLayout.cell(week: 0, day: 0).minY >= CalendarLayout.weekdayRow.maxY)
     }
 
     @Test func monthNavigationSitsRightOfTheTitle() {
         #expect(CalendarLayout.monthTitle.maxX <= CalendarLayout.previousMonth.minX)
         #expect(CalendarLayout.previousMonth.maxX <= CalendarLayout.nextMonth.minX)
-        #expect(CalendarLayout.nextMonth.maxX == 386)
+        #expect(CalendarLayout.nextMonth.maxX == 426)
     }
 
     @Test func centerMapsLocalRectToGlobalPoints() {

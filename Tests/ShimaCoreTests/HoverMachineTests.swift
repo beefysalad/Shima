@@ -11,6 +11,120 @@ import Testing
         return (machine, effects)
     }
 
+    @Test func dragEnteredFromCollapsedGrowsAndExpands() {
+        let (machine, effects) = run([.dragEntered])
+        #expect(machine.phase == .dragHovering)
+        #expect(effects == [.cancelTimer, .growPanel, .setHotRegion(.expanded), .animateExpand])
+        let (_, duplicate) = run([.dragEntered, .dragEntered])
+        #expect(duplicate.isEmpty)
+    }
+
+    @Test func dragEnteredDuringPeekCancelsPeek() {
+        let inputs: [HoverInput] = [.peekRequested, .dragEntered]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .dragHovering)
+        #expect(effects == [.cancelTimer, .growPanel, .setHotRegion(.expanded), .animateExpand])
+        let (after, stale) = run(inputs + [.peekElapsed])
+        #expect(after.phase == .dragHovering && stale.isEmpty)
+    }
+
+    @Test func dragEnteredDuringDwellingExpands() {
+        for prefix: [HoverInput] in [[.pointer(inside: true)], [.peekRequested, .pointer(inside: true)]] {
+            let inputs = prefix + [.dragEntered]
+            let (machine, effects) = run(inputs)
+            #expect(machine.phase == .dragHovering)
+            #expect(effects == [.cancelTimer, .growPanel, .setHotRegion(.expanded), .animateExpand])
+            let (after, stale) = run(inputs + [.dwellElapsed])
+            #expect(after.phase == .dragHovering && stale.isEmpty)
+        }
+    }
+
+    @Test func dragExitedStartsLeaveDebounce() {
+        let (machine, effects) = run([.dragEntered, .dragExited])
+        #expect(machine.phase == .leaving && effects == [.startTimer(.leave)])
+        let (after, duplicate) = run([.dragEntered, .dragExited, .dragEnded(dropped: false)])
+        #expect(after.phase == .leaving && duplicate.isEmpty)
+    }
+
+    @Test func dragReenterWithinDebounceStaysOpen() {
+        let inputs: [HoverInput] = [.dragEntered, .dragExited, .dragEntered]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .dragHovering)
+        #expect(effects == [.cancelTimer, .setHotRegion(.expanded), .animateExpand])
+        let (after, stale) = run(inputs + [.leaveElapsed])
+        #expect(after.phase == .dragHovering && stale.isEmpty)
+    }
+
+    @Test func staleCollapseFinishedAfterReenterIsIgnored() {
+        let inputs: [HoverInput] = [.pointer(inside: true), .dwellElapsed, .pointer(inside: false), .leaveElapsed,
+                                    .dragEntered]
+        let (entered, expand) = run(inputs)
+        #expect(entered.phase == .dragHovering)
+        #expect(expand == [.cancelTimer, .setHotRegion(.expanded), .animateExpand])
+        for suffix: [HoverInput] in [[], [.dragExited], [.dragExited, .leaveElapsed],
+                                     [.dragEnded(dropped: true), .pointer(inside: false), .leaveElapsed, .pointer(inside: true)]] {
+            let (before, _) = run(inputs + suffix)
+            let (after, stale) = run(inputs + suffix + [.collapseFinished(generation: 1)])
+            #expect(after.phase == before.phase && stale.isEmpty)
+        }
+    }
+
+    @Test func dragEndedDroppedStaysExpanded() {
+        let inputs: [HoverInput] = [.dragEntered, .dragEnded(dropped: true)]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .expanded && effects.isEmpty)
+        let (leaving, leave) = run(inputs + [.pointer(inside: false)])
+        #expect(leaving.phase == .leaving && leave == [.startTimer(.leave)])
+    }
+
+    @Test func dragEndedNotDroppedCollapsesAfterLeaveDebounce() {
+        let inputs: [HoverInput] = [.dragEntered, .dragEnded(dropped: false)]
+        let (leaving, leave) = run(inputs)
+        #expect(leaving.phase == .leaving && leave == [.startTimer(.leave)])
+        let (collapsing, collapse) = run(inputs + [.leaveElapsed])
+        #expect(collapsing.phase == .collapsing)
+        #expect(collapse == [.setHotRegion(.idle), .animateCollapse(generation: 1)])
+        let (after, duplicate) = run(inputs + [.dragExited])
+        #expect(after.phase == .leaving && duplicate.isEmpty)
+    }
+
+    @Test func onlyDragExitedStillCollapses() {
+        let (machine, effects) = run([.dragEntered, .dragExited, .leaveElapsed, .collapseFinished(generation: 1)])
+        #expect(machine.phase == .collapsed && effects == [.shrinkPanel])
+    }
+
+    @Test func onlyDragEndedStillCollapses() {
+        let (machine, effects) = run([.dragEntered, .dragEnded(dropped: false), .leaveElapsed, .collapseFinished(generation: 1)])
+        #expect(machine.phase == .collapsed && effects == [.shrinkPanel])
+    }
+
+    @Test func resetClearsDragState() {
+        let inputs: [HoverInput] = [.dragEntered, .reset]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .collapsed)
+        #expect(effects == [.cancelTimer, .snapCollapsed, .setHotRegion(.idle), .shrinkPanel])
+        let (dwelling, dwell) = run(inputs + [.pointer(inside: true)])
+        #expect(dwelling.phase == .dwelling && dwell == [.startTimer(.dwell)])
+        let (after, end) = run(inputs + [.dragEnded(dropped: false)])
+        #expect(after.phase == .collapsed && end.isEmpty)
+    }
+
+    @Test func pointerEventsDuringDragAreIgnored() {
+        let inputs: [HoverInput] = [.dragEntered, .pointer(inside: false), .pointer(inside: true), .pointer(inside: false)]
+        let (machine, effects) = run(inputs)
+        #expect(machine.phase == .dragHovering && effects.isEmpty)
+        let (leaving, leave) = run(inputs + [.dragEnded(dropped: true), .pointer(inside: false)])
+        #expect(leaving.phase == .leaving && leave == [.startTimer(.leave)])
+        let (expanded, enter) = run(inputs + [.dragExited, .pointer(inside: true)])
+        #expect(expanded.phase == .expanded && enter == [.cancelTimer])
+    }
+
+    @Test func dragEnteredFromExpandedDoesNotRegrow() {
+        let (machine, effects) = run([.pointer(inside: true), .dwellElapsed, .dragEntered])
+        #expect(machine.phase == .dragHovering)
+        #expect(effects == [.cancelTimer, .setHotRegion(.expanded), .animateExpand])
+    }
+
     @Test func enterStartsDwell() {
         let (machine, effects) = run([.pointer(inside: true)])
         #expect(machine.phase == .dwelling)

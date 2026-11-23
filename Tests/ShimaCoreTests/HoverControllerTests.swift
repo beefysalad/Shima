@@ -20,6 +20,64 @@ import ShimaCore
         clock.advance(by: .milliseconds(80))
     }
 
+    @Test func dragExitedCollapsesAfterLeaveTimer() {
+        let (controller, recorder) = make()
+        controller.dragEntered()
+        #expect(controller.phase == .dragHovering && !controller.hasPendingTimer)
+        controller.dragExited()
+        clock.advance(by: .milliseconds(200))
+        controller.dragEnded(dropped: false)
+        #expect(clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(99))
+        #expect(controller.phase == .leaving)
+        clock.advance(by: .milliseconds(1))
+        #expect(controller.phase == .collapsing && !controller.hasPendingTimer)
+        #expect(Array(recorder.effects.suffix(2)) == [.setHotRegion(.idle), .animateCollapse(generation: 1)])
+        controller.collapseFinished(generation: 1)
+        #expect(controller.phase == .collapsed && recorder.effects.last == .shrinkPanel)
+    }
+
+    @Test func dragReenterCancelsPendingTimer() {
+        let (controller, recorder) = make()
+        controller.dragEntered()
+        controller.dragExited()
+        clock.advance(by: .milliseconds(200))
+        controller.dragEntered()
+        #expect(!controller.hasPendingTimer && clock.pendingCount == 0)
+        clock.advance(by: .seconds(2))
+        #expect(controller.phase == .dragHovering)
+        #expect(recorder.count(.growPanel) == 1 && recorder.effects.last == .animateExpand)
+    }
+
+    @Test func dragEndedDroppedLeavesNoPendingTimer() {
+        let (controller, _) = make()
+        controller.peek(duration: .seconds(3))
+        controller.dragEntered()
+        controller.dragEnded(dropped: true)
+        #expect(controller.phase == .expanded)
+        #expect(!controller.hasPendingTimer && clock.pendingCount == 0)
+        clock.advance(by: .seconds(4))
+        #expect(controller.phase == .expanded)
+    }
+
+    @Test func dragEndedAloneUsesLeaveTimer() {
+        let (controller, _) = make()
+        controller.dragEntered()
+        controller.dragEnded(dropped: false)
+        #expect(controller.hasPendingTimer && clock.pendingCount == 1)
+        clock.advance(by: .milliseconds(300))
+        #expect(controller.phase == .collapsing && clock.pendingCount == 0)
+    }
+
+    @Test func dragEnteredCancelsDwellTimer() {
+        let (controller, _) = make()
+        controller.pointer(inside: true)
+        controller.dragEntered()
+        #expect(controller.phase == .dragHovering && clock.pendingCount == 0)
+        clock.advance(by: .seconds(1))
+        #expect(controller.phase == .dragHovering && !controller.hasPendingTimer)
+    }
+
     @Test func dwellOf80msExpands() {
         let (controller, recorder) = make()
         controller.pointer(inside: true)

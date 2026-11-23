@@ -35,6 +35,18 @@
         handle(.pointer(inside: inside))
     }
 
+    public func dragEntered() {
+        handle(.dragEntered)
+    }
+
+    public func dragExited() {
+        handle(.dragExited)
+    }
+
+    public func dragEnded(dropped: Bool) {
+        handle(.dragEnded(dropped: dropped))
+    }
+
     public func collapseFinished(generation: Int) {
         handle(.collapseFinished(generation: generation))
     }

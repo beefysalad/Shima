@@ -51,7 +51,7 @@
           <div><b>Free</b><span>no account, all local</span></div>
           <div><b>14+</b><span>macOS, Apple Silicon</span></div>
         </div>
-        <p class="first-time">Version 0.1.10. It isn&rsquo;t notarized yet, so the first launch takes one right-click. <a href="#first-launch">Here&rsquo;s how</a></p>
+        <p class="first-time">Version 0.1.11. It isn&rsquo;t notarized yet, so the first launch takes one right-click. <a href="#first-launch">Here&rsquo;s how</a></p>
       </div>
 
       <figure class="stage" aria-labelledby="stage-cap">
@@ -123,7 +123,7 @@
       </figure>
     </div>
   </section>
-  <div class="wrap news"><span class="tag">0.1.10</span><a href="#changelog">The device banner, actually centred <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
+  <div class="wrap news"><span class="tag">0.1.11</span><a href="#changelog">A shelf on the notch <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
 
   <section class="k-sec wrap" id="how" aria-labelledby="how-title">
     <header class="k-head">
@@ -174,7 +174,18 @@
     </header>
     <ol class="releases">
       <li class="release">
-        <div class="release-meta"><span class="version">0.1.10</span><span class="badge">Latest</span><time datetime="2026-11-23">Nov 23, 2026</time></div>
+        <div class="release-meta"><span class="version">0.1.11</span><span class="badge">Latest</span><time datetime="2026-11-24">Nov 24, 2026</time></div>
+        <div class="release-body">
+          <h3>A shelf, and a wider island</h3>
+          <ul>
+          <li><b>Shelf:</b> drag files, text or links onto the notch from any tab. The island opens, and what you dropped waits on the new Home tab. Drag it back out into Finder, a browser or a text field. It holds 20 items, files stay where they are, and the shelf is cleared when you quit.</li>
+          <li><b>Home tab:</b> Home is now a tab of its own, with the shelf. Settings is the gear at the right edge of the open island.</li>
+          <li><b>Wider island:</b> the open island is 40 pt wider, and the player, camera and calendar use the extra room.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="release">
+        <div class="release-meta"><span class="version">0.1.10</span><time datetime="2026-11-23">Nov 23, 2026</time></div>
         <div class="release-body">
           <h3>Device banner, actually centred</h3>
           <ul>
@@ -191,18 +202,6 @@
           </ul>
         </div>
       </li>
-      <li class="release">
-        <div class="release-meta"><span class="version">0.1.8</span><time datetime="2026-11-23">Nov 23, 2026</time></div>
-        <div class="release-body">
-          <h3>Calendar, Reminders and device banners</h3>
-          <ul>
-            <li><b>Calendar tab:</b> today&rsquo;s date, what&rsquo;s on and what&rsquo;s due, with a month grid beside it, from the Calendar and Reminders apps you already use. Tick a reminder off from the island.</li>
-            <li><b>Device banners:</b> a three-second banner with the name and battery when AirPods, a keyboard or a mouse connects. Hover it to open the island. A Device pop-ups switch in Settings turns it off.</li>
-            <li><b>A fourth tab:</b> Home, Music, Camera and Calendar now sit along the top edge.</li>
-            <li><b>Permissions:</b> macOS asks for Calendar and Reminders the first time you open the Calendar tab, and for Bluetooth the first time shima starts after this update.</li>
-          </ul>
-        </div>
-      </li>
     </ol>
     <a class="all-releases" href="releases.html">View all releases <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
   </section>
@@ -210,13 +209,13 @@
   <section class="k-sec wrap" id="faq" aria-labelledby="faq-title">
     <header class="k-head"><h2 id="faq-title">Questions.</h2></header>
     <div class="k-faq">
-      <details><summary>What is shima?</summary><p>A small Mac app that turns the MacBook notch into a Dynamic Island, like the one on the iPhone. Today it shows what Spotify is playing, a camera mirror, your calendar and reminders, and a banner when AirPods or a keyboard connects. It&rsquo;s a personal project: small, local and easy to hack on.</p></details>
+      <details><summary>What is shima?</summary><p>A small Mac app that turns the MacBook notch into a Dynamic Island, like the one on the iPhone. Today it shows what Spotify is playing, a camera mirror, your calendar and reminders, a shelf for files, text and links, and a banner when AirPods or a keyboard connects. It&rsquo;s a personal project: small, local and easy to hack on.</p></details>
       <details><summary>Is it free?</summary><p>Yes. No price, no account, no trial. The source is on <a href="https://github.com/beefysalad/Shima">GitHub</a>.</p></details>
       <details><summary>Why does macOS warn me when I open it?</summary><p>shima is ad-hoc signed and not notarized by Apple, so Gatekeeper blocks the first double-click. Right-click it and choose Open once, or use the one-line Terminal command in <a href="#first-launch">the first-launch steps</a>.</p></details>
-      <details><summary>Does it work with Apple Music or other players?</summary><p>Not yet. Version 0.1.10 talks to the Spotify desktop app only for music. Without Spotify running, the wings simply don&rsquo;t appear, and the camera and calendar are separate tabs.</p></details>
+      <details><summary>Does it work with Apple Music or other players?</summary><p>Not yet. Version 0.1.11 talks to the Spotify desktop app only for music. Without Spotify running, the wings simply don&rsquo;t appear, and the camera and calendar are separate tabs.</p></details>
       <details><summary>Will it slow my Mac down?</summary><p>It&rsquo;s built not to. While idle, it runs no timers and does no polling. While music plays it&rsquo;s event-driven, and the equalizer runs at a low frame rate; you can turn it off in Settings. The camera runs only while the Camera tab is open.</p></details>
       <details><summary>What about external monitors or a Mac without a notch?</summary><p>shima only uses the built-in display for now. On a built-in screen without a notch it becomes an invisible hover zone at the top centre. External monitors and clamshell mode are still on the list.</p></details>
-      <details><summary>Where is it once it&rsquo;s running?</summary><p>There&rsquo;s no Dock icon. Launch Shima again from Spotlight or Finder to open Settings, or click the Home icon on the open island. Quit from Settings, or from the small capsule icon in the menu bar if your menu bar has room for it.</p></details>
+      <details><summary>Where is it once it&rsquo;s running?</summary><p>There&rsquo;s no Dock icon. Launch Shima again from Spotlight or Finder to open Settings, or click the gear at the right edge of the open island. Quit from Settings, or from the small capsule icon in the menu bar if your menu bar has room for it.</p></details>
       <details><summary>What does it ask permission for?</summary><p>Spotify control (Automation) the first time you play something, and the camera the first time you open the Camera tab. It also asks for Calendar and Reminders when you open that tab, and Bluetooth so it can see a device connect. Each is asked once, only when the feature is used, and shima points you to the right System Settings pane if you say no.</p></details>
       <details><summary>What does &ldquo;shima&rdquo; mean?</summary><p><span lang="ja">島</span>, shima, is Japanese for &ldquo;island&rdquo;. A small island in the notch.</p></details>
     </div>
@@ -227,7 +226,7 @@
       <div class="get-copy">
         <img class="get-icon" src="site-assets/shima-icon.svg" alt="" width="64" height="64">
         <h2 id="install-title">Give your notch <em>something to do.</em></h2>
-        <p>shima 0.1.10 for macOS 14 or newer on Apple Silicon. The release has a DMG and a ZIP; either one works.</p>
+        <p>shima 0.1.11 for macOS 14 or newer on Apple Silicon. The release has a DMG and a ZIP; either one works.</p>
         <p class="note">It&rsquo;s ad-hoc signed, not notarized, so the first launch needs one extra click.</p>
       </div>
       <div class="get-os">
